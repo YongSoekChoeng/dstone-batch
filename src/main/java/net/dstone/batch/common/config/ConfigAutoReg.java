@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
-import net.dstone.batch.common.annotation.AutoRegisteredJob;
+import net.dstone.batch.common.annotation.AutoRegJob;
 
 @Configuration
 public class ConfigAutoReg {
@@ -32,7 +32,7 @@ public class ConfigAutoReg {
 	public void registerJobs() throws Exception {
 		try {
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
-			Map<String, Object> beans = applicationContext.getBeansWithAnnotation(AutoRegisteredJob.class);
+			Map<String, Object> beans = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
 			for (Object bean : beans.values()) {
 System.out.println( "bean.getClass().getName()=================>>>>" + bean.getClass().getName());				
 				// Tasklet 구현체만 처리

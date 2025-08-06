@@ -9,10 +9,10 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.annotation.AutoRegisteredJob;
+import net.dstone.batch.common.annotation.AutoRegJob;
 
 @Component
-@AutoRegisteredJob
+@AutoRegJob
 public class SampleTasklet implements Tasklet {
 
     @Override
