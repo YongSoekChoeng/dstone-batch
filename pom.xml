@@ -1,37 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.4.5</version>
+	</parent>
+
 	<groupId>net.dstone</groupId>
 	<artifactId>dstone-batch</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>dstone-batch</name>
-	<packaging>war</packaging>
-	
-	<!-- lookup parent from repository -->
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- JSP는 1.4.2버전 이하는 jar로도 동작하고 1.4.2버전 이상은 war로 패키징 해야 동작 -->
-		<version>2.7.0</version>
-	</parent>
-	
+
 	<properties>
-		<!-- Java -->
 		<java.version>1.8</java.version>
-		<!-- Web -->
-		<jsp.version>2.2.1</jsp.version>
-		<jstl.version>1.2.1</jstl.version>
-		<servlet.version>3.0.1</servlet.version>
-		<!-- Maven-Plugin -->
-		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
-		<!-- Log4j -->
+		<lightmin.version>2.2.1</lightmin.version>
 		<log4j.version>2.24.3</log4j.version>
-		<!-- Dl4j(AI) -->
-		<dl4j.version>1.0.0-M1.1</dl4j.version>
+		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 	</properties>
-	
+
 	<repositories>
         <repository>
             <id>central</id>
@@ -48,75 +37,95 @@
     </repositories>
     
 	<dependencies>
-	
-		<!-- SpringBoot/Spring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency> 
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-log4j2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId><!-- This is for Hot deply -->
-			<optional>true</optional>
-		</dependency>
-		<dependency> 
-			<groupId>org.springframework</groupId> 
-			<artifactId>spring-jdbc</artifactId> 
-		</dependency>
+		<!-- Spring Boot Batch -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
-		
-		<!-- DATABASE -->
 		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-		</dependency>	
-		<dependency>
-		    <groupId>mysql</groupId>
-		    <artifactId>mysql-connector-java</artifactId>
-		    <version>8.0.33</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-		</dependency>	
-        <dependency>
-            <groupId>oracle.jdbc</groupId>
-            <artifactId>ojdbc</artifactId>
-            <version>12.1.0.2.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/webapp/WEB-INF/lib/ojdbc8-12.2.0.1.jar</systemPath>
-        </dependency>	
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
+
+		<!-- Spring Batch Lightmin -->
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-dbcp2</artifactId><!-- JNDI설정을 위한 dbcp -->
-		</dependency>		
+			<groupId>org.tuxdevelop</groupId>
+			<artifactId>spring-batch-lightmin-client-classic</artifactId>
+		  	<version>${lightmin.version}</version>
+		    <exclusions>
+		        <exclusion>
+				    <groupId>ch.qos.logback</groupId>
+				    <artifactId>logback-classic</artifactId>
+		        </exclusion>
+		        <exclusion>
+				    <groupId>org.apache.logging.log4j</groupId>
+				    <artifactId>log4j-to-slf4j</artifactId>
+		        </exclusion>
+		    </exclusions>	
+		</dependency>
+		<dependency>
+			<groupId>org.tuxdevelop</groupId>
+			<artifactId>spring-batch-lightmin-repository-remote</artifactId>
+		  	<version>${lightmin.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.tuxdevelop</groupId>
+			<artifactId>spring-batch-lightmin-repository-jdbc</artifactId>
+		  	<version>${lightmin.version}</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+		    <version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+		    <version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bgee.log4jdbc-log4j2</groupId>
+			<artifactId>log4jdbc-log4j2-jdbc4.1</artifactId>
+		    <version>1.16</version>
+		</dependency>
+		
+		<!-- MyBatis -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		
+		<!-- JDBC -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		
+		<!-- Common HTTP Client Util -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.7</version>
+		</dependency>
 		
 		<!-- dstone 라이브러리 -->
         <dependency>
@@ -126,6 +135,18 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/webapp/WEB-INF/lib/dstone-utils.jar</systemPath>
         </dependency>	
+		
+		<!-- Encrypt -->
+		<dependency> 
+			<groupId>com.github.ulisesbocchio</groupId> 
+			<artifactId>jasypt-spring-boot-starter</artifactId> 
+			<version>3.0.4</version> 
+		</dependency>
+		<dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk18on</artifactId>
+		    <version>1.75</version>
+		</dependency>
 		
 		<!-- MyBatis -->
 		<dependency>
@@ -139,7 +160,7 @@
 			<artifactId>mybatis</artifactId>
 			<version>3.4.1</version>
 		</dependency>
-
+		
 		<!-- AspectJ -->
 		<dependency>
 		    <groupId>org.aspectj</groupId>
@@ -186,53 +207,6 @@
 			<version>2.6</version>
 		</dependency>
 		
-		<!-- Lombok -->
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
-		<!-- HTTP Connection -->
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.httpcomponents</groupId>
-		    <artifactId>httpcore</artifactId>
-		</dependency>
-
-		<!-- Logging -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-		    <version>${log4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-		    <version>${log4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bgee.log4jdbc-log4j2</groupId>
-			<artifactId>log4jdbc-log4j2-jdbc4.1</artifactId>
-		    <version>1.16</version>
-		</dependency>
-		
-		<!-- Encrypt -->
-		<dependency> 
-			<groupId>com.github.ulisesbocchio</groupId> 
-			<artifactId>jasypt-spring-boot-starter</artifactId> 
-			<version>3.0.4</version> 
-		</dependency>
-		<dependency>
-		    <groupId>org.bouncycastle</groupId>
-		    <artifactId>bcprov-jdk18on</artifactId>
-		    <version>1.75</version>
-		</dependency>
-		
 		<!-- Mail -->
 		<dependency>
 		    <groupId>javax.mail</groupId>
@@ -271,34 +245,20 @@
 		    <version>2.9.0</version>
 		</dependency>
 		
-		<!-- Spring Batch Lightmin Client -->
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-client-classic</artifactId>
-		  	<version>2.2.0</version>
-		    <exclusions>
-		        <exclusion>
-				    <groupId>ch.qos.logback</groupId>
-				    <artifactId>logback-classic</artifactId>
-		        </exclusion>
-		        <exclusion>
-				    <groupId>org.apache.logging.log4j</groupId>
-				    <artifactId>log4j-to-slf4j</artifactId>
-		        </exclusion>
-		    </exclusions>		  	
-		</dependency>
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-repository-remote</artifactId>
-		  	<version>2.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-repository-jdbc</artifactId>
-		  	<version>2.2.0</version>
-		</dependency>
-		
 	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>2020.0.6</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 
     <build>
 		<finalName>${artifactId}</finalName>
@@ -384,6 +344,5 @@
 		</plugins>
 		
     </build>
-
 
 </project>

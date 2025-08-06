@@ -4,8 +4,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-import net.dstone.common.core.BaseObject;
-
 @EnableAsync
 @Configuration
 @Import({ 
@@ -14,8 +12,9 @@ import net.dstone.common.core.BaseObject;
 	ConfigEnc.class,
 	ConfigMapper.class,
 	ConfigProperty.class,
-	ConfigTransaction.class
+	ConfigTransaction.class,
+	ConfigAutoReg.class
 })
-public class Config extends BaseObject{
+public class Config{
 	
 }

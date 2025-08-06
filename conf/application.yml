@@ -1,39 +1,21 @@
-server: 
+server:
     port: 6081
-    connection-timeout: 10s
-    tomcat: 
-        accept-count: 100
-        max-connections: 10000
-        max-threads: 200
-        min-spare-threads: 10
-        max-swallow-size: 2MB
-    error: 
-        whitelabel: 
-            enabled: true
-    servlet: 
-        context-path: /
-        jsp: 
-            init-parameters: 
-                development: true
-        encoding: 
-            force-response: true
-            charset: UTF-8
-    ssl: 
-        enabled: false
-        protocol: TLS
-        enabled-protocols: 
-            - TLSv1
-            - TLSv1.1
-            - TLSv1.2
-        key-store: ${APP_HOME}/framework/dstone-batch/ssl/dstone-keystore.p12
-        key-store-type: PKCS12
-        key-store-password: ENC(vZbjr2NF87hEmiRHka9fUVIay5zvZeNtIRlNGHxvid8=)
-        key-store-alias: dstone-ssl
+    
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
+    endpoint:
+        health:
+            show-details: always
 
-spring: 
-    main: 
+spring:
+    main:
         allow-bean-definition-overriding: true
-    datasource: 
+    application:
+        name: dstone-batch
+    datasource:
         common: 
             hikari: 
                 driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
@@ -44,60 +26,32 @@ spring:
                 use-jndi-lookup: N
                 jndi-lookup-name: java:comp/env/sampleDB
             networks: 
-                - backend                
-        sample:
-            hikari: 
-                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/sampleDB
-                username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
-                password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
-                maximum-pool-size: 30
-                use-jndi-lookup: N
-                jndi-lookup-name: java:comp/env/sampleDB
-            networks: 
-                - backend
-    # 스프링배치        
-    batch:
+                - backend   
+    batch: 
         initialize-schema: never
-        table-prefix: "BATCH_"
-        job: 
-            enabled: false        
-        lightmin: 
-            batch: 
+        job:
+            enabled: false
+
+        lightmin:
+            batch:
                 repository-type: jdbc
-                data-source-name: common
+                data-source-name: dataSourceCommon
                 table-prefix: "BATCH_"
-            client: 
-                classic: 
-                    period: 86400000  # 하루 주기로 서버에 상태 등록
+            client:
+                classic:
+                    period: 86400000    # 하루 주기로 서버에 상태 등록
                     register-once: true
                     auto-deregistration: false
-                    server: 
-                        url: "http://localhost:6080/lightadmin"
-            repository: 
+                    server:
+                        url: http://localhost:6080/lightadmin
+            repository:
                 jdbc: 
-                    data-source-name: common
-                remote: 
-                    server-url: "http://localhost:6080/lightadmin"
-                    
-resources: 
-    fileUp: 
-        path: D:/Temp
+                    data-source-name: dataSourceCommon
+                remote:
+                    server-url: http://localhost:6080/lightadmin
 
-mail: 
-    host: 127.0.0.1
-    port: 3344
-    user: jysn007
-    password: db2admin
-
-sftp: 
-    host: 127.0.0.1
-    port: 22
-    username: jysn007
-    password: db2admin!@
-    private-key-path: ${APP_HOME}/framework/dstone-batch/ssl/id_rsa
-
-app: 
-    common: 
-        biz: 
-            simple-encrypt-key: jysn007db2admin!
+logging:
+    level:
+        root: INFO
+        org.springframework: INFO
+        org.tuxdevelop: INFO

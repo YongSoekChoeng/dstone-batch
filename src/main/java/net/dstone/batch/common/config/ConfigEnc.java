@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Bean;
 
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 
-import net.dstone.common.core.BaseObject;
+import net.dstone.batch.common.core.BatchBaseObject;
 
 @EnableEncryptableProperties
-public class ConfigEnc extends BaseObject{
+public class ConfigEnc extends BatchBaseObject{
 
 	// 1-1. 암복호화 설정.
 	@Bean("jasyptStringEncryptor") 

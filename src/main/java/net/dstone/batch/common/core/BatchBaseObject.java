@@ -12,16 +12,7 @@ import org.springframework.stereotype.Component;
 import net.dstone.common.core.BaseObject;
 
 @Component
-public class BatchBaseObject extends BaseObject {
-	
-	@Autowired
-	protected ApplicationContext applicationContext;
-	@Autowired
-	protected JobBuilderFactory jobBuilderFactory;
-	@Autowired
-	protected StepBuilderFactory stepBuilderFactory;
-	@Autowired
-	protected JobRegistry jobRegistry;
+public class BatchBaseObject extends BaseObject{
 	
 	protected String getAnnotationVal(String annotationKey) {
 		String annotationVal = "";
@@ -30,7 +21,7 @@ public class BatchBaseObject extends BaseObject {
 		if( annotations != null ) {
 			for( Annotation annotation : annotations ) {
 				
-				this.info("annotation====>>>" + annotation);
+				System.out.println("annotation====>>>" + annotation);
 			}
 		}
 		
