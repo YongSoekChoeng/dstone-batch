@@ -13,7 +13,7 @@ import net.dstone.common.core.BaseObject;
 
 @Component
 public class BatchBaseObject extends BaseObject{
-	
+
 	protected String getAnnotationVal(String annotationKey) {
 		String annotationVal = "";
 		
