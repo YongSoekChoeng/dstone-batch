@@ -3,7 +3,7 @@
  
      <Properties>
         <Property name="logging.root-path">${sys:APP_HOME}/LOGS</Property>
-        <Property name="level.default">INFO</Property>
+        <Property name="level.default">DEBUG</Property>
         <Property name="level.dstone">INFO</Property>
     </Properties>
     
