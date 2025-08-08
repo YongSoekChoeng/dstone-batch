@@ -14,17 +14,4 @@ import net.dstone.common.core.BaseObject;
 @Component
 public class BatchBaseObject extends BaseObject{
 
-	protected String getAnnotationVal(String annotationKey) {
-		String annotationVal = "";
-		
-		Annotation[] annotations = this.getClass().getAnnotations();
-		if( annotations != null ) {
-			for( Annotation annotation : annotations ) {
-				
-				System.out.println("annotation====>>>" + annotation);
-			}
-		}
-		
-		return annotationVal;
-	}
 }

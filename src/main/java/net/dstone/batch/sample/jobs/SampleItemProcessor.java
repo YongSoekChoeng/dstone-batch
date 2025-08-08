@@ -2,16 +2,18 @@ package net.dstone.batch.sample.jobs;
 
 import org.springframework.batch.item.ItemProcessor;
 
-//첫 번째 제네릭은 입력 데이터 타입, 두 번째는 출력 데이터 타입입니다.
-public class SampleItemProcessor implements ItemProcessor<String, String> {
+import net.dstone.batch.common.core.BatchBaseObject;
 
- @Override
- public String process(String item) throws Exception {
-     // null 체크를 하여 예외를 방지하고, 데이터를 대문자로 변환합니다.
-     if (item == null) {
-         return null;
-     }
-     System.out.println("ItemProcessor: 데이터를 '" + item + "'에서 '" + item.toUpperCase() + "'로 변환합니다.");
-     return item.toUpperCase();
- }
+//첫 번째 제네릭은 입력 데이터 타입, 두 번째는 출력 데이터 타입입니다.
+public class SampleItemProcessor extends BatchBaseObject implements ItemProcessor<String, String> {
+
+	@Override
+	public String process(String item) throws Exception {
+		// null 체크를 하여 예외를 방지하고, 데이터를 대문자로 변환합니다.
+		if (item == null) {
+			return null;
+		}
+		this.info("ItemProcessor: 데이터를 '" + item + "'에서 '" + item.toUpperCase() + "'로 변환합니다.");
+		return item.toUpperCase();
+	}
 }

@@ -27,6 +27,10 @@ public class SampleJob extends AbstractJob {
 
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
+    
+    private void log(Object msg) {
+    	this.info(msg);
+    }
 
 	@Override
 	public void configJob() throws Exception {
@@ -42,9 +46,9 @@ public class SampleJob extends AbstractJob {
 		return stepBuilderFactory.get(stepName).tasklet(new Tasklet() {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-				System.out.println(stepName + "이(가) 실행됩니다.");
+				log(stepName + "이(가) 실행됩니다.");
 				Thread.sleep(Integer.parseInt(net.dstone.common.utils.StringUtil.getRandomNumber(1)) * 1000);
-				System.out.println(stepName + "이(가) 종료됩니다.");
+				log(stepName + "이(가) 종료됩니다.");
 				
 				// 파라메터 전달(세팅)
 	            chunkContext.getStepContext()
@@ -85,7 +89,7 @@ public class SampleJob extends AbstractJob {
 	    return new Tasklet() {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-				System.out.println(taskletName + "이(가) 실행됩니다.");
+				log(taskletName + "이(가) 실행됩니다.");
 
 				// 파라메터 전달(조회)
 	            String paramName = chunkContext.getStepContext()
@@ -93,10 +97,10 @@ public class SampleJob extends AbstractJob {
                 .getJobExecution()
                 .getExecutionContext()
                 .get("NAME").toString();
-	            System.out.println("paramName["+paramName+"]");
-				
+	            log("paramName["+paramName+"]");
+
 				Thread.sleep(Integer.parseInt(net.dstone.common.utils.StringUtil.getRandomNumber(1)) * 1000);
-				System.out.println(taskletName + "이(가) 종료됩니다.");
+				log(taskletName + "이(가) 종료됩니다.");
 				return RepeatStatus.FINISHED;
 			}
 		};
