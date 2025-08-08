@@ -1,5 +1,7 @@
 package net.dstone.batch.sample.jobs;
 
+import java.util.Arrays;
+
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -8,6 +10,9 @@ import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -27,7 +32,7 @@ public class SampleJob extends AbstractJob {
 	public void configJob() throws Exception {
 		this.addStep(this.createStep("스텝1"));
 		this.addStep(this.createStep("스텝2"));
-		
+		this.addStep(this.createMultiThreadStep("멀티쓰레드스텝1", 2, 2, new SimpleItemReader<>(Arrays.asList("hello", "world", "spring", "batch", "example")), new SimpleItemProcessor(), new SimpleItemWriter()));
 		this.addFlow(this.createSimpleFlow("심플플로우1"));
 		this.addFlow(this.createSplitFlow("스프릿플로우1"));
 		this.addTasklet(this.createTasklet("타스크렛1"));
@@ -51,6 +56,15 @@ public class SampleJob extends AbstractJob {
 				return RepeatStatus.FINISHED;
 			}
 		}).build();
+	}
+	
+	public Step createMultiThreadStep(String stepName, int chunkSize, int threadNum, ItemReader<String> reader, ItemProcessor<String, String> processor, ItemWriter<String> writer) {
+		return stepBuilderFactory.get(stepName).<String, String>chunk(chunkSize)
+				.reader(reader)
+				.processor(processor)
+				.writer(writer).taskExecutor(new SimpleAsyncTaskExecutor()) // 스레드 풀 지정 가능
+				.throttleLimit(threadNum) // 동시에 실행할 스레드 개수
+				.build();
 	}
 	
 	private Flow createSimpleFlow(String flowName) {
