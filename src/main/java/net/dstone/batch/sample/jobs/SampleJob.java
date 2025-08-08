@@ -58,7 +58,7 @@ public class SampleJob extends AbstractJob {
 		}).build();
 	}
 	
-	public Step createMultiThreadStep(String stepName, int chunkSize, int threadNum, ItemReader<String> reader, ItemProcessor<String, String> processor, ItemWriter<String> writer) {
+	private Step createMultiThreadStep(String stepName, int chunkSize, int threadNum, ItemReader<String> reader, ItemProcessor<String, String> processor, ItemWriter<String> writer) {
 		return stepBuilderFactory.get(stepName).<String, String>chunk(chunkSize)
 				.reader(reader)
 				.processor(processor)
