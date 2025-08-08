@@ -1,4 +1,4 @@
-package net.dstone.batch.sample.jobs;
+package net.dstone.batch.sample.jobs.job001;
 
 import java.util.Arrays;
 
