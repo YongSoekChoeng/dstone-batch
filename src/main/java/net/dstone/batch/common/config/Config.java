@@ -7,13 +7,13 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @Configuration
 @Import({ 
+	ConfigAutoReg.class,
 	ConfigBatch.class,
 	ConfigDatasource.class,
 	ConfigEnc.class,
 	ConfigMapper.class,
 	ConfigProperty.class,
-	ConfigTransaction.class,
-	ConfigAutoReg.class
+	ConfigTransaction.class
 })
 public class Config{
 	
