@@ -8,7 +8,6 @@ import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -73,8 +72,6 @@ public class SampleJob extends AbstractJob {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 				System.out.println(taskletName + "이(가) 실행됩니다.");
-				Thread.sleep(Integer.parseInt(net.dstone.common.utils.StringUtil.getRandomNumber(1)) * 1000);
-				System.out.println(taskletName + "이(가) 종료됩니다.");
 
 				// 파라메터 전달(조회)
 	            String paramName = chunkContext.getStepContext()
@@ -84,6 +81,8 @@ public class SampleJob extends AbstractJob {
                 .get("NAME").toString();
 	            System.out.println("paramName["+paramName+"]");
 				
+				Thread.sleep(Integer.parseInt(net.dstone.common.utils.StringUtil.getRandomNumber(1)) * 1000);
+				System.out.println(taskletName + "이(가) 종료됩니다.");
 				return RepeatStatus.FINISHED;
 			}
 		};
