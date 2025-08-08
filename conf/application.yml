@@ -31,7 +31,6 @@ spring:
         initialize-schema: never
         job:
             enabled: false
-
         lightmin:
             batch:
                 repository-type: jdbc
@@ -49,9 +48,3 @@ spring:
                     data-source-name: dataSourceCommon
                 remote:
                     server-url: http://localhost:6080/lightadmin
-
-logging:
-    level:
-        root: INFO
-        org.springframework: INFO
-        org.tuxdevelop: INFO
