@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Queue;
 
 // 제네릭 T는 읽어올 데이터의 타입을 나타냅니다.
-public class SimpleItemReader<T> implements ItemReader<T> {
+public class SampleItemReader<T> implements ItemReader<T> {
 
     private final Queue<T> dataQueue;
 
-    public SimpleItemReader(List<T> data) {
+    public SampleItemReader(List<T> data) {
         // 생성자에서 데이터를 받아 큐(Queue)에 담아둡니다.
         // 큐를 사용하면 순차적으로 데이터를 꺼내기 편리합니다.
         this.dataQueue = new LinkedList<>(data);

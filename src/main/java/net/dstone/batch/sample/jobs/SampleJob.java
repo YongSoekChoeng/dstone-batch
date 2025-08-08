@@ -32,7 +32,7 @@ public class SampleJob extends AbstractJob {
 	public void configJob() throws Exception {
 		this.addStep(this.createStep("스텝1"));
 		this.addStep(this.createStep("스텝2"));
-		this.addStep(this.createMultiThreadStep("멀티쓰레드스텝1", 2, 2, new SimpleItemReader<>(Arrays.asList("hello", "world", "spring", "batch", "example")), new SimpleItemProcessor(), new SimpleItemWriter()));
+		this.addStep(this.createMultiThreadStep("멀티쓰레드스텝1", 2, 2, new SampleItemReader<>(Arrays.asList("hello", "world", "spring", "batch", "example")), new SampleItemProcessor(), new SampleItemWriter()));
 		this.addFlow(this.createSimpleFlow("심플플로우1"));
 		this.addFlow(this.createSplitFlow("스프릿플로우1"));
 		this.addTasklet(this.createTasklet("타스크렛1"));

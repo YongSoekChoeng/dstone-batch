@@ -81,23 +81,22 @@ public abstract class AbstractJob extends BatchBaseObject{
 			this.configJob();
 			JobBuilder jobBuilder = jobBuilderFactory.get(jobName);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
-			FlowBuilder<Flow> subFlowBuilder = null;
 			for(int i=0; i<flowList.size(); i++) {
 				Object flowItem = flowList.get(i);
 				if( i == 0 ) {
 					if(flowItem instanceof Flow) {
 						String flowName = jobName + "-" + "Flow" + "-" + i;
-						subFlowBuilder = new FlowBuilder<Flow>(flowName).start((Flow) flowItem);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(flowName).start((Flow) flowItem);
 						jobFlowBuilder.start(subFlowBuilder.build());
 					}else if(flowItem instanceof Step) {
 						String stepName = jobName + "-" + "Step" + "-" + i;
-						subFlowBuilder = new FlowBuilder<Flow>(stepName).start((Step) flowItem);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(stepName).start((Step) flowItem);
 						jobFlowBuilder.start(subFlowBuilder.build());
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
 						Step step = stepBuilderFactory.get(taskletName).tasklet(tasklet).build();
-						subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.start(subFlowBuilder.build());
 					}else {
 						throw new Exception("지원하지않은 타입입니다.");
@@ -105,17 +104,17 @@ public abstract class AbstractJob extends BatchBaseObject{
 				}else {
 					if(flowItem instanceof Flow) {
 						String flowName = jobName + "-" + "Flow" + "-" + i;
-						subFlowBuilder = new FlowBuilder<Flow>(flowName).start((Flow) flowItem);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(flowName).start((Flow) flowItem);
 						jobFlowBuilder.next(subFlowBuilder.build());
 					}else if(flowItem instanceof Step) {
 						String stepName = jobName + "-" + "Step" + "-" + i;
-						subFlowBuilder = new FlowBuilder<Flow>(stepName).start((Step) flowItem);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(stepName).start((Step) flowItem);
 						jobFlowBuilder.next(subFlowBuilder.build());
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
 						Step step = stepBuilderFactory.get(taskletName).tasklet(tasklet).build();
-						subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
+						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.next(subFlowBuilder.build());
 					}else {
 						throw new Exception("지원하지않은 타입입니다.");
