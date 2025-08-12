@@ -13,7 +13,8 @@ public class SampleItemProcessor extends BatchBaseObject implements ItemProcesso
 		if (item == null) {
 			return null;
 		}
-		this.info("ItemProcessor: 데이터를 '" + item + "'에서 '" + item.toUpperCase() + "'로 변환합니다.");
+		String threadId = String.valueOf(Thread.currentThread().getId());
+		this.info("["+threadId+"]가 " + "ItemProcessor: 데이터를 '" + item + "'에서 '" + item.toUpperCase() + "'로 변환합니다.");
 		return item.toUpperCase();
 	}
 }
