@@ -34,12 +34,14 @@ public class SampleJob extends AbstractJob {
 
 	@Override
 	public void configJob() throws Exception {
-		this.addStep(this.createStep("스텝1"));
-		this.addStep(this.createStep("스텝2"));
-		this.addStep(this.createMultiThreadStep("멀티쓰레드스텝1", 2, 2, new SampleItemReader<>(Arrays.asList("hello", "world", "spring", "batch", "example")), new SampleItemProcessor(), new SampleItemWriter()));
-		this.addFlow(this.createSimpleFlow("심플플로우1"));
-		this.addFlow(this.createSplitFlow("스프릿플로우1"));
-		this.addTasklet(this.createTasklet("타스크렛1"));
+		
+//		this.addStep(this.createStep("01.스텝1"));
+//		this.addStep(this.createStep("02.스텝2"));
+		this.addStep(this.createMultiThreadStep("03.멀티쓰레드스텝1", 2, 2, new SampleItemReader<>(Arrays.asList("hello", "world", "spring", "batch", "example")), new SampleItemProcessor(), new SampleItemWriter()));
+//		this.addFlow(this.createSimpleFlow("04.심플플로우1"));
+//		this.addFlow(this.createSplitFlow("05.스프릿플로우1"));
+//		this.addTasklet(this.createTasklet("06.타스크렛1"));
+		
 	}
 
 	private Step createStep(String stepName) {
