@@ -23,7 +23,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 	
 	private String name;
 	
-	private LinkedList flowList = new LinkedList();
+	private LinkedList<Object> flowList = new LinkedList<Object>();
 	
 	public String getName() {
 		return name;

@@ -23,8 +23,6 @@ spring:
                 username: ENC(ydLjxrknr8dD59e6E+HvxdxRaGiFa9jOCpJJDtb0uak=)
                 password: ENC(ydLjxrknr8dD59e6E+HvxdxRaGiFa9jOCpJJDtb0uak=)
                 maximum-pool-size: 30
-                use-jndi-lookup: N
-                jndi-lookup-name: java:comp/env/sampleDB
             networks: 
                 - backend   
     batch: 
