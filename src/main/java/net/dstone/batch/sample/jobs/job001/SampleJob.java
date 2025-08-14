@@ -68,7 +68,8 @@ public class SampleJob extends AbstractJob {
 		return stepBuilderFactory.get(stepName).<String, String>chunk(chunkSize)
 				.reader(reader)
 				.processor(processor)
-				.writer(writer).taskExecutor(new SimpleAsyncTaskExecutor()) // 스레드 풀 지정 가능
+				.writer(writer)
+				.taskExecutor(new SimpleAsyncTaskExecutor()) // 스레드 풀 지정 가능
 				.throttleLimit(threadNum) // 동시에 실행할 스레드 개수
 				.build();
 	}
