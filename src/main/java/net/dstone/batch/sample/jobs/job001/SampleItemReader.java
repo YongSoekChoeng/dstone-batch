@@ -14,6 +14,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class SampleItemReader<T> extends BatchBaseObject implements ItemReader<T> {
 
     private Queue<T> dataQueue = null;
+    
+    public final Object lockObj = new Object();
 
     public SampleItemReader() {
         this.fillQueue();
@@ -27,15 +29,17 @@ public class SampleItemReader<T> extends BatchBaseObject implements ItemReader<T
     		list.add("QueueItem-" + (i+1));
     	}
     	this.dataQueue = list;
-    	this.info("this.dataQueue.size() ===>>> " + this.dataQueue.size());
+    	this.info( "this.dataQueue.size() ===>>> " + this.dataQueue.size());
     }
 
     @Override
     public T read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-    	T item = dataQueue.poll();
-    	this.info("net.dstone.batch.sample.jobs.job001.SampleItemReader.read() has been called !!! ::: item["+item+"]" + "this.dataQueue.size() ===>>> " + this.dataQueue.size());
-        // 큐가 비어있지 않다면 데이터를 하나 꺼내서 반환합니다.
-        // 큐가 비어있다면 null을 반환하여 읽기가 끝났음을 알립니다.
+    	T item = null;
+    	synchronized(lockObj) {
+    		item = dataQueue.poll();
+        	String threadId = String.valueOf(Thread.currentThread().getId());
+        	this.info( "threadId["+threadId+"] " + "net.dstone.batch.sample.jobs.job001.SampleItemReader.read() has been called !!! ::: item["+item+"]" + "this.dataQueue.size() ===>>> " + this.dataQueue.size());
+    	}
         return item;
     }
 }
