@@ -25,9 +25,6 @@ import net.dstone.batch.common.core.AbstractJob;
 @AutoRegJob(name = "sampleJob")
 public class SampleJob extends AbstractJob {
 
-    @Autowired
-    private StepBuilderFactory stepBuilderFactory;
-    
     private void log(Object msg) {
     	this.info(msg);
     }
@@ -81,6 +78,7 @@ public class SampleJob extends AbstractJob {
 	            .end();
 	}
 	
+	@SuppressWarnings("unused")
 	private Flow createSplitFlow(String flowName) {
 	    return new FlowBuilder<SimpleFlow>(flowName)
 	            .split(new SimpleAsyncTaskExecutor())
@@ -88,6 +86,7 @@ public class SampleJob extends AbstractJob {
 	            .build(); // 내부적으로 SplitFlow 생성
 	}
 
+	@SuppressWarnings("unused")
 	private Tasklet createTasklet(String taskletName) {
 	    return new Tasklet() {
 			@Override
