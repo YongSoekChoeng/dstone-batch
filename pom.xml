@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>3.2.2</version>
 	</parent>
 
 	<groupId>net.dstone</groupId>
@@ -15,9 +15,9 @@
 	<name>dstone-batch</name>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<lightmin.version>2.2.1</lightmin.version>
-		<log4j.version>2.24.3</log4j.version>
+		<java.version>21</java.version>
+		<lightmin.version>4.1.2</lightmin.version>
+		<log4j.version>2.23.1</log4j.version>
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 	</properties>
 
@@ -41,53 +41,36 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
+			<exclusions>
+		        <exclusion>
+	                <groupId>org.springframework.boot</groupId>
+	                <artifactId>spring-boot-starter-logging</artifactId>
+		        </exclusion>
+		    </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
 
-		<!-- Spring Batch Lightmin -->
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-client-classic</artifactId>
-		  	<version>${lightmin.version}</version>
-		    <exclusions>
-		        <exclusion>
-				    <groupId>ch.qos.logback</groupId>
-				    <artifactId>logback-classic</artifactId>
-		        </exclusion>
-		        <exclusion>
-				    <groupId>org.apache.logging.log4j</groupId>
-				    <artifactId>log4j-to-slf4j</artifactId>
-		        </exclusion>
-		    </exclusions>	
-		</dependency>
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-repository-remote</artifactId>
-		  	<version>${lightmin.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.tuxdevelop</groupId>
-			<artifactId>spring-batch-lightmin-repository-jdbc</artifactId>
-		  	<version>${lightmin.version}</version>
-		</dependency>
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-		    <version>${log4j.version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.logging.log4j</groupId>
-		    <artifactId>log4j-slf4j-impl</artifactId>
 		    <version>${log4j.version}</version>
 		</dependency>
 		<dependency>
@@ -103,33 +86,22 @@
 		
 		<!-- MyBatis -->
 		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis</artifactId>
-			<version>3.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis-spring</artifactId>
-			<version>2.0.3</version>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>3.0.3</version>
 		</dependency>
 		
 		<!-- JDBC -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		
 		<!-- Common HTTP Client Util -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-			<version>4.4.13</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.7</version>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
 		</dependency>
 		
 		<!-- dstone 라이브러리 -->
@@ -138,32 +110,19 @@
             <artifactId>dstone-boot</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${basedir}/src/main/webapp/WEB-INF/lib/dstone-utils.jar</systemPath>
+            <systemPath>${basedir}/src/main/webapp/WEB-INF/lib/dstone-boot-batch-utils.jar</systemPath>
         </dependency>	
 		
 		<!-- Encrypt -->
 		<dependency> 
 			<groupId>com.github.ulisesbocchio</groupId> 
 			<artifactId>jasypt-spring-boot-starter</artifactId> 
-			<version>3.0.4</version> 
+			<version>3.0.5</version> 
 		</dependency>
 		<dependency>
 		    <groupId>org.bouncycastle</groupId>
 		    <artifactId>bcprov-jdk18on</artifactId>
-		    <version>1.75</version>
-		</dependency>
-		
-		<!-- MyBatis -->
-		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis-spring</artifactId>
-			<version>1.3.0</version>
-		    <scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis</artifactId>
-			<version>3.4.1</version>
+		    <version>1.78.1</version>
 		</dependency>
 		
 		<!-- AspectJ -->
@@ -184,12 +143,7 @@
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
-			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.9.13</version>
+			<version>1.1.1</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
@@ -204,31 +158,30 @@
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
-			<version>1.9.3</version>
+			<version>1.9.4</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		
 		<!-- Mail -->
 		<dependency>
-		    <groupId>javax.mail</groupId>
-		    <artifactId>mail</artifactId>
-		    <version>1.4.7</version>
+		    <groupId>org.eclipse.angus</groupId>
+		    <artifactId>jakarta.mail</artifactId>
 		</dependency>
 		
 		<!-- Test -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.github.benas</groupId>
-			<artifactId>jpopulator</artifactId><!-- JPOPULATOR(테스트데이터제너레이터) -->
-			<version>1.2.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.hamcrest</groupId>
+					<artifactId>hamcrest-core</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<!-- Encoding 자동체크 -->
@@ -250,6 +203,11 @@
 		    <version>2.9.0</version>
 		</dependency>
 		
+		<dependency>
+		    <groupId>jakarta.annotation</groupId>
+		    <artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
+		
 		<!-- Hot deply -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -264,7 +222,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2020.0.6</version>
+				<version>2023.0.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -308,22 +266,6 @@
         </resources>
 		<plugins>
 		
-			<!-- 이클립스에서 메이븐 사용하기 위한 플러그인 -->
-            <plugin>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>${maven-eclipse-plugin.version}</version>
-                <configuration>
-                    <additionalProjectnatures>
-                        <projectnature>org.springframework.ide.eclipse.core.springnature</projectnature>
-                    </additionalProjectnatures>
-                    <additionalBuildcommands>
-                        <buildcommand>org.springframework.ide.eclipse.core.springbuilder</buildcommand>
-                    </additionalBuildcommands>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>true</downloadJavadocs>
-                </configuration>
-            </plugin>
-		
 			<!-- 컴파일을 위한 플러그인 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -348,8 +290,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<includeSystemScope>false</includeSystemScope>
-					<mainClass>net.dstone.common.DstoneBatchApplication</mainClass>
+					<includeSystemScope>true</includeSystemScope>
+					<mainClass>net.dstone.batch.common.DstoneBatchApplication</mainClass>
 				</configuration>
 			</plugin>
 

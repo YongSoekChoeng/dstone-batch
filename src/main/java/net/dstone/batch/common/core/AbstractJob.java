@@ -4,22 +4,23 @@ import java.util.LinkedList;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public abstract class AbstractJob extends BatchBaseObject{
 
 	@Autowired
-	protected JobBuilderFactory jobBuilderFactory;
+	protected JobRepository jobRepository;
 	@Autowired
-	protected StepBuilderFactory stepBuilderFactory;
+	protected PlatformTransactionManager platformTransactionManager;
 	
 	private String name;
 	
@@ -79,7 +80,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 		try {
 			String jobName = this.name;
 			this.configJob();
-			JobBuilder jobBuilder = jobBuilderFactory.get(jobName);
+			JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
 			for(int i=0; i<flowList.size(); i++) {
 				Object flowItem = flowList.get(i);
@@ -95,7 +96,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
-						Step step = stepBuilderFactory.get(taskletName).tasklet(tasklet).build();
+						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, platformTransactionManager).build();
 						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.start(subFlowBuilder.build());
 					}else {
@@ -113,7 +114,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
-						Step step = stepBuilderFactory.get(taskletName).tasklet(tasklet).build();
+						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, platformTransactionManager).build();
 						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.next(subFlowBuilder.build());
 					}else {

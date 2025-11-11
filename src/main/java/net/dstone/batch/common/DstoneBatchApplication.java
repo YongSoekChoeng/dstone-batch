@@ -25,14 +25,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
-import org.tuxdevelop.spring.batch.lightmin.client.classic.annotation.EnableLightminClientClassic;
-import org.tuxdevelop.spring.batch.lightmin.repository.annotation.EnableLightminRemoteConfigurationRepository;
+
 
 @SpringBootApplication(exclude = {
 	org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
 })
-@EnableLightminClientClassic                // Enable classic client mode for Lightmin  
-@EnableLightminRemoteConfigurationRepository // Use remote repository (Lightmin server) for job config  
 @ComponentScan(basePackages={"net.dstone.batch"})
 public class DstoneBatchApplication extends SpringBootServletInitializer {
 
@@ -79,12 +76,17 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 	
 	public static void main(String[] args) {
 
-		/*** env.properties의 항목들을 System변수로 세팅 ***/
-		setSysProperties();
-		
-		SpringApplication app = new SpringApplication(DstoneBatchApplication.class);
-		app.addListeners(new ApplicationPidFileWriter()); // ApplicationPidFileWriter 설정
-	    app.run(args);
+		try {
+			/*** env.properties의 항목들을 System변수로 세팅 ***/
+			setSysProperties();
+			
+			SpringApplication app = new SpringApplication(DstoneBatchApplication.class);
+			app.addListeners(new ApplicationPidFileWriter()); // ApplicationPidFileWriter 설정
+		    app.run(args);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 }

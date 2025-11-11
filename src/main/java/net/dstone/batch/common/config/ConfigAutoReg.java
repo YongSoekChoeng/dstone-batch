@@ -2,12 +2,10 @@ package net.dstone.batch.common.config;
 
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.support.ReferenceJobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -22,10 +20,6 @@ public class ConfigAutoReg extends BatchBaseObject {
 	
 	@Autowired
 	private ApplicationContext applicationContext;
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
 	@Autowired
 	private JobRegistry jobRegistry;
 

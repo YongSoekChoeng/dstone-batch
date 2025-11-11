@@ -24,7 +24,10 @@ spring:
                 password: ENC(ydLjxrknr8dD59e6E+HvxdxRaGiFa9jOCpJJDtb0uak=)
                 maximum-pool-size: 30
             networks: 
-                - backend   
+                - backend
+    devtools: 
+        restart: 
+            enabled: false
     batch: 
         initialize-schema: never
         job:

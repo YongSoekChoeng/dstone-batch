@@ -37,7 +37,7 @@ public class SampleItemReader<T> extends BatchBaseObject implements ItemReader<T
     	T item = null;
     	synchronized(lockObj) {
     		item = dataQueue.poll();
-        	String threadId = String.valueOf(Thread.currentThread().getId());
+        	String threadId = String.valueOf(Thread.currentThread().threadId());
         	this.info( "threadId["+threadId+"] " + "net.dstone.batch.sample.jobs.job001.SampleItemReader.read() has been called !!! ::: item["+item+"]" + "this.dataQueue.size() ===>>> " + this.dataQueue.size());
     	}
         return item;

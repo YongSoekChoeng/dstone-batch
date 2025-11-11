@@ -4,11 +4,11 @@ import java.util.Arrays;
 
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
@@ -42,7 +42,7 @@ public class SampleJob extends AbstractJob {
 	}
 
 	private Step createStep(String stepName) {
-		return stepBuilderFactory.get(stepName).tasklet(new Tasklet() {
+		return new StepBuilder(stepName, jobRepository).tasklet(new Tasklet() {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
 				log(stepName + "이(가) 실행됩니다.");
@@ -58,11 +58,11 @@ public class SampleJob extends AbstractJob {
 				
 				return RepeatStatus.FINISHED;
 			}
-		}).build();
+		}, platformTransactionManager).build();
 	}
 	
 	private Step createMultiThreadStep(String stepName, int chunkSize, int threadNum, ItemReader<String> reader, ItemProcessor<String, String> processor, ItemWriter<String> writer) {
-		return stepBuilderFactory.get(stepName).<String, String>chunk(chunkSize)
+		return new StepBuilder(stepName, jobRepository).<String, String>chunk(chunkSize, platformTransactionManager)
 				.reader(reader)
 				.processor(processor)
 				.writer(writer)

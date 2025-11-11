@@ -13,7 +13,7 @@ public class SampleItemProcessor extends BatchBaseObject implements ItemProcesso
 		if (item == null) {
 			return null;
 		}
-		String threadId = String.valueOf(Thread.currentThread().getId());
+		String threadId = String.valueOf(Thread.currentThread().threadId());
     	this.info( "threadId["+threadId+"] " + "net.dstone.batch.sample.jobs.job001.SampleItemProcessor.process("+item+") has been called !!!"  + " 데이터를 '" + item + "'에서 '" + item.toUpperCase() + "'로 변환합니다.");
 		return item.toUpperCase();
 	}

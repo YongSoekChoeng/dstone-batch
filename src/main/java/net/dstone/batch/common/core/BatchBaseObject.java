@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import net.dstone.common.core.BaseObject;
+import net.dstone.common.utils.LogUtil;
 
 @Component
 public class BatchBaseObject extends BaseObject{
