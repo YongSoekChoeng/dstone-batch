@@ -20,13 +20,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.annotation.ComponentScan;
 
-
+@EnableTask
+@EnableBatchProcessing
 @SpringBootApplication(exclude = {
 	org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
 })
@@ -86,7 +89,7 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-
+		
 	}
 	
 }

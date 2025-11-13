@@ -34,6 +34,7 @@ public class SampleItemReader<T> extends BatchBaseObject implements ItemReader<T
 
     @Override
     public T read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    	this.info(this.getClass().getName() + ".read() has been called !!!");
     	T item = null;
     	synchronized(lockObj) {
     		item = dataQueue.poll();

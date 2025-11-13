@@ -1,15 +1,5 @@
 server:
     port: 6081
-    
-management:
-    endpoints:
-        web:
-            exposure:
-                include: "*"
-    endpoint:
-        health:
-            show-details: always
-
 spring:
     main:
         allow-bean-definition-overriding: true
@@ -28,24 +18,16 @@ spring:
     devtools: 
         restart: 
             enabled: false
-    batch: 
-        initialize-schema: never
+    batch:
+        # NEVER/ALWAYS 
+        initialize-schema: NEVER
+        jdbc:
+            initialize-schema: NEVER # NEVER/ALWAYS 
+            table-prefix: BATCH_
         job:
-            enabled: false
-        lightmin:
-            batch:
-                repository-type: jdbc
-                data-source-name: dataSourceCommon
-                table-prefix: "BATCH_"
-            client:
-                classic:
-                    period: 86400000    # 하루 주기로 서버에 상태 등록
-                    register-once: true
-                    auto-deregistration: false
-                    server:
-                        url: http://localhost:6080/lightadmin
-            repository:
-                jdbc: 
-                    data-source-name: dataSourceCommon
-                remote:
-                    server-url: http://localhost:6080/lightadmin
+            enabled: false  # CommandLineRunner 자동 실행 방지 (Data Flow 사용시 필수)
+            names: ${spring.batch.job.names:NONE}
+    cloud: 
+        task: 
+            initialize-enabled: false
+            table-prefix: TASK_

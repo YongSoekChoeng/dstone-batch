@@ -6,6 +6,7 @@ import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,20 +17,25 @@ import net.dstone.batch.common.core.BatchBaseObject;
 @Configuration
 public class ConfigBatch extends BatchBaseObject {
 
-    @Bean
+	@Autowired 
+	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
+
+    @Bean("jobRepository")
     public JobRepository jobRepository(DataSource dataSource, @Qualifier("txManagerCommon") PlatformTransactionManager transactionManager) throws Exception {
-        JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
-        factory.setDataSource(dataSource);
-        factory.setTransactionManager(transactionManager);
-        factory.setIsolationLevelForCreate("ISOLATION_READ_COMMITTED");
-        factory.afterPropertiesSet();
-        return factory.getObject();
+        JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
+        factoryBean.setDataSource(dataSource);
+        factoryBean.setTransactionManager(transactionManager);
+        factoryBean.setIsolationLevelForCreate("ISOLATION_READ_COMMITTED");
+        factoryBean.setTablePrefix(configProperty.getProperty("spring.batch.jdbc.table-prefix"));
+        factoryBean.afterPropertiesSet();
+        return factoryBean.getObject();
     }
 
-    @Bean
-    public JobExplorer jobExplorer(DataSource dataSource) throws Exception {
+    @Bean("jobExplorer")
+    public JobExplorer jobExplorer(DataSource dataSource, @Qualifier("txManagerCommon") PlatformTransactionManager transactionManager) throws Exception {
         JobExplorerFactoryBean factoryBean = new JobExplorerFactoryBean();
         factoryBean.setDataSource(dataSource);
+        factoryBean.setTransactionManager(transactionManager);
         factoryBean.afterPropertiesSet();
         return factoryBean.getObject();
     }

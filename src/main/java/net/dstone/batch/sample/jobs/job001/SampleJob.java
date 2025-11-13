@@ -1,7 +1,5 @@
 package net.dstone.batch.sample.jobs.job001;
 
-import java.util.Arrays;
-
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.job.builder.FlowBuilder;
@@ -14,7 +12,6 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -27,11 +24,12 @@ public class SampleJob extends AbstractJob {
 
     private void log(Object msg) {
     	this.info(msg);
+    	//System.out.println(msg);
     }
 
 	@Override
 	public void configJob() throws Exception {
-		
+		log(this.getClass().getName() + ".configJob() has been called !!!");
 		this.addStep(this.createStep("01.스텝1"));
 		this.addStep(this.createStep("02.스텝2"));
 		this.addStep(this.createMultiThreadStep("03.멀티쓰레드스텝1", 20, 5, new SampleItemReader<>(), new SampleItemProcessor(), new SampleItemWriter()));
@@ -42,6 +40,7 @@ public class SampleJob extends AbstractJob {
 	}
 
 	private Step createStep(String stepName) {
+		log(this.getClass().getName() + ".createStep("+stepName+") has been called !!!");
 		return new StepBuilder(stepName, jobRepository).tasklet(new Tasklet() {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
@@ -58,11 +57,12 @@ public class SampleJob extends AbstractJob {
 				
 				return RepeatStatus.FINISHED;
 			}
-		}, platformTransactionManager).build();
+		}, txManagerCommon).build();
 	}
 	
 	private Step createMultiThreadStep(String stepName, int chunkSize, int threadNum, ItemReader<String> reader, ItemProcessor<String, String> processor, ItemWriter<String> writer) {
-		return new StepBuilder(stepName, jobRepository).<String, String>chunk(chunkSize, platformTransactionManager)
+		log(this.getClass().getName() + ".createMultiThreadStep("+stepName+") has been called !!!");
+		return new StepBuilder(stepName, jobRepository).<String, String>chunk(chunkSize, txManagerCommon)
 				.reader(reader)
 				.processor(processor)
 				.writer(writer)
@@ -72,6 +72,7 @@ public class SampleJob extends AbstractJob {
 	}
 	
 	private Flow createSimpleFlow(String flowName) {
+		log(this.getClass().getName() + ".createSimpleFlow("+flowName+") has been called !!!");
 	    return new FlowBuilder<SimpleFlow>(flowName)
 	            .start(this.createStep(flowName + "-스텝3"))
 	            .next(this.createStep(flowName + "-스텝4"))
@@ -80,6 +81,7 @@ public class SampleJob extends AbstractJob {
 	
 	@SuppressWarnings("unused")
 	private Flow createSplitFlow(String flowName) {
+		log(this.getClass().getName() + ".createSplitFlow("+flowName+") has been called !!!");
 	    return new FlowBuilder<SimpleFlow>(flowName)
 	            .split(new SimpleAsyncTaskExecutor())
 	            .add(createSimpleFlow(flowName + "-스프릿서브플로우1"), createSimpleFlow(flowName + "-스프릿서브플로우2"))
@@ -88,6 +90,7 @@ public class SampleJob extends AbstractJob {
 
 	@SuppressWarnings("unused")
 	private Tasklet createTasklet(String taskletName) {
+		log(this.getClass().getName() + ".createTasklet("+taskletName+") has been called !!!");
 	    return new Tasklet() {
 			@Override
 			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {

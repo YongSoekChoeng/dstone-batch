@@ -11,6 +11,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -19,8 +20,9 @@ public abstract class AbstractJob extends BatchBaseObject{
 
 	@Autowired
 	protected JobRepository jobRepository;
+	
 	@Autowired
-	protected PlatformTransactionManager platformTransactionManager;
+	protected PlatformTransactionManager txManagerCommon;
 	
 	private String name;
 	
@@ -78,7 +80,8 @@ public abstract class AbstractJob extends BatchBaseObject{
 	public Job buildAutoRegJob() throws Exception {
 		Job job = null;
 		try {
-			String jobName = this.name;
+			String jobName = this.getName();
+			this.info( "||========================== [" + jobName + "] is configuring ==========================||");
 			this.configJob();
 			JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
@@ -96,7 +99,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
-						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, platformTransactionManager).build();
+						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, txManagerCommon).build();
 						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.start(subFlowBuilder.build());
 					}else {
@@ -114,7 +117,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 					}else if(flowItem instanceof Tasklet) {
 						String taskletName = jobName + "-" + "Tasklet" + "-" + i;
 						Tasklet tasklet = (Tasklet)flowItem;
-						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, platformTransactionManager).build();
+						Step step = new StepBuilder(taskletName, jobRepository).tasklet(tasklet, txManagerCommon).build();
 						FlowBuilder<Flow> subFlowBuilder = new FlowBuilder<Flow>(taskletName).start(step);
 						jobFlowBuilder.next(subFlowBuilder.build());
 					}else {

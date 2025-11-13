@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version>
+		<version>3.3.0</version>
 	</parent>
 
 	<groupId>net.dstone</groupId>
@@ -16,8 +16,9 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<lightmin.version>4.1.2</lightmin.version>
 		<log4j.version>2.23.1</log4j.version>
+		<spring-cloud-starter-task.version>3.1.1</spring-cloud-starter-task.version>
+		<spring-cloud.version>2023.0.0</spring-cloud.version>
 		<maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
 	</properties>
 
@@ -66,6 +67,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
+			
+		<!-- Spring Cloud Task -->
+	    <dependency>
+	        <groupId>org.springframework.cloud</groupId>
+	        <artifactId>spring-cloud-starter-task</artifactId>
+		    <version>${spring-cloud-starter-task.version}</version>
+	    </dependency>
 
 		<!-- Logging -->
 		<dependency>
@@ -222,22 +230,21 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2023.0.0</version>
+				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
-
     <build>
-		<finalName>${artifactId}</finalName>
+		<finalName>${artifactId}-${version}</finalName>
         <resources>
             <resource>
                 <directory>conf</directory>
                 <targetPath>${project.basedir}/target/classes</targetPath>
 				<includes>
-					<include>env.properties</include>
+					<include>*.*</include>
 				</includes>
             </resource>
             <resource>

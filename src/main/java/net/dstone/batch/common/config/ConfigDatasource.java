@@ -23,18 +23,18 @@ public class ConfigDatasource extends BatchBaseObject{
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
 
 	/********************************************************************************
-	1. DataSource 관련 설정
+	1. DataSource 관련 설정(Spring 내부적으로 필수로 dataSource를 사용하는 경우가 있으므로 두개의 이름을 지정)
 	********************************************************************************/
-    @Bean(name = "dataSourceCommon")
+    @Bean(name = {"dataSource", "dataSourceCommon"})
     @ConfigurationProperties("spring.datasource.common.hikari")
     public DataSource dataSourceCommon() {
     	return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
 
 	/********************************************************************************
-	2. TransactionManager 관련 설정
+	2. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)
 	********************************************************************************/
-	@Bean(name = "txManagerCommon")
+	@Bean(name = {"transactionManager", "txManagerCommon"})
 	public PlatformTransactionManager txManagerCommon(@Qualifier("dataSourceCommon") DataSource dataSourceCommon) {
 		PlatformTransactionManager txManagerCommon = new DataSourceTransactionManager(dataSourceCommon);
 		return txManagerCommon;

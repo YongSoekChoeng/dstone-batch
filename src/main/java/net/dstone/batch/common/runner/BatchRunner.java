@@ -23,6 +23,9 @@ public class BatchRunner extends BatchBaseObject {
     	ConfigurableApplicationContext context = null;
     	
     	try {
+    		
+    		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
+    		
             if (args == null || args.length < 1) {
                 throw new Exception("Job name must be provided as the first argument.");
             }
@@ -57,7 +60,6 @@ public class BatchRunner extends BatchBaseObject {
                 }
             }
             JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-
             JobExecution execution = jobLauncher.run(job, jobParameters);
 
             LogUtil.sysout("Job Status: " + execution.getStatus());

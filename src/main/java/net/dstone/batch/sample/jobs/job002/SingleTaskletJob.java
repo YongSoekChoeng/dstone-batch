@@ -11,6 +11,7 @@ public class SingleTaskletJob extends AbstractJob {
 
 	@Override
 	public void configJob() throws Exception {
+		this.info(this.getClass().getName() + ".configJob() has been called !!!");
 		this.addTasklet(new SingleTasklet());
 	}
 

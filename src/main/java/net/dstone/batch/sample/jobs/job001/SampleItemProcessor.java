@@ -9,6 +9,7 @@ public class SampleItemProcessor extends BatchBaseObject implements ItemProcesso
 
 	@Override
 	public String process(String item) throws Exception {
+		this.info(this.getClass().getName() + ".process("+item+") has been called !!!");
 		// null 체크를 하여 예외를 방지하고, 데이터를 대문자로 변환합니다.
 		if (item == null) {
 			return null;
