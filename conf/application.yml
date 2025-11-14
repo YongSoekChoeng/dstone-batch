@@ -25,8 +25,8 @@ spring:
             initialize-schema: NEVER # NEVER/ALWAYS 
             table-prefix: BATCH_
         job:
-            enabled: false  # CommandLineRunner 자동 실행 방지 (Data Flow 사용시 필수)
-            names: ${spring.batch.job.names:NONE}
+            enabled: true  # CommandLineRunner 자동 실행 방지 (Data Flow 사용시 필수)
+            names: ${spring.batch.job.name:}
     cloud: 
         task: 
             initialize-enabled: false
