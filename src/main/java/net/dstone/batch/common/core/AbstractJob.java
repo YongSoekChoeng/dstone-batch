@@ -78,6 +78,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 	}
 
 	public Job buildAutoRegJob() throws Exception {
+		this.info(this.getClass().getName() + ".buildAutoRegJob() has been called !!!");
 		Job job = null;
 		try {
 			String jobName = this.getName();
