@@ -15,7 +15,7 @@ import net.dstone.batch.common.core.BatchBaseObject;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
-public class BatchRunner extends BatchBaseObject {
+public class SimpleBatchRunner extends BatchBaseObject {
 	
     public static void main(String[] args) throws Exception {
     	
