@@ -79,10 +79,16 @@ public abstract class AbstractJob extends BatchBaseObject{
 
 	public Job buildAutoRegJob() throws Exception {
 		this.info(this.getClass().getName() + ".buildAutoRegJob() has been called !!!");
+		StringBuffer regLog = new StringBuffer();
 		Job job = null;
+		String jobName = this.getName();
 		try {
-			String jobName = this.getName();
-			this.info( "||========================== [" + jobName + "] is configuring ==========================||");
+			
+			regLog.setLength(0);
+			regLog.append("\n").append("\n");
+			regLog.append( "||======================================= Job[" + jobName + "] configuration Start =======================================||");
+			
+			this.info(regLog.toString());
 			this.configJob();
 			JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
@@ -130,6 +136,13 @@ public abstract class AbstractJob extends BatchBaseObject{
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
+		} finally {
+
+			regLog.setLength(0);
+			regLog.append("\n");
+			regLog.append( "||======================================= Job[" + jobName + "] configuration End =======================================||");
+			regLog.append("\n");
+			this.info(regLog.toString());
 		}
 		return job;
 	}
