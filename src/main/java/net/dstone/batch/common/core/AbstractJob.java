@@ -2,6 +2,7 @@ package net.dstone.batch.common.core;
 
 import java.util.LinkedList;
 
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;
@@ -23,6 +24,10 @@ public abstract class AbstractJob extends BatchBaseObject{
 	
 	@Autowired
 	protected PlatformTransactionManager txManagerCommon;
+
+    @Autowired 
+    @Qualifier("sqlSessionSample") 
+    protected SqlSessionTemplate sqlSessionSample; 
 	
 	private String name;
 	

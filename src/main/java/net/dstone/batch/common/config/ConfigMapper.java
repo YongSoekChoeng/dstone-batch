@@ -36,7 +36,7 @@ public class ConfigMapper extends BaseObject{
 		SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
 		bean.setDataSource(dataSourceSample);
 		bean.setConfigLocation(pmrpr.getResource("classpath:/sqlmap/sql-mapper-config.xml"));
-		bean.setMapperLocations(pmrpr.getResources("classpath:/sqlmap/common/**/*Dao.xml"));
+		bean.setMapperLocations(pmrpr.getResources("classpath:/sqlmap/sample/**/*Dao.xml"));
 		return bean.getObject();
 	}
 	@Bean(name = "sqlSessionSample")
