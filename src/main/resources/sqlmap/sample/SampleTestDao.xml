@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>                                            
+                                                                                      
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                 
+<mapper namespace="net.dstone.batch.sample.SampleTestDao">                                                       
+
+	<select id="selectListSampleTest" resultType="map">
+		SELECT TEST_ID, TEST_NAME, INPUT_DT
+		FROM SAMPLE_TEST
+	</select>
+	
+	<insert id="insertSampleTest" parameterType="map" >
+		INSERT INTO SAMPLE_TEST (TEST_ID, TEST_NAME, INPUT_DT)
+		VALUES (#{testId}, #{testName}, #{inputDt})
+	</insert>
+	
+	<update id="updateSampleTest" parameterType="map" >
+		UPDATE SAMPLE_TEST
+		SET TEST_NAME = #{testName}
+		WHERE TEST_ID = #{testId}
+	</update>
+                
+	<delete id="deleteSampleTest" parameterType="map" >
+		DELETE FROM SAMPLE_TEST
+		WHERE TEST_ID = #{testId}
+	</delete>
+                 
+	<delete id="deleteSampleTestAll">
+		DELETE FROM SAMPLE_TEST;
+	</delete>
+                                                                                          
+</mapper>                                                                             
+
