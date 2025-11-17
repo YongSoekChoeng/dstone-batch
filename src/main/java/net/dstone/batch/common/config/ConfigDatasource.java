@@ -31,13 +31,4 @@ public class ConfigDatasource extends BatchBaseObject{
     	return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
 
-	/********************************************************************************
-	2. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)
-	********************************************************************************/
-	@Bean(name = {"transactionManager", "txManagerCommon"})
-	public PlatformTransactionManager txManagerCommon(@Qualifier("dataSourceCommon") DataSource dataSourceCommon) {
-		PlatformTransactionManager txManagerCommon = new DataSourceTransactionManager(dataSourceCommon);
-		return txManagerCommon;
-	}
-
 }

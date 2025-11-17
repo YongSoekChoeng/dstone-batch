@@ -12,7 +12,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 	ConfigBatch.class,
 	ConfigEnc.class,
 	ConfigMapper.class,
-	ConfigProperty.class
+	ConfigProperty.class,
+	ConfigTransaction.class
 })
 public class Config{
 	
