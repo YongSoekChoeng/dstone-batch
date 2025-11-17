@@ -1,5 +1,7 @@
 package net.dstone.batch.common.runner;
 
+import java.util.Arrays;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -23,58 +25,98 @@ public class SimpleBatchRunner extends BatchBaseObject {
     	ConfigurableApplicationContext context = null;
     	
     	try {
-    		
     		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-    		
-            if (args == null || args.length < 1) {
-                throw new Exception("Job name must be provided as the first argument.");
-            }
-            String jobName = args[0];
 
-            context = new SpringApplicationBuilder(DstoneBatchApplication.class)
-                    .web(WebApplicationType.NONE)
-                    .run(args);
+    		context = launchJob(null, exitCode, args);
 
-            JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-            JobRegistry jobRegistry = context.getBean(JobRegistry.class);
-            Job job = jobRegistry.getJob(jobName);
-
-            JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
-            jobParametersBuilder.addLong("timestamp", System.currentTimeMillis());
-            if (args.length > 1) {
-                for (int i = 1; i < args.length; i++) {
-                    String arg = args[i];
-                    if (arg.indexOf("=") == -1) {
-                        throw new Exception("Parameters must be in KEY=VALUE format.");
-                    }
-                    String[] params = StringUtil.toStrArray(arg, "=", true);
-                    if (params.length == 0) {
-                        throw new Exception("Parameters must be in KEY=VALUE format.");
-                    }
-                    String key = params[0];
-                    String val = "";
-                    if (params.length > 1) {
-                        val = params[1];
-                    }
-                    jobParametersBuilder.addString(key, val);
-                }
-            }
-            JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-            JobExecution execution = jobLauncher.run(job, jobParameters);
-
-            LogUtil.sysout("Job Status: " + execution.getStatus());
-            if (execution.getStatus().isUnsuccessful()) {
-            	exitCode = -1;
-            }
-            
 		} catch (Exception e) {
 			exitCode = -1;
 			e.printStackTrace();
 		} finally {
-			if (context != null) {
-				context.close();
-			}
-			System.exit(exitCode);
+ 			if (context != null) {
+ 				context.close();
+ 			}
+ 			System.exit(exitCode);
+ 		}
+    }
+    
+    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, String[] args) throws Exception {
+    	LogUtil.sysout( SimpleBatchRunner.class.getName() + ".launchJob("+Arrays.toString(args)+") has been called !!!");
+    	
+    	exitCode = 0;
+
+        String jobName = "";
+        String[] jobParams = new String[0];
+        
+    	try {
+            if (args == null || args.length < 1) {
+                throw new Exception("Job name must be provided as the first argument.");
+            }
+            
+            String firstArg = args[0];
+            if( firstArg.indexOf("spring.batch.job.name=") > -1 ||  firstArg.indexOf("spring.batch.job.names=") > -1 ) {
+            	String[] words = StringUtil.toStrArray(firstArg, "=");
+            	if(words.length > 1) {
+            		jobName = words[1];
+            	}
+            }
+            if( !StringUtil.isEmpty(jobName) ) {
+                if(args.length > 1) {
+                	jobParams = new String[args.length-1];
+                	for(int i=1; i<args.length; i++) {
+                		jobParams[i-1] = args[i];
+                	}
+                }
+
+        		if(StringUtil.isEmpty(jobName)) {
+        			throw new Exception("Job name must be provided as the first argument.");
+        		}
+
+        		if(context == null) {
+                    context = new SpringApplicationBuilder(DstoneBatchApplication.class)
+                            .web(WebApplicationType.NONE)
+                            .run(jobParams);
+        		}
+
+                JobLauncher jobLauncher = context.getBean(JobLauncher.class);
+                JobRegistry jobRegistry = context.getBean(JobRegistry.class);
+                Job job = jobRegistry.getJob(jobName);
+
+                JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
+                jobParametersBuilder.addLong("timestamp", System.currentTimeMillis());
+                if (jobParams.length > 0) {
+                    for (int i = 0; i < jobParams.length; i++) {
+                        String arg = jobParams[i];
+                        if (arg.indexOf("=") == -1) {
+                            throw new Exception("Parameters must be in KEY=VALUE format.");
+                        }
+                        String[] batchParams = StringUtil.toStrArray(arg, "=", true);
+                        if (batchParams.length == 0) {
+                            throw new Exception("Parameters must be in KEY=VALUE format.");
+                        }
+                        String key = batchParams[0];
+                        String val = "";
+                        if (batchParams.length > 1) {
+                            val = batchParams[1];
+                        }
+                        jobParametersBuilder.addString(key, val);
+                    }
+                }
+                JobParameters jobParameters = jobParametersBuilder.toJobParameters();
+                JobExecution execution = jobLauncher.run(job, jobParameters);
+
+                LogUtil.sysout("Job["+jobName+"] Status: " + execution.getStatus());
+                if (execution.getStatus().isUnsuccessful()) {
+                	exitCode = -1;
+                }
+            }
+
+            
+		} catch (Exception e) {
+			exitCode = -1;
+			e.printStackTrace();
 		}
+		
+    	return context;
     }
 }

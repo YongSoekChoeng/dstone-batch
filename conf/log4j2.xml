@@ -4,6 +4,7 @@
      <Properties>
         <Property name="logging.root-path">${sys:APP_HOME}/LOGS</Property>
         <Property name="level.default">INFO</Property>
+        <Property name="level.batch">INFO</Property>
         <Property name="level.dstone">INFO</Property>
     </Properties>
     
@@ -43,6 +44,11 @@
             <AppenderRef ref="rollingFile"/>	
 		</Logger>  	
     	
+	    <Logger name="org.springframework.batch" level="${level.batch}" additivity="false">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="rollingFile"/>
+	    </Logger>
+	    
 		<!--Log4jdbc logger-->
 		<Logger name="log4jdbc.log4j2" level="OFF" additivity="false">   
             <AppenderRef ref="console"/>

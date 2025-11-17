@@ -26,7 +26,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.task.configuration.EnableTask;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+
+import net.dstone.batch.common.runner.SimpleBatchRunner;
 
 @EnableTask
 @EnableBatchProcessing
@@ -37,6 +40,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class DstoneBatchApplication extends SpringBootServletInitializer {
 
 	public static boolean IS_SYS_PROPERTIES_SET = false;
+	
 	@SuppressWarnings("rawtypes")
 	public static void setSysProperties() {
 		if(!IS_SYS_PROPERTIES_SET) {
@@ -82,10 +86,16 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		try {
 			/*** env.properties의 항목들을 System변수로 세팅 ***/
 			setSysProperties();
-			
+
 			SpringApplication app = new SpringApplication(DstoneBatchApplication.class);
 			app.addListeners(new ApplicationPidFileWriter()); // ApplicationPidFileWriter 설정
-		    app.run(args);
+			ConfigurableApplicationContext context = app.run(args);
+		    
+		    // spring.batch.job.names=JOB이름 설정이 적용되지 않아서 수동으로 취한 조치
+		    if(args.length > 0 ) {
+		    	SimpleBatchRunner.launchJob(context, 0, args);
+		    }
+		    
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
