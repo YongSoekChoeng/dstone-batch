@@ -14,6 +14,15 @@ spring:
                 password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
                 maximum-pool-size: 30
             networks: 
+                - backend				       
+        sample:
+            hikari: 
+                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/sampleDB
+                username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
+                password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
+                maximum-pool-size: 30
+            networks: 
                 - backend
     devtools: 
         restart: 

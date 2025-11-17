@@ -14,12 +14,21 @@ import net.dstone.common.core.BaseObject;
 public class ConfigTransaction extends BaseObject{
 
 	/********************************************************************************
-	2. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)
+	1. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)
 	********************************************************************************/
 	@Bean(name = {"transactionManager", "txManagerCommon"})
 	public PlatformTransactionManager txManagerCommon(@Qualifier("dataSourceCommon") DataSource dataSourceCommon) {
 		PlatformTransactionManager txManagerCommon = new DataSourceTransactionManager(dataSourceCommon);
 		return txManagerCommon;
+	}
+
+	/********************************************************************************
+	2. Sample DataSource TransactionManager 관련 설정
+	********************************************************************************/
+	@Bean(name = "txManagerSample")
+	public PlatformTransactionManager txManagerSample(@Qualifier("dataSourceSample") DataSource dataSourceSample) {
+		PlatformTransactionManager txManagerSample = new DataSourceTransactionManager(dataSourceSample);
+		return txManagerSample;
 	}
 
 }

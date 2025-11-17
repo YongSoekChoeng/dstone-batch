@@ -3,13 +3,10 @@ package net.dstone.batch.common.config;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -28,6 +25,15 @@ public class ConfigDatasource extends BatchBaseObject{
     @Bean(name = {"dataSource", "dataSourceCommon"})
     @ConfigurationProperties("spring.datasource.common.hikari")
     public DataSource dataSourceCommon() {
+    	return DataSourceBuilder.create().type(HikariDataSource.class).build();
+    }
+
+	/********************************************************************************
+	2. Sample DataSource 관련 설정
+	********************************************************************************/
+    @Bean(name = "dataSourceSample")
+    @ConfigurationProperties("spring.datasource.sample.hikari")
+    public DataSource dataSourceSample() {
     	return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
 

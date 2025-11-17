@@ -29,4 +29,19 @@ public class ConfigMapper extends BaseObject{
 		return new SqlSessionTemplate(sqlSessionFactoryCommon);
 	}
 
+
+	@Bean(name = "sqlSessionFactorySample")
+	public SqlSessionFactory sqlSessionFactorySample(@Qualifier("dataSourceSample") DataSource dataSourceSample) throws Exception {
+		PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+		SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+		bean.setDataSource(dataSourceSample);
+		bean.setConfigLocation(pmrpr.getResource("classpath:/sqlmap/sql-mapper-config.xml"));
+		bean.setMapperLocations(pmrpr.getResources("classpath:/sqlmap/common/**/*Dao.xml"));
+		return bean.getObject();
+	}
+	@Bean(name = "sqlSessionSample")
+	public SqlSessionTemplate sqlSessionSample(@Qualifier("sqlSessionFactorySample") SqlSessionFactory sqlSessionFactorySample) {
+		return new SqlSessionTemplate(sqlSessionFactorySample);
+	}
+
 }

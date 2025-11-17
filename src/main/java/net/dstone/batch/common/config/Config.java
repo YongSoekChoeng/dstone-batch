@@ -8,8 +8,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @Import({ 
 	ConfigAutoReg.class,
-	ConfigDatasource.class,
 	ConfigBatch.class,
+	ConfigCloudTask.class,
+	ConfigDatasource.class,
 	ConfigEnc.class,
 	ConfigMapper.class,
 	ConfigProperty.class,

@@ -2,8 +2,6 @@ package net.dstone.batch.common.config;
 
 import javax.sql.DataSource;
 
-import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.repository.JobRepository;
@@ -41,5 +39,5 @@ public class ConfigBatch extends BatchBaseObject {
         factoryBean.afterPropertiesSet();
         return factoryBean.getObject();
     }
-    
+
 }
