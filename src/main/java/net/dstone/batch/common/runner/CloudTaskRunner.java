@@ -2,11 +2,12 @@ package net.dstone.batch.common.runner;
 
 import java.util.ArrayList;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.config.ConfigProperty;
 import net.dstone.batch.common.core.BatchBaseObject;
 import net.dstone.common.utils.StringUtil;
 
@@ -16,15 +17,16 @@ import net.dstone.common.utils.StringUtil;
 @Component
 public class CloudTaskRunner extends BatchBaseObject implements ApplicationRunner {
 
-    @Value("${spring.batch.job.names}")
-    private String jobName;
-    
+	@Autowired 
+	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
+
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
+		String jobName = configProperty.getProperty("spring.batch.job.names");
 		this.info("jobName=========================["+jobName+"]");
-        if( !StringUtil.isEmpty(this.jobName) ) {
+        if( !StringUtil.isEmpty(jobName) ) {
         	ArrayList<String> listArgs = new ArrayList<String>();
-    		listArgs.add( "spring.batch.job.names=" + this.jobName);
+    		listArgs.add( "spring.batch.job.names=" + jobName);
         	String[] strArgs = null;
         	if( args.getSourceArgs() != null ) {
                 for (String arg : args.getSourceArgs()) {
