@@ -2,6 +2,7 @@ package net.dstone.batch.common.config;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -10,10 +11,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import net.dstone.common.core.BaseObject;
+import net.dstone.batch.common.core.BatchBaseObject;
 
 @Configuration
-public class ConfigMapper extends BaseObject{
+public class ConfigMapper extends BatchBaseObject{
 
 	@Bean(name = "sqlSessionFactoryCommon")
 	public SqlSessionFactory sqlSessionFactoryCommon(@Qualifier("dataSourceCommon") DataSource dataSourceCommon) throws Exception {
@@ -26,9 +27,8 @@ public class ConfigMapper extends BaseObject{
 	}
 	@Bean(name = "sqlSessionCommon")
 	public SqlSessionTemplate sqlSessionCommon(@Qualifier("sqlSessionFactoryCommon") SqlSessionFactory sqlSessionFactoryCommon) {
-		return new SqlSessionTemplate(sqlSessionFactoryCommon);
+		return new SqlSessionTemplate(sqlSessionFactoryCommon, ExecutorType.SIMPLE);
 	}
-
 
 	@Bean(name = "sqlSessionFactorySample")
 	public SqlSessionFactory sqlSessionFactorySample(@Qualifier("dataSourceSample") DataSource dataSourceSample) throws Exception {
@@ -41,7 +41,12 @@ public class ConfigMapper extends BaseObject{
 	}
 	@Bean(name = "sqlSessionSample")
 	public SqlSessionTemplate sqlSessionSample(@Qualifier("sqlSessionFactorySample") SqlSessionFactory sqlSessionFactorySample) {
-		return new SqlSessionTemplate(sqlSessionFactorySample);
+		return new SqlSessionTemplate(sqlSessionFactorySample, ExecutorType.SIMPLE);
+	}
+	@Bean(name = "sqlBatchSessionSample")
+	public SqlSessionTemplate sqlBatchSessionSample(@Qualifier("sqlSessionFactorySample") SqlSessionFactory sqlSessionFactorySample) {
+		// Chunk 로 처리할 때 ExecutorType.BATCH 세팅 해서 작업.
+		return new SqlSessionTemplate(sqlSessionFactorySample, ExecutorType.BATCH);
 	}
 
 }

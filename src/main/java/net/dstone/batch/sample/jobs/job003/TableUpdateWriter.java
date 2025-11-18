@@ -1,0 +1,42 @@
+package net.dstone.batch.sample.jobs.job003;
+
+import java.util.Map;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.batch.item.Chunk;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+import net.dstone.batch.common.core.BatchBaseObject;
+
+@Component
+public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map<String, Object>> {
+
+    @Autowired 
+    @Qualifier("sqlBatchSessionSample")
+    protected SqlSessionTemplate sqlBatchSessionSample; 
+
+	@Override
+    public void write(Chunk<? extends Map<String, Object>> chunk) {
+    	this.info(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!!");
+
+        int successCount = 0;
+        int failCount = 0;
+        for (Map item : chunk) {
+            try {
+                // MyBatis Mapper를 통한 UPDATE 실행
+            	item.put("TEST_NAME", item.get("TEST_ID")+"-이름");
+                sqlBatchSessionSample.update("net.dstone.batch.sample.SampleTestDao.updateSampleTest", item);
+                successCount++;
+            } catch (Exception e) {
+                failCount++;
+                this.error("Failed to update TestId: {}, Error: ["+ item.get("TEST_ID") + "]. 상세사항:" + e.toString());
+                throw e; // 트랜잭션 롤백을 위해 예외 재발생
+            }
+        }
+        this.info("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
+    }
+
+}

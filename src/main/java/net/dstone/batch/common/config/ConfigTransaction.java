@@ -8,10 +8,10 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.dstone.common.core.BaseObject;
+import net.dstone.batch.common.core.BatchBaseObject;
 
 @Component
-public class ConfigTransaction extends BaseObject{
+public class ConfigTransaction extends BatchBaseObject{
 
 	/********************************************************************************
 	1. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)

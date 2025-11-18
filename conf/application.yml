@@ -13,6 +13,7 @@ spring:
                 username: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
                 password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
                 maximum-pool-size: 30
+                #initialization-fail-timeout: 0 
             networks: 
                 - backend				       
         sample:
@@ -22,6 +23,7 @@ spring:
                 username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
                 password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
                 maximum-pool-size: 30
+                #initialization-fail-timeout: 0 
             networks: 
                 - backend
     devtools: 

@@ -7,6 +7,8 @@
 	<settings>
 		<!--  파라미터에 Null 값이 있을 경우 에러가 발생하는 건데 대한 처리 -->
 		<setting name="jdbcTypeForNull" value="VARCHAR"></setting>
+		<!--  카멜표기법 자동전환 방지 -->
+		<setting name="mapUnderscoreToCamelCase" value="false"/>
 	</settings>
 	
 	<!-- Type Aliases 설정-->

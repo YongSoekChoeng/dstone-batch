@@ -8,10 +8,10 @@ import org.springframework.cloud.task.configuration.TaskConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import net.dstone.common.core.BaseObject;
+import net.dstone.batch.common.core.BatchBaseObject;
 
 @Component
-public class ConfigCloudTask extends BaseObject{
+public class ConfigCloudTask extends BatchBaseObject{
 
     /**
      * Spring Cloud Task를 사용할 경우 Task용 DataSource를 명시적으로 지정해 주어야 함.
