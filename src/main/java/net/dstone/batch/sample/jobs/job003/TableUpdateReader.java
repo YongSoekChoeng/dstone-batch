@@ -17,7 +17,7 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class TableUpdateReader extends BatchBaseObject {
 
     @Autowired 
-    @Qualifier("sqlSessionFactorySample")
+    @Qualifier("sqlSessionFactorySample") 
     protected SqlSessionFactory sqlSessionFactorySample; 
     
     @Bean

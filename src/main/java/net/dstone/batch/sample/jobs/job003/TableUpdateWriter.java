@@ -16,7 +16,7 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
 
     @Autowired 
     @Qualifier("sqlBatchSessionSample")
-    protected SqlSessionTemplate sqlBatchSessionSample; 
+    protected SqlSessionTemplate sqlBatchSessionSample;  
 
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {

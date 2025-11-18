@@ -41,7 +41,7 @@ spring:
         task: 
             initialize-enabled: false
         dataflow:
-            job-auto-register: false
+            job-auto-register: true
             client:
                 server-uri: http://localhost:9393
                 enable-dsl: true
