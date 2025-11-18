@@ -33,7 +33,7 @@ public class TableUpdateJob extends AbstractJob {
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		this.addStep(this.createMultiThreadStep("01.멀티쓰레드스텝1", 20, 5));
+		this.addStep(this.createMultiThreadStep("01.멀티쓰레드스텝1", 10, 5));
 	}
 
 	private Step createMultiThreadStep(String stepName, int chunkSize, int threadNum) {

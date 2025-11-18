@@ -13,7 +13,7 @@ public class TableUpdateProcessor extends BatchBaseObject implements ItemProcess
 
 	@Override
 	public Map<String, Object> process(Map item) throws Exception {
-		this.info(this.getClass().getName() + ".process("+item+") has been called !!!");
+    	this.info(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
 
 		// 예: TEST_NAME, FLAG_YN 값을 변경
 		item.put("TEST_NAME", item.get("TEST_ID")+"-이름");

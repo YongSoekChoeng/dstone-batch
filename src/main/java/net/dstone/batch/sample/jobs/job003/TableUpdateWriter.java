@@ -20,8 +20,7 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
 
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
-    	this.info(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!!");
-
+		this.info(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
         int successCount = 0;
         int failCount = 0;
         for (Map item : chunk) {

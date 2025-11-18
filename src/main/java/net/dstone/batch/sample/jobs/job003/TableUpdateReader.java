@@ -22,7 +22,7 @@ public class TableUpdateReader extends BatchBaseObject {
     
     @Bean
     public ItemReader<Map> read(Map<String, Object> params) {
-    	this.info(this.getClass().getName() + ".read("+params+") has been called !!!");
+    	this.info(this.getClass().getName() + ".read("+params+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
         return new MyBatisPagingItemReaderBuilder<Map>()
                 .sqlSessionFactory(sqlSessionFactorySample)
                 .queryId("net.dstone.batch.sample.SampleTestDao.selectListSampleTest")
