@@ -5,8 +5,6 @@ import java.util.Map;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BatchBaseObject;
@@ -15,8 +13,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map<String, Object>> {
 
     private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
+    	//this.debug(msg);
+    	this.info(msg);
     }
 
     private final SqlSessionTemplate sqlBatchSessionSample;
