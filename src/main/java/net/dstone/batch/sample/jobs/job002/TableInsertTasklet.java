@@ -18,6 +18,11 @@ import net.dstone.common.utils.GuidUtil;
 @Component
 public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
 
+    private void log(Object msg) {
+    	this.debug(msg);
+    	//System.out.println(msg);
+    }
+    
 	private final SqlSessionTemplate sqlSessionSample; 
 	
 	public TableInsertTasklet(SqlSessionTemplate sqlSessionSample) {
@@ -26,7 +31,7 @@ public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-		this.info(this.getClass().getName() + "이(가) 실행됩니다.");
+		log(this.getClass().getName() + "이(가) 실행됩니다.");
 		
 		// SAMPLE_TEST 테이블 삭제
 		String queryId = "net.dstone.batch.sample.SampleTestDao.deleteSampleTestAll";
@@ -47,7 +52,7 @@ public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
 			this.sqlSessionSample.insert(queryId, row);
 		}
 		
-		this.info(this.getClass().getName()  + "이(가) 종료됩니다.");
+		log(this.getClass().getName()  + "이(가) 종료됩니다.");
 		return RepeatStatus.FINISHED;
 	}
 }

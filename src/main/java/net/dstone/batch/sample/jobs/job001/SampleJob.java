@@ -23,7 +23,7 @@ import net.dstone.batch.common.core.AbstractJob;
 public class SampleJob extends AbstractJob {
 
     private void log(Object msg) {
-    	this.info(msg);
+    	this.debug(msg);
     	//System.out.println(msg);
     }
 

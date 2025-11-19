@@ -12,9 +12,14 @@ import net.dstone.batch.common.core.AbstractJob;
 @AutoRegJob(name = "tableInsertTaskletJob")
 public class TableInsertTaskletJob extends AbstractJob {
 
+    private void log(Object msg) {
+    	this.debug(msg);
+    	//System.out.println(msg);
+    }
+
 	@Override
 	public void configJob() throws Exception {
-		this.info(this.getClass().getName() + ".configJob() has been called !!!");
+		log(this.getClass().getName() + ".configJob() has been called !!!");
 		this.addTasklet(new TableInsertTasklet(this.sqlSessionSample));
 	}
 

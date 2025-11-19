@@ -25,7 +25,7 @@ spring:
                 maximum-pool-size: 30
                 #initialization-fail-timeout: 0 
             networks: 
-                - backend
+                - backend		
     devtools: 
         restart: 
             enabled: false

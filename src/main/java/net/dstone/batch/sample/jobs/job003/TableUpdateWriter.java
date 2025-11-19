@@ -14,13 +14,20 @@ import net.dstone.batch.common.core.BatchBaseObject;
 @Component
 public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map<String, Object>> {
 
-    @Autowired 
-    @Qualifier("sqlBatchSessionSample")
-    protected SqlSessionTemplate sqlBatchSessionSample;  
+    private void log(Object msg) {
+    	this.debug(msg);
+    	//System.out.println(msg);
+    }
+
+    private final SqlSessionTemplate sqlBatchSessionSample;
+
+    public TableUpdateWriter(SqlSessionTemplate sqlBatchSessionSample) {
+    	this.sqlBatchSessionSample = sqlBatchSessionSample;
+    }
 
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
-		this.info(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+		log(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
         int successCount = 0;
         int failCount = 0;
         for (Map item : chunk) {
@@ -35,7 +42,7 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
                 throw e; // 트랜잭션 롤백을 위해 예외 재발생
             }
         }
-        this.info("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
+        log("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
     }
 
 }

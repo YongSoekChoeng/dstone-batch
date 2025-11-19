@@ -5,11 +5,13 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
-import org.springframework.boot.autoconfigure.jmx.ParentAwareNamingStrategy;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.common.utils.LogUtil;
 
 @Component
 public class ConfigAspect extends BatchBaseObject{
@@ -23,21 +25,53 @@ public class ConfigAspect extends BatchBaseObject{
             @Override
             public Object invoke(MethodInvocation invocation) throws Throwable {
             	StringBuffer buff = new StringBuffer();
+            	org.springframework.batch.core.Job job = null;
+            	Object result = null;
+            	String jobName = "";
+            	String jobStatus = "";
+            	Object[] args = invocation.getArguments();
+            	if( args != null ) {
+            		for( Object arg : args) {
+            			if( arg instanceof org.springframework.batch.core.Job ) {
+            				job = (org.springframework.batch.core.Job)arg;
+            				jobName =  job.getName();
+            				break;
+            			}
+            		}
+            	}
             	
-            	buff.setLength(0);
-            	buff.append("\n");
-            	buff.append("\n");
-            	buff.append("||======================================= Job[singleTaskletJob] Start =======================================||");
-            	info(buff.toString());
-            	
-                Object result = invocation.proceed();
+            	if( job != null ) {
+            		jobStatus = BatchStatus.STARTING.name();
+                	buff.setLength(0);
+                	buff.append("\n");
+                	buff.append("\n");
+                	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
+                	info(buff.toString());
+                	
+                    result = invocation.proceed();
 
-            	buff.setLength(0);
-            	buff.append("\n");
-            	buff.append("||======================================= Job[singleTaskletJob] End =======================================||");
-            	buff.append("\n");
-            	info(buff.toString());
-            	
+                    jobStatus = BatchStatus.STARTED.name();
+                	buff.setLength(0);
+                    if(result instanceof JobExecution ) {
+                    	JobExecution execution = (JobExecution)result;
+            			if ( execution != null ) {
+            				int checkTryCnt = 0;
+            				while (execution.isRunning()) {
+            				    Thread.sleep(1 * 1000);
+            				    checkTryCnt++;
+            				    // 50번 확인
+            				    if( checkTryCnt > 50) {
+            				    	break;
+            				    }
+            				}
+            				jobStatus = execution.getStatus().name();
+            			}
+                    }
+                	buff.append("\n");
+                	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
+                	buff.append("\n");
+                	info(buff.toString());
+            	}
                 return result;
             }
         });

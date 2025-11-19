@@ -14,7 +14,6 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -22,7 +21,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 
 	@Autowired
 	protected JobRepository jobRepository;
-	
+
 	@Autowired
 	protected PlatformTransactionManager txManagerCommon;
 
@@ -94,7 +93,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 			regLog.append("\n").append("\n");
 			regLog.append( "|------------------------------------ Job[" + jobName + "] configuration Start ------------------------------------|");
 			
-			this.info(regLog.toString());
+			this.debug(regLog.toString());
 			this.configJob();
 			JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
@@ -148,7 +147,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 			regLog.append("\n");
 			regLog.append( "|------------------------------------ Job[" + jobName + "] configuration End ------------------------------------|");
 			regLog.append("\n");
-			this.info(regLog.toString());
+			this.debug(regLog.toString());
 		}
 		return job;
 	}

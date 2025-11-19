@@ -2,6 +2,7 @@ package net.dstone.batch.common.runner;
 
 import java.util.Arrays;
 
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -47,6 +48,7 @@ public class SimpleBatchRunner extends BatchBaseObject {
 
         String jobName = "";
         String[] jobParams = new String[0];
+        JobExecution execution = null;
         
     	try {
             if (args == null || args.length < 1) {
@@ -103,20 +105,17 @@ public class SimpleBatchRunner extends BatchBaseObject {
                     }
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-                JobExecution execution = jobLauncher.run(job, jobParameters);
-
-                LogUtil.sysout("Job["+jobName+"] Status: " + execution.getStatus());
+                execution = jobLauncher.run(job, jobParameters);
                 if (execution.getStatus().isUnsuccessful()) {
                 	exitCode = -1;
                 }
             }
-
             
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			exitCode = -1;
 			e.printStackTrace();
 		}
-		
+
     	return context;
     }
 }

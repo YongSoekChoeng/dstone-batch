@@ -4,11 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -19,16 +23,9 @@ import net.dstone.batch.common.core.AbstractJob;
 public class TableUpdateJob extends AbstractJob {
 
     private void log(Object msg) {
-    	this.info(msg);
+    	this.debug(msg);
     	//System.out.println(msg);
     }
-
-    @Autowired
-    private TableUpdateReader tableUpdateReader;
-    @Autowired
-    private TableUpdateProcessor tableUpdateProcessor;
-    @Autowired
-    private TableUpdateWriter tableUpdateWriter;
 
 	@Override
 	public void configJob() throws Exception {
@@ -41,12 +38,42 @@ public class TableUpdateJob extends AbstractJob {
 		Map<String, Object> params = new HashMap<String, Object>();
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
-				.reader(tableUpdateReader.read(params))
-				.processor((ItemProcessor<? super Map, ? extends Map>) tableUpdateProcessor)
-				.writer((ItemWriter<? super Map>) tableUpdateWriter)
-				.taskExecutor(new SimpleAsyncTaskExecutor()) // 스레드 풀 지정 가능
+				.reader(itemReader())
+				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
+				.writer((ItemWriter<? super Map>) itemWriter())
+				.taskExecutor(taskExecutor()) // 스레드 풀 지정 가능
 				.throttleLimit(threadNum) // 동시에 실행할 스레드 개수
 				.build();
 	}
 
+    @Bean
+    @StepScope
+    public ItemReader<Map<String, Object>> itemReader() {
+        return new TableUpdateReader(this.sqlSessionSample);
+    }
+
+    @Bean
+    @StepScope
+    public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
+        return new TableUpdateProcessor();
+    }
+
+    @Bean
+    @StepScope
+    public ItemWriter<Map<String, Object>> itemWriter() {
+        return new TableUpdateWriter(this.sqlSessionSample);
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(25);
+        executor.setThreadNamePrefix("batch-thread-");
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
+        executor.initialize();
+        return executor;
+    }
 }
