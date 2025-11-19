@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import net.dstone.batch.common.core.BatchBaseObject;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.GuidUtil;
+import net.dstone.common.utils.StringUtil;
 
 @Component
 public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
@@ -45,8 +46,8 @@ public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
 		GuidUtil guidUtil = new GuidUtil();
 		for(int i=0; i<dataCnt; i++) {
 			Map<String, String> row = new HashMap<String, String>();
-			row.put("TEST_ID", guidUtil.getNewGuid().substring(0, 8));
-			row.put("TEST_NAME", row.get("TEST_ID"));
+			row.put("TEST_ID", String.valueOf(i));
+			row.put("TEST_NAME", "이름-"+row.get("TEST_ID"));
 			row.put("FLAG_YN", "N");
 			row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
 			this.sqlSessionSample.insert(queryId, row);

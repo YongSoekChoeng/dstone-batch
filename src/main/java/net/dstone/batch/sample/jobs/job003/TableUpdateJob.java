@@ -3,7 +3,6 @@ package net.dstone.batch.sample.jobs.job003;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mybatis.spring.batch.MyBatisBatchItemWriter;
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
 import org.springframework.batch.core.Step;
@@ -12,7 +11,6 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.support.SynchronizedItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -79,7 +77,7 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
-        return new TableUpdateWriter(this.sqlSessionSample);
+        return new TableUpdateWriter(this.sqlBatchSessionSample);
     }
     /*************************************************************************************************************************/
     
@@ -102,9 +100,8 @@ public class TableUpdateJob extends AbstractJob {
         return new MyBatisPagingItemReaderBuilder<Map<String, Object>>()
                 .sqlSessionFactory(this.sqlSessionSample.getSqlSessionFactory())
                 .queryId("net.dstone.batch.sample.SampleTestDao.selectListSampleTestPaging")
-                .parameterValues(params)
                 .pageSize(chunkSize)
-                .build();
+                .build(); 
     }
 
     @Bean
@@ -126,10 +123,12 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> tableUpdateWriter() {
-        MyBatisBatchItemWriter<Map<String, Object>> writer = new MyBatisBatchItemWriter<>();
-        writer.setStatementId("net.dstone.batch.sample.SampleTestDao.updateSampleTest");
-        writer.setSqlSessionFactory(this.sqlSessionSample.getSqlSessionFactory());
-        return new SynchronizedItemWriter<>(writer);
+        return items -> {
+            // MyBatis를 사용한 배치 업데이트
+            for (Map<String, Object> item : items) {
+            	sqlBatchSessionSample.update("net.dstone.batch.sample.SampleTestDao.updateSampleTest", item );
+            }
+        };
     }
     /*************************************************************************************************************************/
 

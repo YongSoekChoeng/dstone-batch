@@ -13,7 +13,7 @@
 	</select>
 	
     <!-- 
-        페이징 방식으로 데이터 읽기
+        MyBatisPagingItemReader용 페이징 쿼리
         _page: 페이지 번호 (0부터 시작)
         _pagesize: 페이지 크기
         _skiprows: 건너뛸 행 수 (_page * _pagesize)
@@ -23,14 +23,11 @@
 			SELECT TEST_ID, TEST_NAME, FLAG_YN, INPUT_DT
 			FROM SAMPLE_TEST
 			WHERE 1=1
-				AND FLAG_YN = 'N'
 			ORDER BY TEST_ID
 		)   P
 		WHERE 2>1 
 		ORDER BY TEST_ID 
-		LIMIT 
-			(${_page}*${_pagesize})
-			, ((${_page}+1)*${_pagesize})
+		LIMIT #{_skiprows}, #{_pagesize}
 	</select>
 	
 	<insert id="insertSampleTest" parameterType="map" >

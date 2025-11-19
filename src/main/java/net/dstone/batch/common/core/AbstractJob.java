@@ -28,6 +28,10 @@ public abstract class AbstractJob extends BatchBaseObject{
     @Autowired 
     @Qualifier("sqlSessionSample")
     protected SqlSessionTemplate sqlSessionSample; 
+
+    @Autowired 
+    @Qualifier("sqlBatchSessionSample")
+    protected SqlSessionTemplate sqlBatchSessionSample; 
 	
 	private String name;
 	
