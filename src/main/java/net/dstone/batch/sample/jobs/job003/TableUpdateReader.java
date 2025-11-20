@@ -19,8 +19,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class TableUpdateReader extends BatchBaseObject implements ItemReader<Map<String, Object>> {
 
     private void log(Object msg) {
-    	this.info(msg);
-    	//this.debug(msg);
+    	//this.info(msg);
+    	this.debug(msg);
     }
 
     private final SqlSessionTemplate sqlSessionSample;

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
+import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -31,8 +32,8 @@ public class TableUpdateJob extends AbstractJob {
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 1000;
-		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
-		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+		//this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
+		this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
 
     @Bean
@@ -65,7 +66,7 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-        return new TableUpdateReader(this.sqlSessionSample);
+        return new TableUpdateReader(this.sqlBatchSessionSample);
     }
 
     @Bean
@@ -98,7 +99,7 @@ public class TableUpdateJob extends AbstractJob {
         Map<String, Object> params = new HashMap<>();
         // 필요시 파라미터 추가 가능
         return new MyBatisPagingItemReaderBuilder<Map<String, Object>>()
-                .sqlSessionFactory(this.sqlSessionSample.getSqlSessionFactory())
+                .sqlSessionFactory(this.sqlBatchSessionSample.getSqlSessionFactory())
                 .queryId("net.dstone.batch.sample.SampleTestDao.selectListSampleTestPaging")
                 .pageSize(chunkSize)
                 .build(); 
@@ -123,12 +124,10 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> tableUpdateWriter() {
-        return items -> {
-            // MyBatis를 사용한 배치 업데이트
-            for (Map<String, Object> item : items) {
-            	sqlBatchSessionSample.update("net.dstone.batch.sample.SampleTestDao.updateSampleTest", item );
-            }
-        };
+        return new MyBatisBatchItemWriterBuilder<Map<String, Object>>()
+                .sqlSessionFactory(this.sqlBatchSessionSample.getSqlSessionFactory())
+                .statementId("net.dstone.batch.sample.SampleTestDao.updateSampleTest")
+                .build();
     }
     /*************************************************************************************************************************/
 

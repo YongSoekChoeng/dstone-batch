@@ -13,8 +13,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map<String, Object>> {
 
     private void log(Object msg) {
-    	//this.debug(msg);
-    	this.info(msg);
+    	this.debug(msg);
+    	//this.info(msg);
     }
 
     private final SqlSessionTemplate sqlBatchSessionSample;
@@ -40,6 +40,7 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
                 throw e; // 트랜잭션 롤백을 위해 예외 재발생
             }
         }
+        sqlBatchSessionSample.flushStatements();
         log("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
     }
 
