@@ -3,6 +3,8 @@ package net.dstone.batch.sample.jobs.job002;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Component;
 import net.dstone.batch.common.core.BatchBaseObject;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.GuidUtil;
-import net.dstone.common.utils.StringUtil;
 
 @Component
 public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
@@ -25,6 +26,7 @@ public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
     }
     
 	private final SqlSessionTemplate sqlSessionSample; 
+	private final int chunkSize = 5000;
 	
 	public TableInsertTasklet(SqlSessionTemplate sqlSessionSample) {
 		this.sqlSessionSample = sqlSessionSample;
@@ -41,17 +43,21 @@ public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
 		// SAMPLE_TEST 테이블 입력
 		JobParameters jobParameters = contribution.getStepExecution().getJobParameters();
 		int dataCnt = Integer.parseInt(jobParameters.getString("dataCnt", "100"));
-		
 		queryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
-		GuidUtil guidUtil = new GuidUtil();
-		for(int i=0; i<dataCnt; i++) {
-			Map<String, String> row = new HashMap<String, String>();
-			row.put("TEST_ID", String.valueOf(i));
-			row.put("TEST_NAME", "이름-"+row.get("TEST_ID"));
-			row.put("FLAG_YN", "N");
-			row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
-			this.sqlSessionSample.insert(queryId, row);
-		}
+
+        try (SqlSession session = this.sqlSessionSample.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
+    		for(int i=0; i<dataCnt; i++) {
+    			Map<String, String> row = new HashMap<String, String>();
+    			row.put("TEST_ID", String.valueOf(i));
+    			row.put("TEST_NAME", "이름-"+row.get("TEST_ID"));
+    			row.put("FLAG_YN", "N");
+    			row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
+    			this.sqlSessionSample.insert(queryId, row);
+    			if( i%chunkSize == 0 ) {
+    				session.flushStatements();
+    			}
+    		}
+        }
 		
 		log(this.getClass().getName()  + "이(가) 종료됩니다.");
 		return RepeatStatus.FINISHED;

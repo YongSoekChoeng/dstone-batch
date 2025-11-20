@@ -12,8 +12,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class TableUpdateProcessor extends BatchBaseObject implements ItemProcessor<Map<String, Object>, Map<String, Object>> {
 
     private void log(Object msg) {
-    	//this.debug(msg);
-    	this.info(msg);
+    	this.debug(msg);
+    	//this.info(msg);
     }
 
 	@Override
