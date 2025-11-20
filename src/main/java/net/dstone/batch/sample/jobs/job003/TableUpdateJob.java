@@ -30,7 +30,7 @@ public class TableUpdateJob extends AbstractJob {
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		int chunkSize = 10;
+		int chunkSize = 1000;
 		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
 		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
@@ -38,7 +38,7 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
+        executor.setCorePoolSize(2);
         executor.setMaxPoolSize(5);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("batch-thread-");
