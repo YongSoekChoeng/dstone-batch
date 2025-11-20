@@ -7,14 +7,17 @@ import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BatchBaseObject;
-import net.dstone.common.utils.LogUtil;
 
 @Component
 public class ConfigAspect extends BatchBaseObject{
+
+	@Autowired 
+	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
 	
     @Bean
     public Advisor jobExecuteAdvisor() {
@@ -48,29 +51,39 @@ public class ConfigAspect extends BatchBaseObject{
                 	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
                 	info(buff.toString());
                 	
-                    result = invocation.proceed();
+                	JobExecution execution = null;
+                	try {
+                        result = invocation.proceed();
 
-                    jobStatus = BatchStatus.STARTED.name();
-                	buff.setLength(0);
-                    if(result instanceof JobExecution ) {
-                    	JobExecution execution = (JobExecution)result;
-            			if ( execution != null ) {
-            				int checkTryCnt = 0;
-            				while (execution.isRunning()) {
-            				    Thread.sleep(1 * 1000);
-            				    checkTryCnt++;
-            				    // 50번 확인
-            				    if( checkTryCnt > 50) {
-            				    	break;
-            				    }
-            				}
-            				jobStatus = execution.getStatus().name();
-            			}
-                    }
-                	buff.append("\n");
-                	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
-                	buff.append("\n");
-                	info(buff.toString());
+                        String strBatchTimeout = configProperty.getProperty("app.batch-timeout");
+                        long batchTimeout = Integer.parseInt( (strBatchTimeout == null||"".equals(strBatchTimeout)) ?"3600":strBatchTimeout );
+
+                        jobStatus = BatchStatus.STARTED.name();
+                    	buff.setLength(0);
+                        if(result instanceof JobExecution ) {
+                        	execution = (JobExecution)result;
+                			if ( execution != null ) {
+                				int checkTryCnt = 0;
+                				while (execution.isRunning()) {
+                				    Thread.sleep(1 * 1000);
+                				    checkTryCnt++;
+                				    if( checkTryCnt > batchTimeout ) {
+                				    	break;
+                				    }
+                				}
+                			}
+                        }
+					} catch (Exception e) {
+						throw e;
+					} finally {
+						if( execution != null) {
+							jobStatus = execution.getStatus().name();
+						}
+	                	buff.append("\n");
+	                	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
+	                	buff.append("\n");
+	                	info(buff.toString());
+					}
             	}
                 return result;
             }

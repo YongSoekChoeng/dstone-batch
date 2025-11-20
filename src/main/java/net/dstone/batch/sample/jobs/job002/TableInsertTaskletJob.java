@@ -20,7 +20,7 @@ public class TableInsertTaskletJob extends AbstractJob {
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		this.addTasklet(new TableInsertTasklet(this.sqlSessionSample));
+		this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
 	}
 
 }

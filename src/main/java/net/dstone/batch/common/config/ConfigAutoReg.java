@@ -47,7 +47,7 @@ public class ConfigAutoReg extends BatchBaseObject {
 					jobRegistry.register(new ReferenceJobFactory(job));
 				}
 			}
-
+			
 			if( "true".equals(configProperty.getProperty("spring.cloud.dataflow.job-auto-register")) ) {
 				this.registerToDataflow();
 			}

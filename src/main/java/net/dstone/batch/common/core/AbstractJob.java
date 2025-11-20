@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import net.dstone.batch.common.config.ConfigBatch;
 
 @Configuration
 public abstract class AbstractJob extends BatchBaseObject{
@@ -32,6 +35,10 @@ public abstract class AbstractJob extends BatchBaseObject{
     @Autowired 
     @Qualifier("sqlBatchSessionSample")
     protected SqlSessionTemplate sqlBatchSessionSample; 
+    
+    @Autowired 
+    @Qualifier("jobRegisterListener")
+    protected JobExecutionListener jobRegisterListener;
 	
 	private String name;
 	
@@ -100,6 +107,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 			this.debug(regLog.toString());
 			this.configJob();
 			JobBuilder jobBuilder = new JobBuilder(jobName, jobRepository);
+			jobBuilder.listener(jobRegisterListener);
 			FlowBuilder<Flow> jobFlowBuilder = new FlowBuilder<Flow>(jobName+"-Flow");
 			for(int i=0; i<flowList.size(); i++) {
 				Object flowItem = flowList.get(i);
@@ -142,6 +150,7 @@ public abstract class AbstractJob extends BatchBaseObject{
 				}
 			}
 			job = jobBuilder.start(jobFlowBuilder.build()).end().build();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;

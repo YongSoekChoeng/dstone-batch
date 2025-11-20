@@ -31,8 +31,8 @@ public class TableUpdateJob extends AbstractJob {
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 10;
-		//this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
-		this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
+		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
 
     @Bean
