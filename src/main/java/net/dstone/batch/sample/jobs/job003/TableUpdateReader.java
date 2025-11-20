@@ -2,8 +2,12 @@ package net.dstone.batch.sample.jobs.job003;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.ibatis.session.ResultHandler;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -24,8 +28,11 @@ public class TableUpdateReader extends BatchBaseObject implements ItemReader<Map
     }
 
     private final SqlSessionTemplate sqlSessionSample;
-    private Iterator<Map<String, Object>> iterator;
-    private final ConcurrentLinkedQueue<Map<String, Object>> queue = new ConcurrentLinkedQueue<>();
+    
+    private volatile int current = 0;
+    private volatile boolean selected = false;
+    private volatile List<Map<String, Object>> results;
+    private final Lock lock = new ReentrantLock();
 
     public TableUpdateReader(SqlSessionTemplate sqlSessionSample) {
     	this.sqlSessionSample = sqlSessionSample;
@@ -35,28 +42,31 @@ public class TableUpdateReader extends BatchBaseObject implements ItemReader<Map
     public Map<String, Object> read() {
     	log(this.getClass().getName() + ".read() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
     	
-		if (iterator == null) {
-			/* Job Parameter 얻어오는 부분 시작 */
-			Map<String, Object> params = new HashMap<String, Object>();
-			StepExecution stepExecution = StepSynchronizationManager.getContext().getStepExecution();
-			JobParameters jobParameters = stepExecution.getJobParameters();
-			params.put("timestamp", jobParameters.getLong("timestamp"));
-			log("params=================>>>" + params);
-			/* Job Parameter 얻어오는 부분 끝 */
-
-			/* MyBatis streaming 방식 처리 */
-			sqlSessionSample.select("net.dstone.batch.sample.SampleTestDao.selectListSampleTest", params,
-					new ResultHandler<Map<String, Object>>() {
-						@Override
-						public void handleResult(
-								org.apache.ibatis.session.ResultContext<? extends Map<String, Object>> resultContext) {
-							queue.add(resultContext.getResultObject());
-						}
-					}
-			);
-			iterator = queue.iterator();
+		/* Job Parameter 얻어오는 부분 시작 */
+		Map<String, Object> params = new HashMap<String, Object>();
+		StepExecution stepExecution = StepSynchronizationManager.getContext().getStepExecution();
+		JobParameters jobParameters = stepExecution.getJobParameters();
+		params.put("timestamp", jobParameters.getLong("timestamp"));
+		log("params=================>>>" + params);
+		/* Job Parameter 얻어오는 부분 끝 */
+		
+		this.lock.lock();
+		try {
+			if(!selected) {
+				selected = true;
+				results = new CopyOnWriteArrayList<>();
+				results.addAll(sqlSessionSample.selectList("net.dstone.batch.sample.SampleTestDao.selectListSampleTest", params));
+			}
+			
+			int next = current++;
+			if (next < results.size()) {
+				return results.get(next);
+			}else {
+				return null;
+			}
+		}finally {
+			this.lock.unlock();
 		}
-        return iterator.hasNext() ? iterator.next() : null;
     }
     
 }

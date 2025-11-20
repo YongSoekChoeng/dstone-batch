@@ -1,7 +1,9 @@
 package net.dstone.batch.sample.jobs.job003;
 
+import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -25,7 +27,7 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
     	this.sqlBatchSessionSample = sqlBatchSessionSample;
     }
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
 		log(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
@@ -35,8 +37,6 @@ public class TableUpdateWriter extends BatchBaseObject implements ItemWriter<Map
         	for (Map item : chunk) {
                 try {
                     // MyBatis Mapper를 통한 UPDATE 실행
-                	item.put("TEST_NAME", item.get("TEST_ID")+"-이름");
-                	item.put("FLAG_YN", "Y");
                     sqlBatchSessionSample.update("net.dstone.batch.sample.SampleTestDao.updateSampleTest", item);
                     successCount++;
                 } catch (Exception e) {
