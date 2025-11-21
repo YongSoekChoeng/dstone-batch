@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.AbstractJob;
-import net.dstone.batch.common.core.item.TableItemProcessor;
+import net.dstone.batch.common.core.item.BaseItemProcessor;
 import net.dstone.batch.common.core.item.TableItemReader;
 import net.dstone.batch.common.core.item.TableItemWriter;
 
@@ -77,10 +77,10 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	return new TableItemProcessor() {
+    	return new BaseItemProcessor() {
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
-				log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
 
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = new HashMap<>(item);

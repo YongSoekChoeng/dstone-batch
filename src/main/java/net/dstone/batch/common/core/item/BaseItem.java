@@ -9,21 +9,20 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BatchBaseObject;
 
 @Component
 @StepScope
-public abstract class TableItemProcessor extends BatchBaseObject implements ItemProcessor<Map<String, Object>, Map<String, Object>> {
+public class BaseItem extends BatchBaseObject {
+
+	protected void log(Object msg) {
+    	this.info(msg);
+    	//this.debug(msg);
+    }
 
 	protected Map<String, Object> params = new HashMap<String, Object>();
-    
-    private void log(Object msg) {
-    	//this.debug(msg);
-    	this.info(msg);
-    }
 
     @BeforeStep
     protected void beforeStep(StepExecution stepExecution) {
@@ -39,6 +38,8 @@ public abstract class TableItemProcessor extends BatchBaseObject implements Item
     	}
     }
     
-	@Override
-	public abstract Map<String, Object> process(Map item) throws Exception;
+    public Object getParam(String key) {
+    	return params.get(key);
+    }
+    
 }

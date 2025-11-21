@@ -21,16 +21,10 @@ import net.dstone.batch.common.core.BatchBaseObject;
 
 @Component
 @StepScope
-public class TableItemReader extends BatchBaseObject implements ItemReader<Map<String, Object>> {
-
-    private void log(Object msg) {
-    	this.info(msg);
-    	//this.debug(msg);
-    }
+public class TableItemReader extends BaseItem implements ItemReader<Map<String, Object>> {
 
     private final SqlSessionTemplate sqlSessionSample;
     private final String queryId;
-	protected Map<String, Object> params = new HashMap<String, Object>();
     
     private volatile int current = 0;
     private volatile boolean selected = false;
@@ -52,7 +46,7 @@ public class TableItemReader extends BatchBaseObject implements ItemReader<Map<S
 
     @Override
     public Map<String, Object> read() {
-    	log(this.getClass().getName() + ".read() has been called !!! params["+this.params+"] - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	super.log(this.getClass().getName() + ".read() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
     	
 		this.lock.lock();
 		try {
@@ -76,18 +70,4 @@ public class TableItemReader extends BatchBaseObject implements ItemReader<Map<S
 		}
     }
 
-    @BeforeStep
-    protected void beforeStep(StepExecution stepExecution) {
-    	JobParameters jobParameters = stepExecution.getJobParameters();
-    	if( jobParameters != null ) {
-    		Map<String, JobParameter<?>> jobParamMap = jobParameters.getParameters();
-    		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
-    		while(jobParamMapKey.hasNext()) {
-    			String key = jobParamMapKey.next();
-    			JobParameter val = jobParamMap.get(key);
-    			this.params.put(key, val.getValue());
-    		}
-    	}
-    }
-    
 }

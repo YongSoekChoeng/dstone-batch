@@ -20,16 +20,10 @@ import net.dstone.batch.common.core.BatchBaseObject;
 
 @Component
 @StepScope
-public class TableItemWriter extends BatchBaseObject implements ItemWriter<Map<String, Object>> {
-
-    private void log(Object msg) {
-    	//this.debug(msg);
-    	this.info(msg);
-    }
+public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, Object>> {
 
     private final SqlSessionTemplate sqlSessionSample;
     private String queryId;
-	protected Map<String, Object> params = new HashMap<String, Object>();
 
     public TableItemWriter(SqlSessionTemplate sqlSessionSample, String queryId) {
     	this.sqlSessionSample = sqlSessionSample;
@@ -39,7 +33,7 @@ public class TableItemWriter extends BatchBaseObject implements ItemWriter<Map<S
 	@SuppressWarnings({ "rawtypes" })
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
-		log(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! params["+this.params+"] - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+		this.log(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
         int successCount = 0;
         int failCount = 0;
         try (SqlSession session = this.sqlSessionSample.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
@@ -56,21 +50,7 @@ public class TableItemWriter extends BatchBaseObject implements ItemWriter<Map<S
         	}
         	this.sqlSessionSample.flushStatements();
         }
-        log("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
+        this.log("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
     }
 
-    @BeforeStep
-    protected void beforeStep(StepExecution stepExecution) {
-    	JobParameters jobParameters = stepExecution.getJobParameters();
-    	if( jobParameters != null ) {
-    		Map<String, JobParameter<?>> jobParamMap = jobParameters.getParameters();
-    		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
-    		while(jobParamMapKey.hasNext()) {
-    			String key = jobParamMapKey.next();
-    			JobParameter val = jobParamMap.get(key);
-    			this.params.put(key, val.getValue());
-    		}
-    	}
-    }
-    
 }
