@@ -59,12 +59,25 @@ public class ConfigBatch extends BatchBaseObject {
     	return new JobExecutionListener() {
             @Override
             public void beforeJob(JobExecution jobExecution) {
+            	this.executeLog(jobExecution);
                 JobThreadRegistry.register(jobExecution.getId(), Thread.currentThread());
                 (new JobTimeoutKiller()).monitor(jobExecution.getId());
             }
             @Override
             public void afterJob(JobExecution jobExecution) {
+            	this.executeLog(jobExecution);
                 JobThreadRegistry.unregister(jobExecution.getId());
+            }
+            
+            private void executeLog(JobExecution jobExecution) {
+            	String jobName = jobExecution.getJobInstance().getJobName();
+            	String jobStatus = jobExecution.getStatus().toString();
+            	StringBuffer buff = new StringBuffer();
+            	buff.setLength(0);
+            	buff.append("\n");
+            	buff.append("22||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
+            	buff.append("\n");
+            	info(buff.toString());
             }
     	};
     }
