@@ -19,8 +19,8 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class BaseItem extends BatchBaseObject {
 
 	protected void log(Object msg) {
-    	this.info(msg);
-    	//this.debug(msg);
+    	//this.info(msg);
+    	this.debug(msg);
     }
 
 	protected Map<String, Object> params = new HashMap<String, Object>();
