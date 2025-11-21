@@ -1,5 +1,7 @@
 package net.dstone.batch.common.config;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,12 +41,19 @@ public class ConfigTransaction extends BatchBaseObject{
 	3. TaskExecutor 관련 설정
 	********************************************************************************/
     // 기본 executor (대부분의 Job이 사용)	
-    @Bean
+    @Bean("taskExecutor")
     @Primary
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10);
-        executor.setMaxPoolSize(20);
+        
+        // 스레드 수 설정
+        executor.setCorePoolSize(2);          // 기본 스레드 수
+        executor.setMaxPoolSize(5);           // 최대 스레드 수
+        executor.setQueueCapacity(100);       // 큐 용량 (중요!)
+
+        // 거부 정책 (큐가 가득 찼을 때)
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        
         executor.setThreadNamePrefix("batch-default-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(60);
@@ -56,11 +65,18 @@ public class ConfigTransaction extends BatchBaseObject{
     @Bean("heavyTaskExecutor")
     public TaskExecutor heavyTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(20);
-        executor.setMaxPoolSize(50);
+
+        // 스레드 수 설정
+        executor.setCorePoolSize(5);          // 기본 스레드 수
+        executor.setMaxPoolSize(5);           // 최대 스레드 수
+        executor.setQueueCapacity(100);       // 큐 용량 (중요!)
+
+        // 거부 정책 (큐가 가득 찼을 때)
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        
         executor.setThreadNamePrefix("batch-heavy-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(120);
+        executor.setAwaitTerminationSeconds(60*60);
         executor.initialize();
         return executor;
     }
