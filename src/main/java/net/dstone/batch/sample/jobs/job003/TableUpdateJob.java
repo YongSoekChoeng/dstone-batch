@@ -13,6 +13,8 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -31,7 +33,11 @@ public class TableUpdateJob extends AbstractJob {
     private void log(Object msg) {
     	this.info(msg);
     }
-
+    
+    @Autowired
+    @Qualifier("heavyTaskExecutor")
+    private TaskExecutor heavyTaskExecutor;
+    
 	@Override
 	@JobScope
 	public void configJob() throws Exception {
@@ -40,20 +46,7 @@ public class TableUpdateJob extends AbstractJob {
 		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
 		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(5);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("batch-thread-");
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(60);
-        executor.initialize();
-        return executor;
-    }
-
+	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
     @StepScope
 	private Step createStepByOperator(String stepName, int chunkSize) {
@@ -63,7 +56,7 @@ public class TableUpdateJob extends AbstractJob {
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
-				.taskExecutor(taskExecutor()) // 스레드 풀 지정 가능
+				.taskExecutor(heavyTaskExecutor) // 스레드 풀 지정 가능
 				.build();
 	}
 
@@ -106,7 +99,7 @@ public class TableUpdateJob extends AbstractJob {
                 .reader(tableUpdateReader(chunkSize))
                 .processor(tableUpdateProcessor())
                 .writer(tableUpdateWriter())
-                .taskExecutor(taskExecutor())
+                .taskExecutor(heavyTaskExecutor)
                 .build();
     }
 

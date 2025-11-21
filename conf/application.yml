@@ -13,7 +13,7 @@ spring:
                 username: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
                 password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
                 maximum-pool-size: 100
-                connection-timeout: 30000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
+                connection-timeout: 60000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
                 max-lifetime: 1700000      # 커넥션의 최대 생존시간 (DB timeout 보다 짧게 설정 필요). 기본값 30분.
                 idle-timeout: 600000       # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
                 keepalive-time: 300000     # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
@@ -27,7 +27,7 @@ spring:
                 username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
                 password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
                 maximum-pool-size: 100
-                connection-timeout: 30000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
+                connection-timeout: 60000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
                 max-lifetime: 1700000      # 커넥션의 최대 생존시간 (DB timeout 보다 짧게 설정 필요). 기본값 30분.
                 idle-timeout: 600000       # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
                 keepalive-time: 300000     # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
@@ -53,5 +53,3 @@ spring:
             client:
                 server-uri: http://localhost:9393
                 enable-dsl: true
-app: 
-    batch-timeout: 3600 # 배치작업 타임아웃(초단위). 단, 타임아웃에 걸리더라도 현재 진행되고 있는 Step은 진행된 후 Job을 멈춘다.
