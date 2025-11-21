@@ -4,11 +4,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
-import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
 import org.springframework.batch.core.repository.JobRepository;
@@ -54,6 +51,7 @@ public class ConfigBatch extends BatchBaseObject {
     }
 
     /*** Job Timeout 관련 컴퍼넌트 시작 ***/
+    private static ConcurrentHashMap<Long, Thread> jobThreads = new ConcurrentHashMap<>();
     @Bean("jobRegisterListener")
     public JobExecutionListener jobRegisterListener() {
     	return new JobExecutionListener() {
@@ -75,7 +73,7 @@ public class ConfigBatch extends BatchBaseObject {
             	StringBuffer buff = new StringBuffer();
             	buff.setLength(0);
             	buff.append("\n");
-            	buff.append("22||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
+            	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
             	buff.append("\n");
             	info(buff.toString());
             }
@@ -83,8 +81,7 @@ public class ConfigBatch extends BatchBaseObject {
     }
     @Component
     private static class JobThreadRegistry {
-        private static ConcurrentHashMap<Long, Thread> jobThreads = new ConcurrentHashMap<>();
-        public static void register(Long executionId, Thread thread) {
+        public static synchronized void register(Long executionId, Thread thread) {
             jobThreads.put(executionId, thread);
         }
         public static void interrupt(Long executionId) {
@@ -94,7 +91,7 @@ public class ConfigBatch extends BatchBaseObject {
             	t.interrupt();
             }
         }
-        public static void unregister(Long executionId) {
+        public static synchronized void unregister(Long executionId) {
             jobThreads.remove(executionId);
         }
     }

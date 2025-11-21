@@ -7,11 +7,13 @@ import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -19,6 +21,9 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.AbstractJob;
+import net.dstone.batch.common.core.item.TableItemProcessor;
+import net.dstone.batch.common.core.item.TableItemReader;
+import net.dstone.batch.common.core.item.TableItemWriter;
 
 @Component
 @AutoRegJob(name = "tableUpdateJob")
@@ -29,6 +34,7 @@ public class TableUpdateJob extends AbstractJob {
     }
 
 	@Override
+	@JobScope
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 1000;
@@ -49,14 +55,13 @@ public class TableUpdateJob extends AbstractJob {
         return executor;
     }
 
-    
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+    @StepScope
 	private Step createStepByOperator(String stepName, int chunkSize) {
 		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
-				.reader(itemReader())
+				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
 				.taskExecutor(taskExecutor()) // 스레드 풀 지정 가능
@@ -66,19 +71,32 @@ public class TableUpdateJob extends AbstractJob {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-        return new TableUpdateReader(this.sqlBatchSessionSample);
+        return new TableItemReader(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTest");
     }
 
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-        return new TableUpdateProcessor();
+    	return new TableItemProcessor() {
+			@Override
+			public Map<String, Object> process(Map item) throws Exception {
+				log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+
+				// Thread-safe하게 새로운 Map 객체 생성
+		        Map<String, Object> processedItem = new HashMap<>(item);
+				// 예: TEST_NAME, FLAG_YN 값을 변경 
+		        processedItem.put("TEST_NAME", item.get("TEST_ID")+"-이름");
+				processedItem.put("FLAG_YN", "Y");
+
+		    	return processedItem;
+			}
+    	};
     }
 
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
-        return new TableUpdateWriter(this.sqlBatchSessionSample);
+        return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
     }
     /*************************************************************************************************************************/
     

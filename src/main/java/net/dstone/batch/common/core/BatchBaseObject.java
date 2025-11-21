@@ -1,21 +1,18 @@
 package net.dstone.batch.common.core;
 
-import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import net.dstone.common.core.BaseObject;
 import net.dstone.common.utils.LogUtil;
+import net.dstone.common.utils.StringUtil;
 
 @Component
 public class BatchBaseObject{
 	
 	private LogUtil myLogger = null;
+	private Map<String,Object> property = new HashMap<String,Object>();
 	
 	protected LogUtil getLogger() {
 		if(myLogger == null) {
@@ -55,4 +52,30 @@ public class BatchBaseObject{
 		LogUtil.sysout(o);
 	}
 
+	protected void setProperty(String key, Object val) {
+		this.property.put(key, val);
+	}
+
+	protected String getStrProperty(String key) {
+		if( this.property.containsKey(key) ) {
+			return StringUtil.nullCheck(this.property.get(key), "").toString();
+		}else {
+			return "";
+		}
+	}
+	protected String getStrProperty(String key, String defaultVal) {
+		if( this.property.containsKey(key) ) {
+			return StringUtil.nullCheck(this.property.get(key), defaultVal).toString();
+		}else {
+			return defaultVal;
+		}
+	}
+	protected Object getObjProperty(String key) {
+		if( this.property.containsKey(key) ) {
+			return this.property.get(key);
+		}else {
+			return null;
+		}
+	}
+	
 }
