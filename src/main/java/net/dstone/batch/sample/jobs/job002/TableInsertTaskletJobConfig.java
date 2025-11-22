@@ -6,7 +6,7 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 
 @Component
-@AutoRegJob(name = "tableInsertTaskletJob")
+@AutoRegJob(name = "tableInsertTaskletJobConfig")
 public class TableInsertTaskletJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {

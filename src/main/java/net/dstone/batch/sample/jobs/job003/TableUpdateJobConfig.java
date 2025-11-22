@@ -23,7 +23,7 @@ import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 
 @Component
-@AutoRegJob(name = "tableUpdateJob")
+@AutoRegJob(name = "tableUpdateJobConfig")
 public class TableUpdateJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {
@@ -35,14 +35,26 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 5000;
-		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
-		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+		this.addStep(this.workerStep1("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
+		//this.addStep(this.workerStep2("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
 	@Bean
     @StepScope
-	private Step createStepByOperator(String stepName, int chunkSize) {
+	private Step masterStep1(String stepName, int chunkSize) {
+		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
+		return new StepBuilder(stepName, jobRepository)
+				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.reader( itemReader() )
+				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
+				.writer((ItemWriter<? super Map>) itemWriter())
+				.build();
+	}
+	
+	@Bean
+    @StepScope
+	private Step workerStep1(String stepName, int chunkSize) {
 		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
@@ -85,7 +97,9 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     /*************************************************************************************************************************/
     
     /*************************************** 02.Reader/Processor/Writer 동일클래스내에 생성 ***************************************/
-    public Step createStepInAll(String stepName, int chunkSize) {
+	@Bean
+    @StepScope
+    private Step workerStep2(String stepName, int chunkSize) {
         return new StepBuilder(stepName, jobRepository)
                 .<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
                 .reader(tableUpdateReader(chunkSize))
