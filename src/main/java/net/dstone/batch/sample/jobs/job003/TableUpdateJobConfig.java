@@ -42,18 +42,6 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
 	@Bean
     @StepScope
-	private Step masterStep1(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
-		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
-				.reader( itemReader() )
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
-				.build();
-	}
-	
-	@Bean
-    @StepScope
 	private Step workerStep1(String stepName, int chunkSize) {
 		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
