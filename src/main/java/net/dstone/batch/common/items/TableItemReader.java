@@ -1,4 +1,4 @@
-package net.dstone.batch.common.core.item;
+package net.dstone.batch.common.items;
 
 import java.util.Iterator;
 import java.util.Map;

@@ -18,9 +18,9 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.AbstractJob;
-import net.dstone.batch.common.core.item.BaseItemProcessor;
-import net.dstone.batch.common.core.item.TableItemReader;
-import net.dstone.batch.common.core.item.TableItemWriter;
+import net.dstone.batch.common.items.BaseItemProcessor;
+import net.dstone.batch.common.items.TableItemReader;
+import net.dstone.batch.common.items.TableItemWriter;
 
 @Component
 @AutoRegJob(name = "tableUpdateJob")
@@ -34,7 +34,7 @@ public class TableUpdateJobConfig extends AbstractJob {
 	@JobScope
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		int chunkSize = 1000;
+		int chunkSize = 5000;
 		this.addStep(this.createStepByOperator("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
 		//this.addStep(this.createStepInAll("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}

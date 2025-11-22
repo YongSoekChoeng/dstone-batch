@@ -57,7 +57,7 @@ public class ConfigTransaction extends BatchBaseObject{
         // ** 이 두 설정이 중요합니다!**
         executor.setWaitForTasksToCompleteOnShutdown(true); 
         // 1시간 대기 설정 (배치 작업 시간에 맞춰 충분히 길게 설정)
-        executor.setAwaitTerminationSeconds(60*60);
+        executor.setAwaitTerminationSeconds(60*60*1);
         
         executor.initialize();
         return executor;
