@@ -1,14 +1,12 @@
 package net.dstone.batch.common.core;
 
 import java.util.LinkedList;
-import java.util.Map;
 
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobScope;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
@@ -17,7 +15,6 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -29,6 +26,10 @@ public abstract class AbstractJob extends BatchBaseObject{
 
 	@Autowired
 	protected PlatformTransactionManager txManagerCommon;
+
+    @Autowired 
+    @Qualifier("sqlSessionFactorySample")
+    protected SqlSessionFactory sqlSessionFactorySample; 
 
     @Autowired 
     @Qualifier("sqlSessionSample")

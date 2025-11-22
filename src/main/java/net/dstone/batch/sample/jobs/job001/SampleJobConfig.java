@@ -20,7 +20,7 @@ import net.dstone.batch.common.core.AbstractJob;
 
 @Component
 @AutoRegJob(name = "sampleJob")
-public class SampleJob extends AbstractJob {
+public class SampleJobConfig extends AbstractJob {
 
     private void log(Object msg) {
     	this.debug(msg);

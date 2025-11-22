@@ -19,14 +19,27 @@ import net.dstone.batch.common.core.BatchBaseObject;
 public class BaseItem extends BatchBaseObject {
 
 	protected void log(Object msg) {
-    	//this.info(msg);
-    	this.debug(msg);
+    	this.info(msg);
+    	//this.debug(msg);
     }
 
 	protected Map<String, Object> params = new HashMap<String, Object>();
 
     @BeforeStep
     protected void beforeStep(StepExecution stepExecution) {
+    	this.populateParam(stepExecution);
+    }
+
+    @AfterStep
+    protected void afterStep(StepExecution stepExecution) {
+    	// TO-DO : 추후 필요하면 구현
+    }
+    
+    /**
+     * 파라메터 수집
+     * @param stepExecution
+     */
+    private void populateParam(StepExecution stepExecution) {
     	JobParameters jobParameters = stepExecution.getJobParameters();
     	if( jobParameters != null ) {
     		Map<String, JobParameter<?>> jobParamMap = jobParameters.getParameters();
@@ -38,16 +51,22 @@ public class BaseItem extends BatchBaseObject {
     		}
     	}
     }
-
-    @AfterStep
-    protected void afterStep(StepExecution stepExecution) {
-    	// TO-DO : 추후 필요하면 구현
-    }
     
+    /**
+     * 파라메터 값 얻어오는 메소드
+     * @param key
+     * @return
+     */
     public Object getParam(String key) {
     	return params.get(key);
     }
 
+    /**
+     * 파라메터 값 얻어오는 메소드
+     * @param key
+     * @param defaultVal
+     * @return
+     */
     public Object getParam(String key, String defaultVal) {
     	Object val = getParam(key);
     	if( val == null || "".equals(val.toString()) ) {

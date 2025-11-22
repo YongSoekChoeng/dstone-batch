@@ -13,10 +13,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -27,15 +24,11 @@ import net.dstone.batch.common.core.item.TableItemWriter;
 
 @Component
 @AutoRegJob(name = "tableUpdateJob")
-public class TableUpdateJob extends AbstractJob {
+public class TableUpdateJobConfig extends AbstractJob {
 
     private void log(Object msg) {
     	this.info(msg);
     }
-    
-    @Autowired
-    @Qualifier("heavyTaskExecutor")
-    private TaskExecutor heavyTaskExecutor;
     
 	@Override
 	@JobScope
@@ -47,6 +40,7 @@ public class TableUpdateJob extends AbstractJob {
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
+	@Bean
     @StepScope
 	private Step createStepByOperator(String stepName, int chunkSize) {
 		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
@@ -55,14 +49,13 @@ public class TableUpdateJob extends AbstractJob {
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
-				.taskExecutor(heavyTaskExecutor) // 스레드 풀 지정 가능
 				.build();
 	}
 
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-        return new TableItemReader(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTest");
+        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTest");
     }
 
     @Bean
@@ -98,7 +91,6 @@ public class TableUpdateJob extends AbstractJob {
                 .reader(tableUpdateReader(chunkSize))
                 .processor(tableUpdateProcessor())
                 .writer(tableUpdateWriter())
-                .taskExecutor(heavyTaskExecutor)
                 .build();
     }
 

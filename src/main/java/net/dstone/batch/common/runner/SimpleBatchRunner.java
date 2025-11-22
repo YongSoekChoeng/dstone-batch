@@ -2,7 +2,6 @@ package net.dstone.batch.common.runner;
 
 import java.util.Arrays;
 
-import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;

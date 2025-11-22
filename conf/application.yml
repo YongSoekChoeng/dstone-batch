@@ -8,30 +8,52 @@ spring:
     datasource:
         common: 
             hikari: 
-                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/dataflow
-                username: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
-                password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)
-                maximum-pool-size: 100
-                connection-timeout: 60000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
-                max-lifetime: 1700000      # 커넥션의 최대 생존시간 (DB timeout 보다 짧게 설정 필요). 기본값 30분.
-                idle-timeout: 600000       # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
-                keepalive-time: 300000     # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
-                #initialization-fail-timeout: 0 
+                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy     # 데이터베이스 드라이버 클래스 이름
+                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/dataflow      # 데이터베이스 연결 URL
+                username: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)  # 데이터베이스 사용자 이름
+                password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)  # 데이터베이스 사용자 비밀번호
+                minimum-idle: 2                                              # 최소 Idle 커넥션 수
+                maximum-pool-size: 50                                        # 커넥션 풀의 최대 크기
+                connection-timeout: 30000                                    # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
+                max-lifetime: 1700000                                        # 커넥션의 최대 생존시간(ms). (DB timeout 보다 짧게 설정 필요). 기본값 30분.
+                idle-timeout: 600000                                         # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
+                keepalive-time: 0                                            # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
+                data-source-properties:
+                    cache-prep-stmts: "true"                                 # PreparedStatement 캐시 사용 여부
+                    prep-stmt-cache-size: "250"                              # PreparedStatement 캐시 크기
+                    prep-stmt-cache-sql-limit: "2048"                        # PreparedStatement 캐시 SQL 제한 크기
+                    use-server-prep-stmts: "true"                            # 서버 측 PreparedStatement 사용 여부
+                    use-local-session-state: "true"                          # 로컬 세션 상태 사용 여부
+                    rewrite-batched-statements: "true"                       # 배치된 SQL 문장 재작성 여부
+                    cache-result-set-metadata: "true"                        # ResultSet 메타데이터 캐시 사용 여부
+                    cache-server-configuration: "true"                       # 서버 구성 정보 캐시 사용 여부
+                    elide-set-auto-commits: "true"                           # setAutoCommits 생략 여부
+                    maintain-time-stats: "false"                             # 시간 통계 정보 유지 여부
             networks: 
                 - backend				       
         sample:
             hikari: 
-                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/sampleDB
-                username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
-                password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)
-                maximum-pool-size: 100
-                connection-timeout: 60000  # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
-                max-lifetime: 1700000      # 커넥션의 최대 생존시간 (DB timeout 보다 짧게 설정 필요). 기본값 30분.
-                idle-timeout: 600000       # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
-                keepalive-time: 300000     # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
-                #initialization-fail-timeout: 0 
+                driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy     # 데이터베이스 드라이버 클래스 이름
+                jdbc-url: jdbc:log4jdbc:mysql://localhost:3306/sampleDB      # 데이터베이스 연결 URL
+                username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)  # 데이터베이스 사용자 이름
+                password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)  # 데이터베이스 사용자 비밀번호
+                minimum-idle: 2                                              # 최소 Idle 커넥션 수
+                maximum-pool-size: 100                                       # 커넥션 풀의 최대 크기
+                connection-timeout: 600000                                   # 커넥션 풀에서 커넥션을 얻기 위한 최대 대기시간(ms). 기본값 30초.
+                max-lifetime: 1700000                                        # 커넥션의 최대 생존시간(ms). (DB timeout 보다 짧게 설정 필요). 기본값 30분.
+                idle-timeout: 600000                                         # Idle 상태 커넥션의 최대 유지시간. 기본값 10분.
+                keepalive-time: 300000                                       # idle 상태의 커넥션을 살려두기 위해 수행하는 keep-alive ping 수행 간격(ms). 기본값 0ms(기능 꺼짐).
+                data-source-properties:
+                    cache-prep-stmts: "true"                                 # PreparedStatement 캐시 사용 여부
+                    prep-stmt-cache-size: "250"                              # PreparedStatement 캐시 크기
+                    prep-stmt-cache-sql-limit: "2048"                        # PreparedStatement 캐시 SQL 제한 크기
+                    use-server-prep-stmts: "true"                            # 서버 측 PreparedStatement 사용 여부
+                    use-local-session-state: "true"                          # 로컬 세션 상태 사용 여부
+                    rewrite-batched-statements: "true"                       # 배치된 SQL 문장 재작성 여부
+                    cache-result-set-metadata: "true"                        # ResultSet 메타데이터 캐시 사용 여부
+                    cache-server-configuration: "true"                       # 서버 구성 정보 캐시 사용 여부
+                    elide-set-auto-commits: "true"                           # setAutoCommits 생략 여부
+                    maintain-time-stats: "false"                             # 시간 통계 정보 유지 여부
             networks: 
                 - backend		
     devtools: 
