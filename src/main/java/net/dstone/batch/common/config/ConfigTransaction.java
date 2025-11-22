@@ -12,10 +12,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 @Component
-public class ConfigTransaction extends BatchBaseObject{
+public class ConfigTransaction extends BaseBatchObject{
 
 	/********************************************************************************
 	1. TransactionManager 관련 설정(Spring 내부적으로 필수로 transactionManager를 사용하는 경우가 있으므로 두개의 이름을 지정)

@@ -9,7 +9,7 @@ import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
 @Component
-public class BatchBaseObject{
+public class BaseBatchObject{
 	
 	private LogUtil myLogger = null;
 	private Map<String,Object> property = new HashMap<String,Object>();

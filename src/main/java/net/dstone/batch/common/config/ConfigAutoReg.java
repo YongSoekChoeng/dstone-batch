@@ -15,11 +15,11 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
 import net.dstone.batch.common.annotation.AutoRegJob;
-import net.dstone.batch.common.core.AbstractJob;
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseJobConfig;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 @Configuration
-public class ConfigAutoReg extends BatchBaseObject {
+public class ConfigAutoReg extends BaseBatchObject {
 	
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -39,8 +39,8 @@ public class ConfigAutoReg extends BatchBaseObject {
 			
 			for(Object jobObj : jobs.values()) {
 				
-				if (jobObj instanceof AbstractJob) {
-					AbstractJob abstractJob = (AbstractJob)jobObj;
+				if (jobObj instanceof BaseJobConfig) {
+					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					abstractJob.setName(jobName);
 					Job job = abstractJob.buildAutoRegJob();

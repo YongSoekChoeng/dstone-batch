@@ -12,10 +12,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 @Configuration
-public class ConfigJob extends BatchBaseObject {
+public class ConfigJob extends BaseBatchObject {
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean

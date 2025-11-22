@@ -19,11 +19,11 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.DateUtil;
 
 @Component
-public class TableInsertTasklet extends BatchBaseObject implements Tasklet{
+public class TableInsertTasklet extends BaseBatchObject implements Tasklet{
 
     private void log(Object msg) {
     	this.debug(msg);

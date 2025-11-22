@@ -3,10 +3,10 @@ package net.dstone.batch.sample.jobs.job001;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.FileUtil;
 
-public class SampleItemWriter extends BatchBaseObject implements ItemWriter<String> {
+public class SampleItemWriter extends BaseBatchObject implements ItemWriter<String> {
 
     private void log(Object msg) {
     	this.debug(msg);

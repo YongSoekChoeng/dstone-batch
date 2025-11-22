@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Configuration;
 
 import com.zaxxer.hikari.HikariDataSource;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 
 @Configuration
-public class ConfigDatasource extends BatchBaseObject{
+public class ConfigDatasource extends BaseBatchObject{
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean

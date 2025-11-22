@@ -13,11 +13,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
-public class SimpleBatchRunner extends BatchBaseObject {
+public class SimpleBatchRunner extends BaseBatchObject {
 	
     public static void main(String[] args) throws Exception {
     	

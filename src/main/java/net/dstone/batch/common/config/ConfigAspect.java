@@ -9,10 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 @Component
-public class ConfigAspect extends BatchBaseObject{
+public class ConfigAspect extends BaseBatchObject{
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean

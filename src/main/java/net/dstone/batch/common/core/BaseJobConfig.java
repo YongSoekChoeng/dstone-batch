@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-public abstract class AbstractJob extends BatchBaseObject{
+public abstract class BaseJobConfig extends BaseBatchObject{
 
 	@Autowired
 	protected JobRepository jobRepository;

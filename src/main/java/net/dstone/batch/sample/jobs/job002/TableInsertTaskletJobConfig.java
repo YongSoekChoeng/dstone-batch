@@ -3,11 +3,11 @@ package net.dstone.batch.sample.jobs.job002;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
-import net.dstone.batch.common.core.AbstractJob;
+import net.dstone.batch.common.core.BaseJobConfig;
 
 @Component
 @AutoRegJob(name = "tableInsertTaskletJob")
-public class TableInsertTaskletJobConfig extends AbstractJob {
+public class TableInsertTaskletJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {
     	this.debug(msg);

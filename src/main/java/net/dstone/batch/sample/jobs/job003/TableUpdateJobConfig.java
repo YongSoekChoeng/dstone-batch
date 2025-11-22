@@ -17,14 +17,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
-import net.dstone.batch.common.core.AbstractJob;
+import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.BaseItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 
 @Component
 @AutoRegJob(name = "tableUpdateJob")
-public class TableUpdateJobConfig extends AbstractJob {
+public class TableUpdateJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {
     	this.info(msg);

@@ -8,10 +8,10 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 // 제네릭 T는 읽어올 데이터의 타입을 나타냅니다.
-public class SampleItemReader<T> extends BatchBaseObject implements ItemReader<T> {
+public class SampleItemReader<T> extends BaseBatchObject implements ItemReader<T> {
 
     private void log(Object msg) {
     	this.debug(msg);

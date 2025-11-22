@@ -12,11 +12,11 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BatchBaseObject;
+import net.dstone.batch.common.core.BaseBatchObject;
 
 @Component
 @StepScope
-public class BaseItem extends BatchBaseObject {
+public class BaseItem extends BaseBatchObject {
 
 	protected void log(Object msg) {
     	this.info(msg);

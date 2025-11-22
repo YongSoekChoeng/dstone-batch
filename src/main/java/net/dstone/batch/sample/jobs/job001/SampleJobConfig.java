@@ -16,11 +16,11 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
-import net.dstone.batch.common.core.AbstractJob;
+import net.dstone.batch.common.core.BaseJobConfig;
 
 @Component
 @AutoRegJob(name = "sampleJob")
-public class SampleJobConfig extends AbstractJob {
+public class SampleJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {
     	this.debug(msg);
