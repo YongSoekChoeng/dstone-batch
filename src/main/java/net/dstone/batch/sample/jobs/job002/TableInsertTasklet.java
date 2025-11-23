@@ -42,7 +42,7 @@ public class TableInsertTasklet extends BaseItem implements Tasklet{
 		this.sqlSessionSample.flushStatements();
 		
 		// SAMPLE_TEST 테이블 입력
-		int dataCnt = Integer.parseInt(this.getParam("dataCnt", "1000").toString());
+		int dataCnt = Integer.parseInt(this.getJobParam("dataCnt", "1000").toString());
 		final String insertQueryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
 
         int chunkPerThread = dataCnt / threadCount;

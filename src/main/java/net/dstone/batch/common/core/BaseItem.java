@@ -61,22 +61,22 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     }
     
     /**
-     * 파라메터 값 얻어오는 메소드
+     * Job파라메터 값 얻어오는 메소드
      * @param key
      * @return
      */
-    public Object getParam(String key) {
+    public Object getJobParam(String key) {
     	return params.get(key);
     }
 
     /**
-     * 파라메터 값 얻어오는 메소드
+     * Job파라메터 값 얻어오는 메소드
      * @param key
      * @param defaultVal
      * @return
      */
-    public Object getParam(String key, String defaultVal) {
-    	Object val = getParam(key);
+    public Object getJobParam(String key, String defaultVal) {
+    	Object val = getJobParam(key);
     	if( val == null || "".equals(val.toString()) ) {
     		val = defaultVal;
     	}
