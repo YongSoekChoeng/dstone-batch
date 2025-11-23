@@ -10,6 +10,8 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.core.BaseItem;
+
 @Component
 @StepScope
 public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, Object>> {

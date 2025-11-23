@@ -6,6 +6,8 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.core.BaseItem;
+
 @Component
 @StepScope
 public abstract class BaseItemProcessor extends BaseItem implements ItemProcessor<Map<String, Object>, Map<String, Object>> {

@@ -19,7 +19,7 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 
 @Component
-@AutoRegJob(name = "sampleJobConfig")
+@AutoRegJob(name = "sampleJob")
 public class SampleJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {

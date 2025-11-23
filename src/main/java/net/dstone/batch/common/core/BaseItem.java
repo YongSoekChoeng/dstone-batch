@@ -1,38 +1,45 @@
-package net.dstone.batch.common.items;
+package net.dstone.batch.common.core;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseBatchObject;
-
+/**
+ * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
+ */
 @Component
 @StepScope
-public class BaseItem extends BaseBatchObject {
+public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
 	protected void log(Object msg) {
     	this.info(msg);
     	//this.debug(msg);
     }
 
+	/**
+	 * 파라메터
+	 */
 	protected Map<String, Object> params = new HashMap<String, Object>();
 
     @BeforeStep
-    protected void beforeStep(StepExecution stepExecution) {
+    public void beforeStep(StepExecution stepExecution) {
     	this.populateParam(stepExecution);
     }
 
     @AfterStep
-    protected void afterStep(StepExecution stepExecution) {
+    public ExitStatus afterStep(StepExecution stepExecution) {
     	// TO-DO : 추후 필요하면 구현
+    	return null;
     }
     
     /**
@@ -40,6 +47,7 @@ public class BaseItem extends BaseBatchObject {
      * @param stepExecution
      */
     private void populateParam(StepExecution stepExecution) {
+    	// Job Parameter 수집
     	JobParameters jobParameters = stepExecution.getJobParameters();
     	if( jobParameters != null ) {
     		Map<String, JobParameter<?>> jobParamMap = jobParameters.getParameters();

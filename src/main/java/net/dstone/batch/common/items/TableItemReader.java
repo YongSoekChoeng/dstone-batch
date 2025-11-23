@@ -14,6 +14,8 @@ import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.core.BaseItem;
+
 /**
  * ItemReader 구현체. 
  * 아래와 같은 흐름을 갖는다.

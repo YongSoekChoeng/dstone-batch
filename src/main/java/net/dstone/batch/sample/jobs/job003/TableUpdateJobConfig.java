@@ -23,7 +23,7 @@ import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 
 @Component
-@AutoRegJob(name = "tableUpdateJobConfig")
+@AutoRegJob(name = "tableUpdateJob")
 public class TableUpdateJobConfig extends BaseJobConfig {
 
     private void log(Object msg) {

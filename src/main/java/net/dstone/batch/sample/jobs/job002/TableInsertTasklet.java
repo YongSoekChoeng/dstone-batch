@@ -19,17 +19,12 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.DateUtil;
 
 @Component
-public class TableInsertTasklet extends BaseBatchObject implements Tasklet{
+public class TableInsertTasklet extends BaseItem implements Tasklet{
 
-    private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
-    }
-    
 	private final SqlSessionTemplate sqlSessionSample; 
 	private final int threadCount = 5;
 	
@@ -47,8 +42,7 @@ public class TableInsertTasklet extends BaseBatchObject implements Tasklet{
 		this.sqlSessionSample.flushStatements();
 		
 		// SAMPLE_TEST 테이블 입력
-		JobParameters jobParameters = contribution.getStepExecution().getJobParameters();
-		int dataCnt = Integer.parseInt(jobParameters.getString("dataCnt", "100"));
+		int dataCnt = Integer.parseInt(this.getParam("dataCnt", "1000").toString());
 		final String insertQueryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
 
         int chunkPerThread = dataCnt / threadCount;
