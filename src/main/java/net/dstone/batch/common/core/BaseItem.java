@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameter;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.annotation.AfterStep;
@@ -21,52 +20,65 @@ import org.springframework.stereotype.Component;
 @StepScope
 public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
+	protected StepExecution stepExecution;
+	
 	protected void log(Object msg) {
     	this.info(msg);
     	//this.debug(msg);
     }
 
-	/**
-	 * 파라메터
-	 */
-	protected Map<String, Object> params = new HashMap<String, Object>();
-
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
-    	this.populateParam(stepExecution);
+    	this.stepExecution = stepExecution;
+    	
+    	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
+    	Map<String,Object> jobParamMap = getJobParamMap();
+        Iterator<String> keys = jobParamMap.keySet().iterator();
+        while(keys.hasNext()) {
+        	String key = keys.next();
+        	Object val = jobParamMap.get(key);
+        	this.setStepParam(key, val);
+        }
+    	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
+    	
     }
 
     @AfterStep
     public ExitStatus afterStep(StepExecution stepExecution) {
-    	// TO-DO : 추후 필요하면 구현
     	return null;
     }
     
     /**
-     * 파라메터 수집
-     * @param stepExecution
+     * Job파라메터 전체를 Map형태로 얻어오는 메소드
+     * @param key
+     * @return
      */
-    private void populateParam(StepExecution stepExecution) {
-    	// Job Parameter 수집
-    	JobParameters jobParameters = stepExecution.getJobParameters();
-    	if( jobParameters != null ) {
-    		Map<String, JobParameter<?>> jobParamMap = jobParameters.getParameters();
+    @SuppressWarnings("rawtypes")
+	public Map<String,Object> getJobParamMap() {
+    	Map<String,Object> map = new HashMap<String,Object>();
+    	if( this.stepExecution.getJobParameters() != null ) {
+    		Map<String, JobParameter<?>> jobParamMap = this.stepExecution.getJobParameters().getParameters();
     		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
     		while(jobParamMapKey.hasNext()) {
     			String key = jobParamMapKey.next();
     			JobParameter val = jobParamMap.get(key);
-    			this.params.put(key, val.getValue());
+    			map.put(key, val.getValue());
     		}
     	}
+    	return map;
     }
-    
+
     /**
      * Job파라메터 값 얻어오는 메소드
      * @param key
      * @return
      */
     public Object getJobParam(String key) {
-    	return params.get(key);
+    	Object val = null;
+    	if( this.getJobParamMap().containsKey(key) ) {
+    		val = this.getJobParamMap().get(key);
+    	}
+    	return val;
     }
 
     /**
@@ -76,10 +88,80 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
      * @return
      */
     public Object getJobParam(String key, String defaultVal) {
-    	Object val = getJobParam(key);
+    	Object val = this.getJobParam(key);
     	if( val == null || "".equals(val.toString()) ) {
     		val = defaultVal;
     	}
     	return val;
+    }
+
+    /**
+     * Step파라메터 전체를 Map형태로 얻어오는 메소드
+     * @param key
+     * @return
+     */
+    public Map<String,Object> getStepParamMap() {
+    	Map<String,Object> map = new HashMap<String,Object>();
+    	if( this.stepExecution.getExecutionContext() != null ) {
+    		map = new HashMap<String,Object>(this.stepExecution.getExecutionContext().toMap());
+    	}
+    	return map;
+    }
+
+    /**
+     * Step파라메터 값 얻어오는 메소드
+     * @param key
+     * @return
+     */
+	public Object getStepParam(String key) {
+    	Object val = null;
+    	if( this.getStepParamMap().containsKey(key) ) {
+    		val = this.getStepParamMap().get(key);
+    	}
+    	return val;
+    }
+
+    /**
+     * Step파라메터 값 얻어오는 메소드
+     * @param key
+     * @param defaultVal
+     * @return
+     */
+    public Object getStepParam(String key, String defaultVal) {
+    	Object val = this.getStepParam(key);
+    	if( val == null || "".equals(val.toString()) ) {
+    		val = defaultVal;
+    	}
+    	return val;
+    }
+
+    /**
+     * Step파라메터 값 세팅하는 메소드.<br>
+     * <유의사항><br>
+     * Reader.open() → Reader.read() → Processor.process() → Writer.write() 라고 할 때, open() 에서 put 한 값은 Writer.write() 에 도달하지 않음.<br>
+     * Reader.read() 에서 put 해야 Writer.write() 에 도달함.<br>
+     * 이유는 open() 의 ExecutionContext는 ItemStream 관리용context 으로 StepExecution.getExecutionContext() 와는 별개임. <br>
+     * @param key
+     * @return
+     */
+    public void setStepParam(String key, Object val) {
+    	this.stepExecution.getExecutionContext().put(key, val);
+    }
+    
+    protected void checkParam() {
+    	StringBuffer buff = new StringBuffer();
+    	if( !this.getJobParamMap().isEmpty() ) {
+    		buff.append("jobParams:"+this.getJobParamMap()+"");
+    	}
+    	if( !this.getStepParamMap().isEmpty() ) {
+    		if(buff.length() > 0) {
+    	    	buff.append("\t");
+    		}
+    		buff.append("stepParams:"+this.getStepParamMap()+"");
+    	}
+    	if(buff.length() > 0) {
+	    	buff.append("\n");
+    		this.log( "stepExecution[" + this.stepExecution + "] 파라메터 - " + buff);
+    	}
     }
 }

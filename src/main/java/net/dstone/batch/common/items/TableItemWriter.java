@@ -28,6 +28,8 @@ public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, 
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
 		this.log(this.getClass().getName() + ".write( chunk.size():"+chunk.size()+" ) has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	this.checkParam();
+    	
         int successCount = 0;
         int failCount = 0;
         try (SqlSession session = this.sqlSessionSample.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {

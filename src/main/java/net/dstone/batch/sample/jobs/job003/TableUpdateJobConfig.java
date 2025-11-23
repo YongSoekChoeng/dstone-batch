@@ -35,8 +35,8 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 5000;
-		this.addStep(this.workerStep1("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
-		//this.addStep(this.workerStep2("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+		//this.addStep(this.workerStep1("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
+		this.addStep(this.workerStep2("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/

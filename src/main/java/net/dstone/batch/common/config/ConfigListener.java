@@ -2,8 +2,11 @@ package net.dstone.batch.common.config;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +24,10 @@ public class ConfigListener extends BaseBatchObject{
     	this.info(msg);
     }
 
+    /**
+     * Job 의 쓰레드를 JOB_THREAD_MAP 에 세팅하는 리스너.
+     * @return
+     */
     @Bean("jobRegisterListener")
     public JobExecutionListener jobRegisterListener() {
     	return new JobExecutionListener() {
@@ -48,14 +55,15 @@ public class ConfigListener extends BaseBatchObject{
     	};
     }
     
-    private static ConcurrentHashMap<Long, Thread> jobThreads = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Long, Thread> JOB_THREAD_MAP = new ConcurrentHashMap<>();
     @Component
     private static class JobThreadRegistry {
         public static synchronized void register(Long executionId, Thread thread) {
-            jobThreads.put(executionId, thread);
+        	JOB_THREAD_MAP.put(executionId, thread);
         }
         public static synchronized void unregister(Long executionId) {
-            jobThreads.remove(executionId);
+        	JOB_THREAD_MAP.remove(executionId);
         }
     }
+    
 }

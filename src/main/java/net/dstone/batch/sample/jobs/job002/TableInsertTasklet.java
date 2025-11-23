@@ -34,22 +34,22 @@ public class TableInsertTasklet extends BaseItem implements Tasklet{
 	
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-    	log(this.getClass().getName() + "이(가) 실행됩니다.");
+    	log(this.getClass().getName() + "이(가) 실행됩니다." );
+    	this.checkParam();
     	
 		// SAMPLE_TEST 테이블 삭제
 		String deleteQueryId = "net.dstone.batch.sample.SampleTestDao.deleteSampleTestAll";
 		this.sqlSessionSample.delete(deleteQueryId);
 		this.sqlSessionSample.flushStatements();
-		
+	
 		// SAMPLE_TEST 테이블 입력
-		int dataCnt = Integer.parseInt(this.getJobParam("dataCnt", "1000").toString());
+		int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString());
 		final String insertQueryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
 
         int chunkPerThread = dataCnt / threadCount;
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         List<Future<?>> futures = new ArrayList<>();
-        
 
         for (int t = 0; t < threadCount; t++) {
             int startIdx = t * chunkPerThread;

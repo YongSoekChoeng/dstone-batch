@@ -27,7 +27,7 @@ import net.dstone.batch.common.core.BaseItem;
  *     │
  *     ▼
  * ┌─────────────────────────────────────┐
- * │  reader.open(executionContext)      │  ◀── Step 시작 시 1회 자동으로 호출
+ * │  reader.open(executionContext)      │  ◀── Step 시작 시 1회 자동으로 호출. 이때의 ExecutionContext는 ItemStream 관리용context로 StepExecutionContext와는 별개임.(여기서 Step파라메터 세팅은 Step내에서 공유되지 않음)
  * └─────────────────────────────────────┘
  *     │
  *     ▼
@@ -35,9 +35,9 @@ import net.dstone.batch.common.core.BaseItem;
  * │  Chunk 반복 (chunk size: 1000 기준)   │
  * │                                     │
  * │  ┌───────────────────────────────┐  │
- * │  │ reader.read() × 1000          │  │  ◀── null 반환될 때까지 반복
+ * │  │ reader.read() × 1000          │  │  ◀── null 반환될 때까지 반복. 여기서 비로소 StepExecutionContext가 생성됨.(여기서 Step파라메터 세팅은 Step내에서 공유됨)
  * │  │ processor.process() × 1000    │  │
- * │  │ writer.write(items)           │  │
+ * │  │ writer.write(items)           │  │  
  * │  │ reader.update(context)        │  │  ◀── 매 chunk 커밋 후 자동으로 호출
  * │  └───────────────────────────────┘  │
  * │              ...반복...              │
@@ -62,22 +62,20 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     private SqlSession sqlSession;
     private Cursor<Map<String, Object>> cursor;
     private Iterator<Map<String, Object>> iterator;
+    int readCnt = 0;
 
     /** open/close 중복 방지용 플래그 */
     private final AtomicBoolean opened = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
-
+    
     public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
     }
 
-    public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId, Map<String, Object> params) {
+    public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId, Map<String, Object> stepParams) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
-    	if( params!=null ) {
-    		this.params.putAll(params);
-    	}
     }
 
     @Override
@@ -86,7 +84,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
         if (opened.compareAndSet(false, true)) {
             try {
                 this.sqlSession = this.sqlSessionFactory.openSession();
-                this.cursor = this.sqlSession.selectCursor(queryId, params);
+                this.cursor = this.sqlSession.selectCursor(queryId, this.getJobParamMap());
                 this.iterator = this.cursor.iterator();
                 log(">>> Cursor 열기 성공");
             } catch (Exception e) {
@@ -111,6 +109,8 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
         }
         if (this.iterator != null && this.iterator.hasNext()) {
 			Map<String, Object> item = this.iterator.next();
+			readCnt++;
+			this.setStepParam("readCnt", readCnt);
         	return item;
         }
         return null;
