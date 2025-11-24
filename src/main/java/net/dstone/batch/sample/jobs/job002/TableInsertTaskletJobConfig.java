@@ -34,6 +34,9 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 100;
+		// 01. 기존데이터 삭제
+		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
+		// 02. 신규데이터 입력
 		//this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
 		this.addStep(this.workerStep1("Reader/Processor/Writer 방식으로 생성된 스텝", chunkSize));
 	}

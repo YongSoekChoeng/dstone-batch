@@ -37,11 +37,6 @@ public class TableInsertTasklet extends BaseItem implements Tasklet{
     	log(this.getClass().getName() + "이(가) 실행됩니다." );
     	this.checkParam();
     	
-		// SAMPLE_TEST 테이블 삭제
-		String deleteQueryId = "net.dstone.batch.sample.SampleTestDao.deleteSampleTestAll";
-		this.sqlSessionSample.delete(deleteQueryId);
-		this.sqlSessionSample.flushStatements();
-	
 		// SAMPLE_TEST 테이블 입력
 		int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString());
 		final String insertQueryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
