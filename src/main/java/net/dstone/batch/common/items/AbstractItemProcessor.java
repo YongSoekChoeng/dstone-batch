@@ -10,7 +10,7 @@ import net.dstone.batch.common.core.BaseItem;
 
 @Component
 @StepScope
-public abstract class BaseItemProcessor extends BaseItem implements ItemProcessor<Map<String, Object>, Map<String, Object>> {
+public abstract class AbstractItemProcessor extends BaseItem implements ItemProcessor<Map<String, Object>, Map<String, Object>> {
 
 	@Override
 	public abstract Map<String, Object> process(Map item) throws Exception;

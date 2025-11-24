@@ -7,7 +7,6 @@ import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
-import net.dstone.batch.common.items.BaseItemProcessor;
+import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 
@@ -31,7 +30,6 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     }
     
 	@Override
-	@JobScope
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
 		int chunkSize = 5000;
@@ -40,10 +38,8 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-	@Bean
-    @StepScope
 	private Step workerStep1(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".createStepByOperator("+stepName+", "+chunkSize+" ) has been called !!!");
+		log(this.getClass().getName() + ".workerStep1("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
@@ -61,7 +57,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	return new BaseItemProcessor() {
+    	return new AbstractItemProcessor() {
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
 				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
@@ -85,8 +81,6 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     /*************************************************************************************************************************/
     
     /*************************************** 02.Reader/Processor/Writer 동일클래스내에 생성 ***************************************/
-	@Bean
-    @StepScope
     private Step workerStep2(String stepName, int chunkSize) {
         return new StepBuilder(stepName, jobRepository)
                 .<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
