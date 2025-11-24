@@ -27,6 +27,9 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	@Autowired
 	protected PlatformTransactionManager txManagerCommon;
 
+	@Autowired
+	protected PlatformTransactionManager txManagerSample;
+
     @Autowired 
     @Qualifier("sqlSessionFactorySample")
     protected SqlSessionFactory sqlSessionFactorySample; 

@@ -33,7 +33,7 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		int chunkSize = 100;
+		int chunkSize = 5000;
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
 		// 02. 신규데이터 입력
@@ -45,7 +45,7 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 	private Step workerStep1(String stepName, int chunkSize) {
 		log(this.getClass().getName() + ".workerStep1("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
@@ -92,6 +92,7 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = new HashMap<>(item);
+		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
 		    	return processedItem;
 			}
     	};
@@ -100,7 +101,8 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
-        return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
+    	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
+    	return writer;
     }
     /*************************************************************************************************************************/
     
