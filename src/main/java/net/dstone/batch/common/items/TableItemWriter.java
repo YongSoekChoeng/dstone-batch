@@ -16,11 +16,11 @@ import net.dstone.batch.common.core.BaseItem;
 @StepScope
 public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, Object>> {
 
-    private final SqlSessionTemplate sqlSessionSample;
+    private final SqlSessionTemplate sqlSessionTemplate;
     private String queryId;
 
-    public TableItemWriter(SqlSessionTemplate sqlSessionSample, String queryId) {
-    	this.sqlSessionSample = sqlSessionSample;
+    public TableItemWriter(SqlSessionTemplate sqlSessionTemplate, String queryId) {
+    	this.sqlSessionTemplate = sqlSessionTemplate;
     	this.queryId = queryId;
     }
 
@@ -32,11 +32,11 @@ public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, 
     	
         int successCount = 0;
         int failCount = 0;
-        try (SqlSession session = this.sqlSessionSample.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
+        try (SqlSession session = this.sqlSessionTemplate.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
         	for (Map item : chunk) {
                 try {
                     // MyBatis Mapper를 통한 UPDATE 실행
-                	this.sqlSessionSample.update(this.queryId, item);
+                	this.sqlSessionTemplate.update(this.queryId, item);
                     successCount++;
                 } catch (Exception e) {
                     failCount++;
@@ -44,7 +44,7 @@ public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, 
                     throw e; // 트랜잭션 롤백을 위해 예외 재발생
                 }
         	}
-        	this.sqlSessionSample.flushStatements();
+        	this.sqlSessionTemplate.flushStatements();
         }
         this.log("Write completed - Thread: {"+Thread.currentThread().getName()+"}, Success: {"+successCount+"}, Fail: {"+failCount+"}");
     }
