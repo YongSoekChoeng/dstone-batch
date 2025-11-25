@@ -12,7 +12,11 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -20,6 +24,7 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
+import net.dstone.batch.common.partitioner.QueryPartitioner;
 
 @Component
 @AutoRegJob(name = "tableUpdateJob")
@@ -32,16 +37,27 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
-		int chunkSize = 5000;
-		//this.addStep(this.workerStep1("01.Reader/Processor/Writer 별도클래스로 생성 스텝", chunkSize));
-		this.addStep(this.workerStep2("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+		
+        int chunkSize = 30;
+        int gridSize = 4; // 파티션 개수 (병렬 처리할 스레드 수)
+        
+		//this.addStep(this.workerStep1(chunkSize));
+		this.addStep(this.workerMultiStep1(chunkSize, gridSize));
+		
+		//this.addStep(this.workerStep2("02.Reader/Processor/Writer 동일클래스내에 생성 스텝", chunkSize));
+	}
+	
+	@Bean
+	@StepScope
+	public TaskExecutor stepExecutor(@Qualifier("taskExecutor") TaskExecutor executor) {
+	    return executor;
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-	private Step workerStep1(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".workerStep1("+stepName+", "+chunkSize+" ) has been called !!!");
-		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+	private Step workerStep1(int chunkSize) {
+		log(this.getClass().getName() + ".workerStep1("+chunkSize+" ) has been called !!!");
+		return new StepBuilder("workerStep1", jobRepository)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
@@ -51,12 +67,28 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTest");
+		log(this.getClass().getName() + ".itemReader() has been called !!!");
+    	Map<String, Object> baseParams = new HashMap<String, Object>();
+        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", baseParams);
+    }
+
+    @Bean
+    @StepScope
+    public ItemReader<Map<String, Object>> itemPartitionReader(
+    	@Value("#{stepExecutionContext['MIN_ID']}") String minId
+    	, @Value("#{stepExecutionContext['MAX_ID']}") String maxId
+    ) {
+		log(this.getClass().getName() + ".itemPartitionReader("+minId+", "+maxId+") has been called !!!");
+    	Map<String, Object> baseParams = new HashMap<String, Object>();
+    	baseParams.put("MIN_ID", minId);
+    	baseParams.put("MAX_ID", maxId);
+        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
     }
 
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
+		log(this.getClass().getName() + ".itemProcessor() has been called !!!");
     	return new AbstractItemProcessor() {
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
@@ -76,8 +108,46 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
+		log(this.getClass().getName() + ".itemWriter() has been called !!!");
         return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
     }
+    
+    @Bean
+    @Qualifier("queryPartitioner")
+    public QueryPartitioner queryPartitioner() {
+        int gridSize = 4; // 파티션 개수
+        QueryPartitioner queryPartitioner = new QueryPartitioner(
+            sqlBatchSessionSample, 
+            "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", 
+            "TEST_ID", 
+            gridSize
+        );
+        return queryPartitioner;
+    }
+    
+	private Step workerMultiStep1(int chunkSize, int gridSize) {
+		log(this.getClass().getName() + ".workerMultiStep1("+chunkSize+", "+gridSize+" ) has been called !!!");
+        
+		return new StepBuilder("workerMultiStep1", jobRepository)
+				.partitioner("slaveStep1", queryPartitioner())
+				.gridSize(gridSize)
+				.step(slaveStep1())
+				.taskExecutor(stepExecutor(null))
+				.build();
+	}
+	
+	@Bean
+	public Step slaveStep1() {
+		log(this.getClass().getName() + ".slaveStep1() has been called !!!");
+		int chunkSize = 30;
+		return new StepBuilder("slaveStep1", jobRepository)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
+				.reader(itemPartitionReader(null, null)) // Spring이 런타임에 주입
+				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
+				.writer((ItemWriter<? super Map>) itemWriter())
+				.build();
+	}
+
     /*************************************************************************************************************************/
     
     /*************************************** 02.Reader/Processor/Writer 동일클래스내에 생성 ***************************************/

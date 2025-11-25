@@ -2,10 +2,12 @@ package net.dstone.batch.common.config;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,10 @@ import net.dstone.batch.common.core.BaseBatchObject;
 @Configuration
 public class ConfigMapper extends BaseBatchObject{
 
+	@Autowired
+	@Qualifier("myBatisPartitionSqlInterceptor")
+	public Interceptor myBatisPartitionSqlInterceptor;
+    
 	@Bean(name = "sqlSessionFactoryCommon")
 	public SqlSessionFactory sqlSessionFactoryCommon(@Qualifier("dataSourceCommon") DataSource dataSourceCommon) throws Exception {
 		PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
@@ -37,6 +43,7 @@ public class ConfigMapper extends BaseBatchObject{
 		bean.setDataSource(dataSourceSample);
 		bean.setConfigLocation(pmrpr.getResource("classpath:/sqlmap/sql-mapper-config.xml"));
 		bean.setMapperLocations(pmrpr.getResources("classpath:/sqlmap/sample/**/*Dao.xml"));
+		bean.setPlugins(myBatisPartitionSqlInterceptor);
 		return bean.getObject();
 	}
 	@Bean(name = "sqlSessionSample")

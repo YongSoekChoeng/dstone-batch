@@ -14,6 +14,7 @@ import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BaseItem;
 
 /**
@@ -63,7 +64,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     private Cursor<Map<String, Object>> cursor;
     private Iterator<Map<String, Object>> iterator;
     int readCnt = 0;
-
+    
     /** open/close 중복 방지용 플래그 */
     private final AtomicBoolean opened = new AtomicBoolean(false);
     private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -73,9 +74,12 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     	this.queryId = queryId;
     }
 
-    public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId, Map<String, Object> stepParams) {
+    public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId, Map<String, Object> baseParams) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
+    	if(baseParams != null && baseParams.size() > 0) {
+    		this.baseParam.putAll(baseParams);
+    	}
     }
 
     @Override
@@ -84,7 +88,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
         if (opened.compareAndSet(false, true)) {
             try {
                 this.sqlSession = this.sqlSessionFactory.openSession();
-                this.cursor = this.sqlSession.selectCursor(queryId, this.getJobParamMap());
+                this.cursor = this.sqlSession.selectCursor(queryId, this.getStepParamMap());
                 this.iterator = this.cursor.iterator();
                 log(">>> Cursor 열기 성공");
             } catch (Exception e) {

@@ -15,7 +15,10 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
@@ -45,6 +48,14 @@ public abstract class BaseJobConfig extends BaseBatchObject{
     @Autowired 
     @Qualifier("jobRegisterListener")
     protected JobExecutionListener jobRegisterListener;
+
+    @Autowired 
+    @Qualifier("taskExecutor")
+    protected TaskExecutor taskExecutor;
+
+    @Autowired 
+    @Qualifier("heavyTaskExecutor")
+    protected TaskExecutor heavyTaskExecutor;
     
 	private String name;
 	

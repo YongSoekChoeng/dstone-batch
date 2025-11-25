@@ -5,14 +5,14 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.consts.Constants;
 import net.dstone.common.utils.LogUtil;
-import net.dstone.common.utils.StringUtil;
 
 @Component
 public class BaseBatchObject{
 	
 	private LogUtil myLogger = null;
-	private Map<String,Object> property = new HashMap<String,Object>();
+	protected Map<String,Object> baseParam = new HashMap<String,Object>();
 	
 	protected LogUtil getLogger() {
 		if(myLogger == null) {
@@ -52,30 +52,16 @@ public class BaseBatchObject{
 		LogUtil.sysout(o);
 	}
 
-	protected void setProperty(String key, Object val) {
-		this.property.put(key, val);
+	protected void setBaseParam(String key, Object val) {
+		this.baseParam.put(key, val);
 	}
 
-	protected String getStrProperty(String key) {
-		if( this.property.containsKey(key) ) {
-			return StringUtil.nullCheck(this.property.get(key), "").toString();
-		}else {
-			return "";
-		}
+	protected Object getBaseParam(String key) {
+		return this.baseParam.get(key);
 	}
-	protected String getStrProperty(String key, String defaultVal) {
-		if( this.property.containsKey(key) ) {
-			return StringUtil.nullCheck(this.property.get(key), defaultVal).toString();
-		}else {
-			return defaultVal;
-		}
-	}
-	protected Object getObjProperty(String key) {
-		if( this.property.containsKey(key) ) {
-			return this.property.get(key);
-		}else {
-			return null;
-		}
+	
+	protected Map<String,Object> getBaseParamMap() {
+		return this.baseParam;
 	}
 	
 }

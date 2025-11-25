@@ -7,11 +7,11 @@ import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import net.dstone.batch.common.core.BaseBatchObject;
 
-@Component
+@Configuration
 public class ConfigAspect extends BaseBatchObject{
 
 	@Autowired 
@@ -62,4 +62,5 @@ public class ConfigAspect extends BaseBatchObject{
             }
         });
     }
+    
 }
