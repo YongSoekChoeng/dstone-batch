@@ -22,11 +22,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
 @AutoRegJob(name = "sampleJob")
 public class SampleJobConfig extends BaseJobConfig {
 
-    private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
-    }
-
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");

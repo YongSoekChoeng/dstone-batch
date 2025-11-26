@@ -24,11 +24,6 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
 	protected StepExecution stepExecution;
 	
-	protected void log(Object msg) {
-    	//this.info(msg);
-    	this.debug(msg);
-    }
-
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;

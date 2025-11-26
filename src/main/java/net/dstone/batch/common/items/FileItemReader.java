@@ -70,7 +70,7 @@ public class FileItemReader extends BaseItem implements ItemReader<String>, Item
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
-    	log(this.getClass().getName() + ".open() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "open", filePath);
         try {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset))
             );
@@ -81,7 +81,7 @@ public class FileItemReader extends BaseItem implements ItemReader<String>, Item
 
     @Override
     public synchronized String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-    	log(this.getClass().getName() + ".read() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "read");
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
         }
@@ -96,13 +96,13 @@ public class FileItemReader extends BaseItem implements ItemReader<String>, Item
 
     @Override
     public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	log(this.getClass().getName() + ".update() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "update");
         executionContext.put("fileItemReader.lineCount", lineCount);
     }
 
     @Override
     public void close() throws ItemStreamException {
-    	log(this.getClass().getName() + ".close() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "close");
         try {
             if (reader != null) {
                 log("[FileItemReader] CLOSE. Total read lines = {"+lineCount+"}");

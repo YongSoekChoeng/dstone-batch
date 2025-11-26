@@ -28,11 +28,6 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "tableInsertTaskletJob")
 public class TableInsertTaskletJobConfig extends BaseJobConfig {
 
-    private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
-    }
-
 	/**
 	 * Job 구성
 	 */

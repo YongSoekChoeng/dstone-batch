@@ -7,10 +7,6 @@ import net.dstone.batch.common.core.BaseBatchObject;
 //첫 번째 제네릭은 입력 데이터 타입, 두 번째는 출력 데이터 타입입니다.
 public class SampleItemProcessor extends BaseBatchObject implements ItemProcessor<String, String> {
 
-    private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
-    }
 	@Override
 	public String process(String item) throws Exception {
 		log(this.getClass().getName() + ".process("+item+") has been called !!!");

@@ -79,7 +79,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
-    	log(this.getClass().getName() + ".open() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "open");
         try {
 
         	Map<String,Object> paramMap = new HashMap<String,Object>();
@@ -113,7 +113,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
 
     @Override
     public Map<String, Object> read() {
-    	log(this.getClass().getName() + ".read() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "read");
         if (this.cursor == null) {
         	return null;
         }
@@ -128,7 +128,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
 
     @Override
     public void close() throws ItemStreamException {
-    	super.log(this.getClass().getName() + ".close() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "close");
     	this.closeQuietly();
     }
 

@@ -8,11 +8,6 @@ import net.dstone.common.utils.FileUtil;
 
 public class SampleItemWriter extends BaseBatchObject implements ItemWriter<String> {
 
-    private void log(Object msg) {
-    	this.debug(msg);
-    	//System.out.println(msg);
-    }
-    
     @Override
     public void write(Chunk<? extends String> items) throws Exception {
     	log(this.getClass().getName() + ".write("+items+") has been called !!!");

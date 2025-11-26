@@ -52,6 +52,23 @@ public class BaseBatchObject{
 		LogUtil.sysout(o);
 	}
 
+	protected void log(Object msg) {
+    	//this.info(msg);
+    	this.debug(msg);
+    }
+
+	protected void callLog(Object obj, String method) {
+		String logStr = obj.getClass().getName() + "."+method+"() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
+    	//this.info(logStr);
+    	this.debug(logStr);
+    }
+
+	protected void callLog(Object obj, String method, String paramMsg) {
+		String logStr = obj.getClass().getName() + "."+method+"("+paramMsg+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
+    	//this.info(logStr);
+    	this.debug(logStr);
+    }
+
 	protected void setBaseParam(String key, Object val) {
 		this.baseParam.put(key, val);
 	}

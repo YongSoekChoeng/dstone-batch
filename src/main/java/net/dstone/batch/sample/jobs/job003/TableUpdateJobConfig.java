@@ -34,10 +34,6 @@ import net.dstone.batch.common.partitioner.QueryPartitioner;
 @AutoRegJob(name = "tableUpdateJob")
 public class TableUpdateJobConfig extends BaseJobConfig {
 
-    private void log(Object msg) {
-    	this.info(msg);
-    }
-    
 	/**
 	 * Job 구성
 	 */

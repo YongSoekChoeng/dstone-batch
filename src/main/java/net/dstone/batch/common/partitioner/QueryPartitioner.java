@@ -16,13 +16,8 @@ import net.dstone.batch.common.core.BaseBatchObject;
  * 범용 쿼리 기반 Partitioner
  */
 @Component
-public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
+public class QueryPartitioner extends BaseBatchObject implements Partitioner {
 
-    private void log(Object msg) {
-    	//this.info(msg);
-    	this.debug(msg);
-    }
-    
     private final SqlSessionTemplate sqlSessionTemplate;
     private final String queryId;
     private final String keyColumn;
@@ -46,8 +41,6 @@ public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
             Map<String, Object> params
      ) {
     	
-    	log(this.getClass().getName() + ".QueryPartitioner() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
-        
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.queryId = queryId;
         this.keyColumn = keyColumn;
@@ -64,7 +57,7 @@ public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
 
-    	log(this.getClass().getName() + ".partition() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+    	callLog(this, "partition", String.valueOf(gridSize));
         
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
         this.params.put(Constants.Partition.GRID_SIZE, actualGridSize);

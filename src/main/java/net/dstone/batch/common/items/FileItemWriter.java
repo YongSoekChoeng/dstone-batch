@@ -32,15 +32,11 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<String>
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
+    	callLog(this, "open", outputFilePath);
         try {
-            log("[FileItemWriter] OPEN : {"+outputFilePath+"}");
-
-            writer = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream(outputFilePath, append),
-                            Charset.forName(charset)
-                    )
-            );
+			writer = new BufferedWriter(
+				new OutputStreamWriter(new FileOutputStream(outputFilePath, append), Charset.forName(charset))
+			);
 
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + outputFilePath, e);
@@ -49,6 +45,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<String>
 
     @Override
     public synchronized void write(Chunk<? extends String> chunk) throws Exception {
+    	callLog(this, "write", "chunk[size:"+chunk.size()+"]");
         if (writer == null) {
             throw new IllegalStateException("Writer is not opened.");
         }
@@ -66,6 +63,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<String>
 
     @Override
     public void close() throws ItemStreamException {
+    	callLog(this, "close");
         try {
             if (writer != null) {
                 log("[FileItemWriter] CLOSE : {"+outputFilePath+"}");
