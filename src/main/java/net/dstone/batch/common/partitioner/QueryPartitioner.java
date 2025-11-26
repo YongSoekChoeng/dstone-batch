@@ -19,7 +19,8 @@ import net.dstone.batch.common.core.BaseBatchObject;
 public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
 
     private void log(Object msg) {
-    	this.info(msg);
+    	//this.info(msg);
+    	this.debug(msg);
     }
     
     private final SqlSessionTemplate sqlSessionTemplate;
@@ -80,8 +81,8 @@ public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to create query-based partitions", e);
-        }  
-System.out.println( "result==========>>>" + result);
+        } 
+    	log(this.getClass().getName() + ".partition() return ["+result+"]" );
         return result;
     }
     

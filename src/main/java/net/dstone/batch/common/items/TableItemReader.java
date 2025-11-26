@@ -86,14 +86,16 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
 
         	Map<String,Object> paramMap = new HashMap<String,Object>();
         	
-        	Map<String,Object> executionMap = this.stepExecution.getExecutionContext().toMap();
         	Map<String,Object> stepParamMap = this.getStepParamMap();
         	if( stepParamMap != null ) {
         		paramMap.putAll(stepParamMap);
         	}
+        	
+        	Map<String,Object> executionMap = this.stepExecution.getExecutionContext().toMap();
         	if( executionMap != null ) {
         		paramMap.putAll(executionMap);
         	}
+        	
             this.sqlSession = this.sqlSessionFactory.openSession();
             this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
             this.iterator = this.cursor.iterator();

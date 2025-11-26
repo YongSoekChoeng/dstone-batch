@@ -25,14 +25,13 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 	protected StepExecution stepExecution;
 	
 	protected void log(Object msg) {
-    	this.info(msg);
-    	//this.debug(msg);
+    	//this.info(msg);
+    	this.debug(msg);
     }
 
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
-    	//log("beforeStep1 :: this.stepExecution.getExecutionContext().toMap()============>>>" + this.stepExecution.getExecutionContext().toMap());
     	Iterator<String> keys = null;
     	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
     	Map<String,Object> jobParamMap = getJobParamMap();
@@ -57,7 +56,6 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
         	}
         }
     	/*** Base 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
-        //log("beforeStep2 :: this.stepExecution.getExecutionContext().toMap()============>>>" + this.stepExecution.getExecutionContext().toMap());
     }
 
     @AfterStep
