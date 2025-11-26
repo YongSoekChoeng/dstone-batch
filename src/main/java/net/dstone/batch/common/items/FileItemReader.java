@@ -23,7 +23,7 @@ import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * ItemReader 구현체. 
+ * 파일핸들링을 위한 ItemReader 구현체. 
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작

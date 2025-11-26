@@ -110,7 +110,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 		int chunkSize = 30;
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
-				.reader(itemPartitionReader(null, null)) // Spring이 런타임에 주입
+				.reader(itemPartitionReader()) // Spring이 런타임에 주입
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
 				.build();
@@ -138,14 +138,9 @@ public class TableUpdateJobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemPartitionReader(
-    	@Value("#{stepExecutionContext['MIN_ID']}") String minId
-    	, @Value("#{stepExecutionContext['MAX_ID']}") String maxId
-    ) {
-		log(this.getClass().getName() + ".itemPartitionReader("+minId+", "+maxId+") has been called !!!");
+    public ItemReader<Map<String, Object>> itemPartitionReader() {
+		log(this.getClass().getName() + ".itemPartitionReader() has been called !!!");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
-    	baseParams.put("MIN_ID", minId);
-    	baseParams.put("MAX_ID", maxId);
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 

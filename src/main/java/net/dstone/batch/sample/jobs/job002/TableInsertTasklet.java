@@ -13,6 +13,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
@@ -26,6 +27,7 @@ import net.dstone.common.utils.StringUtil;
  * 데이블 입력 Tasklet
  */
 @Component
+@StepScope
 public class TableInsertTasklet extends BaseItem implements Tasklet{
 
 	private final SqlSessionTemplate sqlSessionSample; 

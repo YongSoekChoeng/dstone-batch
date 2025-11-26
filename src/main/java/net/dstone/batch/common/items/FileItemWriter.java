@@ -13,12 +13,14 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.StringUtil;
 
+/**
+ * 파일핸들링을 위한 ItemWriter 구현체. 
+ */
 @Component
 @StepScope
 public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {

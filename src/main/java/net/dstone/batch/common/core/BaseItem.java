@@ -11,6 +11,7 @@ import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.StringUtil;
@@ -22,6 +23,7 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
+	@Autowired
 	protected StepExecution stepExecution;
 	
     @BeforeStep
@@ -112,7 +114,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
      */
     public Map<String,Object> getStepParamMap() {
     	Map<String,Object> map = new HashMap<String,Object>();
-    	if( this.stepExecution.getExecutionContext() != null ) {
+    	if( this.stepExecution.getExecutionContext() != null && this.stepExecution.getExecutionContext().toMap() != null ) {
     		map = new HashMap<String,Object>(this.stepExecution.getExecutionContext().toMap());
     	}
     	return map;

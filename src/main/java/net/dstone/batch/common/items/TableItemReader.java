@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import net.dstone.batch.common.core.BaseItem;
 
 /**
- * ItemReader 구현체. 
+ * DB핸들링을 위한 ItemReader 구현체. 
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작
@@ -82,18 +82,8 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     	callLog(this, "open");
         try {
 
-        	Map<String,Object> paramMap = new HashMap<String,Object>();
-        	
-        	Map<String,Object> stepParamMap = this.getStepParamMap();
-        	if( stepParamMap != null ) {
-        		paramMap.putAll(stepParamMap);
-        	}
-        	
-        	Map<String,Object> executionMap = this.stepExecution.getExecutionContext().toMap();
-        	if( executionMap != null ) {
-        		paramMap.putAll(executionMap);
-        	}
-        	
+        	Map<String,Object> paramMap = this.getStepParamMap();
+
             this.sqlSession = this.sqlSessionFactory.openSession();
             this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
             this.iterator = this.cursor.iterator();
