@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
-import net.dstone.batch.common.items.AbstractTableItemProcessor;
+import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.batch.common.partitioner.QueryPartitioner;
@@ -159,7 +159,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
 		log(this.getClass().getName() + ".itemProcessor() has been called !!!");
-    	return new AbstractTableItemProcessor() {
+    	return new AbstractItemProcessor() {
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {

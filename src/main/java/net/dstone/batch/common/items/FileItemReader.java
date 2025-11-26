@@ -5,6 +5,10 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
@@ -16,6 +20,7 @@ import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * ItemReader 구현체. 
@@ -55,17 +60,31 @@ import net.dstone.batch.common.core.BaseItem;
  */
 @Component
 @StepScope
-public class FileItemReader extends BaseItem implements ItemReader<String>, ItemStream {
+public class FileItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
     private final String filePath;
     private final String charset;
+    /**
+     * 컬럼정보(컬럼명, 컬럼바이트길이)
+     */
+    private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+    /**
+     * 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
+     */
+    private String div = "";
 
     private BufferedReader reader;
     private long lineCount = 0;
     
-    public FileItemReader(String filePath, String charset) {
+    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
+    	this(filePath, charset, colInfoMap, "");
+    }
+
+    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.filePath = filePath;
     	this.charset = charset;
+    	this.colInfoMap = colInfoMap;
+    	this.div = div;
     }
 
     @Override
@@ -80,15 +99,43 @@ public class FileItemReader extends BaseItem implements ItemReader<String>, Item
     }
 
     @Override
-    public synchronized String read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    public synchronized Map<String, Object> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
     	callLog(this, "read");
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
         }
         String line = reader.readLine();
         if (line != null) {
+        	Map<String, Object> item = new HashMap<String, Object>();
+        	
+        	Iterator<String> colInfoKeys = colInfoMap.keySet().iterator();
+        	// 고정길이 일 경우
+        	if( StringUtil.isEmpty(div) ) {
+            	int offset = 0;
+            	while(colInfoKeys.hasNext()) {
+            		String key = colInfoKeys.next();
+            		Integer len = colInfoMap.get(key);
+            		String val = StringUtil.substrFld(line, offset, len, this.charset);
+            		item.put(key, val);
+            		offset = offset + len;
+            	}
+            // 구분자 일 경우	
+        	}else {
+        		int setNum = 0;
+        		String[] valArr = StringUtil.toStrArray(line, div);
+        		while(colInfoKeys.hasNext()) {
+        			String key = colInfoKeys.next();
+        			String val = "";
+        			if( valArr != null && valArr.length > setNum ) {
+        				val = valArr[setNum];
+        			}
+        			item.put(key, val);
+        			setNum++;
+        		}
+        	}
+        	
             lineCount++;
-            return line;
+            return item;
         }
 
         return null; // EOF → Step 종료

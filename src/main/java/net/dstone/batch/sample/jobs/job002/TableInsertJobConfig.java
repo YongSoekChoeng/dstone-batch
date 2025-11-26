@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
-import net.dstone.batch.common.items.AbstractTableItemProcessor;
+import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.AbstractItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.common.utils.DateUtil;
@@ -106,7 +106,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	return new AbstractTableItemProcessor() {
+    	return new AbstractItemProcessor() {
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
 				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
