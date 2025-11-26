@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.Map;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
@@ -14,7 +13,6 @@ import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
@@ -59,14 +57,16 @@ import net.dstone.batch.common.core.BaseItem;
 @StepScope
 public class FileItemReader extends BaseItem implements ItemReader<String>, ItemStream {
 
-    @Value("#{jobParameters['filePath']}")
-    private String filePath;
-
-    @Value("#{jobParameters['charset'] ?: 'UTF-8'}")
-    private String charset;
+    private final String filePath;
+    private final String charset;
 
     private BufferedReader reader;
     private long lineCount = 0;
+    
+    public FileItemReader(String filePath, String charset) {
+    	this.filePath = filePath;
+    	this.charset = charset;
+    }
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {

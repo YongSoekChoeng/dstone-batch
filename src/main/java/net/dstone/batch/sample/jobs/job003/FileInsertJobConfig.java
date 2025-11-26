@@ -1,45 +1,50 @@
-package net.dstone.batch.sample.jobs.job002;
+package net.dstone.batch.sample.jobs.job003;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
-import net.dstone.batch.common.items.AbstractTableItemProcessor;
+import net.dstone.batch.common.items.AbstractFileItemProcessor;
 import net.dstone.batch.common.items.AbstractItemReader;
-import net.dstone.batch.common.items.TableItemWriter;
+import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.common.utils.DateUtil;
+import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
+ * 파일 C:/Temp/SAMPLE_TEST.sam 파일 에 테스트데이터를 입력하는 Job
  */
 @Component
-@AutoRegJob(name = "tableInsertTaskletJob")
-public class TableInsertJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileInsertJobConfig")
+public class FileInsertJobConfig extends BaseJobConfig {
 
 	/**
 	 * Job 구성
 	 */
 	@Override
 	public void configJob() throws Exception {
-		log(this.getClass().getName() + ".configJob() has been called !!!");
+		callLog(this, "configJob");
 		int chunkSize = 5000;
 		// 01. 기존데이터 삭제
-		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
+		this.addTasklet(this.deleteTasklet("fileInsertJobConfig-deleteTasklet"));
 		// 02. 신규데이터 입력
-		//this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
-		this.addStep(this.workerStep("workerStep", chunkSize));
+		this.addStep(this.workerStep("fileInsertJobConfig-workerStep", chunkSize));
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
@@ -51,15 +56,41 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	private Step workerStep(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".workerStep("+stepName+", "+chunkSize+" ) has been called !!!");
+		callLog(this, "workerStep("+stepName+", "+chunkSize+" )", ""+stepName+", "+chunkSize+"");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor((ItemProcessor<String, String>) itemProcessor())
+				.writer(itemWriter(null, null, null))
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
+
+	/* --------------------------------- Tasklet 설정 시작 ------------------------------- */ 
+	@SuppressWarnings("unused")
+	private Tasklet deleteTasklet(String taskletName) {
+		callLog(this, "deleteTasklet");
+	    return new Tasklet() {
+			@Override
+			public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+				callLog(this, "execute");
+				
+				// 파라메터 전달(조회)
+	            String filePath = chunkContext.getStepContext()
+                .getStepExecution()
+                .getJobExecution()
+                .getExecutionContext()
+                .get("filePath").toString();
+	            log("filePath["+filePath+"]");
+	            
+	            if( FileUtil.isFileExist(filePath) ) {
+	            	FileUtil.deleteFile(filePath);
+	            }
+				return RepeatStatus.FINISHED;
+			}
+		};
+	}
+	/* --------------------------------- Tasklet 설정 끝 ------------------------------- */ 
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
     /**
@@ -78,7 +109,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     			for(int i=0; i<dataCnt; i++) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );
-                    //row.put("TEST_NAME", "이름-" + i);
+                    row.put("TEST_NAME", "이름-" + row.get("TEST_ID"));
                     row.put("FLAG_YN", "N");
                     row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
                     queue.add(row);
@@ -105,15 +136,12 @@ public class TableInsertJobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	return new AbstractTableItemProcessor() {
+    public ItemProcessor<String, String> itemProcessor() {
+    	return new AbstractFileItemProcessor() {
 			@Override
-			public Map<String, Object> process(Map item) throws Exception {
-				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
-				// Thread-safe하게 새로운 Map 객체 생성
-		        Map<String, Object> processedItem = new HashMap<>(item);
-		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
-		    	return processedItem;
+			public String process(String item) throws Exception {
+				callLog(this, "process", (item==null?"":item) );
+		    	return item;
 			}
     	};
     }
@@ -126,9 +154,12 @@ public class TableInsertJobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
-    	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
-    	return writer;
+    public ItemWriter<? super String> itemWriter(
+    	@Value("#{jobParameters['outputFilePath']}") String outputFilePath,
+    	@Value("#{jobParameters['charset']}") String charset,
+    	@Value("#{jobParameters['append']}") Boolean append
+    ) {
+    	return new FileItemWriter(outputFilePath, charset, append);
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
     

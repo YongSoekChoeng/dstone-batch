@@ -10,7 +10,6 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
@@ -19,16 +18,17 @@ import net.dstone.batch.common.core.BaseItem;
 @StepScope
 public class FileItemWriter extends BaseItem implements ItemStreamWriter<String> {
 
-    @Value("#{jobParameters['outputFilePath']}")
-    private String outputFilePath;
-
-    @Value("#{jobParameters['charset'] ?: 'UTF-8'}")
-    private String charset;
-
-    @Value("#{jobParameters['append'] ?: false}")
-    private boolean append;
+    private final String outputFilePath;
+    private final String charset;
+    private final boolean append;
 
     private BufferedWriter writer;
+    
+    public FileItemWriter(String outputFilePath, String charset, boolean append) {
+    	this.outputFilePath = outputFilePath;
+    	this.charset = charset;
+    	this.append = append;
+    }
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
