@@ -96,7 +96,6 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 */
 	private Step parallelMasterStep(int chunkSize, int gridSize) {
 		log(this.getClass().getName() + ".parallelMasterStep("+chunkSize+", "+gridSize+" ) has been called !!!");
-        
 		return new StepBuilder("parallelMasterStep", jobRepository)
 				.partitioner("parallelSlaveStep", queryPartitioner())
 				.step(parallelSlaveStep())

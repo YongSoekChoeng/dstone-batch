@@ -33,19 +33,6 @@ public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, 
         int successCount = 0;
         int failCount = 0;
         try (SqlSession session = this.sqlSessionTemplate.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
-
-try {
-	java.sql.Connection connection = session.getConnection();
-	java.sql.DatabaseMetaData metaData = connection.getMetaData();
-	// 4. 메타 정보를 통해 DB 종류와 버전 조회
-    String dbProductName = metaData.getDatabaseProductName(); // DB 종류 (예: Oracle, MySQL, PostgreSQL)
-    String dbProductVersion = metaData.getDatabaseProductVersion(); // DB 버전 (예: 12.2.0.1.0, 8.0.28)
-
-    System.out.println("✅ Database Product Name: " + dbProductName);
-    System.out.println("✅ Database Product Version: " + dbProductVersion);
-}catch(Exception e) {}
-
-        	
         	for (Map item : chunk) {
                 try {
                     // MyBatis Mapper를 통한 UPDATE 실행
