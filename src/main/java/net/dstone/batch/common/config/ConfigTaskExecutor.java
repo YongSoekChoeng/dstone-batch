@@ -2,9 +2,9 @@ package net.dstone.batch.common.config;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -17,7 +17,8 @@ public class ConfigTaskExecutor extends BaseBatchObject{
 	TaskExecutor 관련 설정
 	********************************************************************************/
     // 기본 executor (대부분의 Job이 사용)	
-    @Bean(name = "taskExecutor")
+    @Bean
+    @Qualifier("taskExecutor")
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         
@@ -41,12 +42,13 @@ public class ConfigTaskExecutor extends BaseBatchObject{
     }
     
     // 대용량 처리용 executor (특정 Job만 사용)
-    @Bean(name = "heavyTaskExecutor")
+    @Bean
+    @Qualifier("heavyTaskExecutor")
     public TaskExecutor heavyTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         // 스레드 수 설정
-        executor.setCorePoolSize(5);          			// 기본 스레드 수
+        executor.setCorePoolSize(2);          			// 기본 스레드 수
         executor.setMaxPoolSize(5);           			// 최대 스레드 수
         executor.setQueueCapacity(0);    				// 큐 사용하지 않음 → 즉시 쓰레드 실행
 

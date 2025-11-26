@@ -22,6 +22,9 @@ import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.StringUtil;
 
+/**
+ * 데이블 입력 Tasklet
+ */
 @Component
 public class TableInsertTasklet extends BaseItem implements Tasklet{
 

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
 
+/**
+ * 데이블 삭제 Tasklet
+ */
 @Component
 public class TableDeleteTasklet extends BaseItem implements Tasklet{
 

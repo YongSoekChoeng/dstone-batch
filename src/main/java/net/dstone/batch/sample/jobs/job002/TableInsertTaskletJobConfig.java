@@ -21,6 +21,9 @@ import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.StringUtil;
 
+/**
+ * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
+ */
 @Component
 @AutoRegJob(name = "tableInsertTaskletJob")
 public class TableInsertTaskletJobConfig extends BaseJobConfig {
@@ -30,6 +33,9 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
     	//System.out.println(msg);
     }
 
+	/**
+	 * Job 구성
+	 */
 	@Override
 	public void configJob() throws Exception {
 		log(this.getClass().getName() + ".configJob() has been called !!!");
@@ -38,12 +44,19 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
 		// 02. 신규데이터 입력
 		//this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
-		this.addStep(this.workerStep1("Reader/Processor/Writer 방식으로 생성된 스텝", chunkSize));
+		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
-
+	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-	private Step workerStep1(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".workerStep1("+stepName+", "+chunkSize+" ) has been called !!!");
+
+	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
+	/**
+	 * 단일처리 Step
+	 * @param chunkSize
+	 * @return
+	 */
+	private Step workerStep(String stepName, int chunkSize) {
+		log(this.getClass().getName() + ".workerStep("+stepName+", "+chunkSize+" ) has been called !!!");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
@@ -51,7 +64,13 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 				.writer((ItemWriter<? super Map>) itemWriter())
 				.build();
 	}
+	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
 
+	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
+    /**
+     * Table 읽어오는 ItemReader
+     * @return
+     */
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
@@ -82,7 +101,13 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 			}
 		};
     }
+	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 
+	/* --------------------------------- Processor 설정 시작 ---------------------------- */ 
+    /**
+     * Table 처리용 ItemProcessor
+     * @return
+     */
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
@@ -97,13 +122,21 @@ public class TableInsertTaskletJobConfig extends BaseJobConfig {
 			}
     	};
     }
+	/* --------------------------------- Processor 설정 끝 ---------------------------- */ 
 
+	/* --------------------------------- Writer 설정 시작 ------------------------------ */
+    /**
+     * Table 처리용 ItemWriter
+     * @return
+     */
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
     	return writer;
     }
+	/* --------------------------------- Writer 설정 끝 -------------------------------- */
+    
     /*************************************************************************************************************************/
     
 }
