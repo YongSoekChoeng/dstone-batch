@@ -1,5 +1,6 @@
 package net.dstone.batch.common.items;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -12,9 +13,9 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BaseItem;
 
 /**
@@ -65,10 +66,6 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     private Iterator<Map<String, Object>> iterator;
     int readCnt = 0;
     
-    /** open/close 중복 방지용 플래그 */
-    private final AtomicBoolean opened = new AtomicBoolean(false);
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-    
     public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
@@ -85,17 +82,26 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	log(this.getClass().getName() + ".open() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
-        if (opened.compareAndSet(false, true)) {
-            try {
-                this.sqlSession = this.sqlSessionFactory.openSession();
-                this.cursor = this.sqlSession.selectCursor(queryId, this.getStepParamMap());
-                this.iterator = this.cursor.iterator();
-                log(">>> Cursor 열기 성공");
-            } catch (Exception e) {
-            	log(">>> Cursor 열기 실패. 상세사항:" + e);
-            	close();
-                throw new ItemStreamException("Cursor 열기 실패: " + queryId, e);
-            }
+        try {
+
+        	Map<String,Object> paramMap = new HashMap<String,Object>();
+        	
+        	Map<String,Object> executionMap = this.stepExecution.getExecutionContext().toMap();
+        	Map<String,Object> stepParamMap = this.getStepParamMap();
+        	if( stepParamMap != null ) {
+        		paramMap.putAll(stepParamMap);
+        	}
+        	if( executionMap != null ) {
+        		paramMap.putAll(executionMap);
+        	}
+            this.sqlSession = this.sqlSessionFactory.openSession();
+            this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
+            this.iterator = this.cursor.iterator();
+            log(">>> Cursor 열기 성공");
+        } catch (Exception e) {
+        	log(">>> Cursor 열기 실패. 상세사항:" + e);
+        	close();
+            throw new ItemStreamException("Cursor 열기 실패: " + queryId, e);
         }
     }
 
@@ -123,9 +129,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     @Override
     public void close() throws ItemStreamException {
     	super.log(this.getClass().getName() + ".close() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
-    	if (closed.compareAndSet(false, true)) {
-    		this.closeQuietly();
-    	}
+    	this.closeQuietly();
     }
 
     private void closeQuietly() {

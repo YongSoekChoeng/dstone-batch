@@ -13,6 +13,8 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.stereotype.Component;
 
+import net.dstone.common.utils.StringUtil;
+
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
  */
@@ -30,7 +32,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
-    	
+    	//log("beforeStep1 :: this.stepExecution.getExecutionContext().toMap()============>>>" + this.stepExecution.getExecutionContext().toMap());
     	Iterator<String> keys = null;
     	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
     	Map<String,Object> jobParamMap = getJobParamMap();
@@ -38,7 +40,9 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
         while(keys.hasNext()) {
         	String key = keys.next();
         	Object val = jobParamMap.get(key);
-        	this.setStepParam(key, val);
+        	if(!StringUtil.isEmpty(val)) {
+        		this.setStepParam(key, val);
+        	}
         }
     	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
 
@@ -48,15 +52,17 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
         while(keys.hasNext()) {
         	String key = keys.next();
         	Object val = baseParamMap.get(key);
-        	this.setStepParam(key, val);
+        	if(!StringUtil.isEmpty(val)) {
+        		this.setStepParam(key, val);
+        	}
         }
     	/*** Base 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
-    	
+        //log("beforeStep2 :: this.stepExecution.getExecutionContext().toMap()============>>>" + this.stepExecution.getExecutionContext().toMap());
     }
 
     @AfterStep
     public ExitStatus afterStep(StepExecution stepExecution) {
-    	return null;
+    	return stepExecution.getExitStatus();
     }
     
     /**
@@ -156,7 +162,9 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
      * @return
      */
     public void setStepParam(String key, Object val) {
-    	this.stepExecution.getExecutionContext().put(key, val);
+    	if( this.stepExecution.getExecutionContext() != null ) {
+    		this.stepExecution.getExecutionContext().put(key, val);
+    	}
     }
     
     protected void checkParam() {

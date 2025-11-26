@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BaseBatchObject;
-import net.dstone.batch.common.core.BaseJobConfig;
 
 /**
  * 범용 쿼리 기반 Partitioner
@@ -82,6 +81,7 @@ public class QueryPartitioner  extends BaseBatchObject implements Partitioner {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create query-based partitions", e);
         }  
+System.out.println( "result==========>>>" + result);
         return result;
     }
     

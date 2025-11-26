@@ -124,15 +124,15 @@ public class TableUpdateJobConfig extends BaseJobConfig {
         );
         return queryPartitioner;
     }
-    
+
 	private Step workerMultiStep1(int chunkSize, int gridSize) {
 		log(this.getClass().getName() + ".workerMultiStep1("+chunkSize+", "+gridSize+" ) has been called !!!");
         
 		return new StepBuilder("workerMultiStep1", jobRepository)
 				.partitioner("slaveStep1", queryPartitioner())
-				.gridSize(gridSize)
 				.step(slaveStep1())
-				.taskExecutor(stepExecutor(null))
+				//.gridSize(gridSize)
+				//.taskExecutor(stepExecutor(null))
 				.build();
 	}
 	
