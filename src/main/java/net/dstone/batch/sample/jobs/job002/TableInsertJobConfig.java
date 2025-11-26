@@ -26,7 +26,7 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @AutoRegJob(name = "tableInsertTaskletJob")
-public class TableInsertTaskletJobConfig extends BaseJobConfig {
+public class TableInsertJobConfig extends BaseJobConfig {
 
 	/**
 	 * Job 구성
