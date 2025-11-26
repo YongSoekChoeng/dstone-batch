@@ -20,10 +20,6 @@ import net.dstone.common.utils.StringUtil;
 @Configuration
 public class ConfigInterceptor extends BaseBatchObject{
 
-    private void log(Object msg) {
-    	this.info(msg);
-    }
-    
     @Bean
     public Interceptor myBatisPartitionSqlInterceptor() {
         return new MyBatisPartitionSqlInterceptor();

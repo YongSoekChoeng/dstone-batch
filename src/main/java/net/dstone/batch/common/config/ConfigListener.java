@@ -17,10 +17,6 @@ public class ConfigListener extends BaseBatchObject{
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
 
-    private void log(Object msg) {
-    	this.info(msg);
-    }
-
     /**
      * Job 의 쓰레드를 JOB_THREAD_MAP 에 세팅하는 리스너.
      * @return

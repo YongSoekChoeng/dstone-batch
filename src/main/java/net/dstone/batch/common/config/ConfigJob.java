@@ -20,10 +20,6 @@ public class ConfigJob extends BaseBatchObject {
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
 
-    private void log(Object msg) {
-    	this.info(msg);
-    }
-
     @Bean("jobRepository")
     public JobRepository jobRepository(DataSource dataSource, @Qualifier("txManagerCommon") PlatformTransactionManager transactionManager) throws Exception {
         JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
