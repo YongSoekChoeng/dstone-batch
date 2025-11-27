@@ -13,7 +13,7 @@ import net.dstone.common.utils.StringUtil;
 public class BaseBatchObject{
 	
 	private LogUtil myLogger = null;
-	protected Map<String,Object> baseParam = new HashMap<String,Object>();
+	private Map<String,Object> baseParam = new HashMap<String,Object>();
 	
 	protected LogUtil getLogger() {
 		if(myLogger == null) {

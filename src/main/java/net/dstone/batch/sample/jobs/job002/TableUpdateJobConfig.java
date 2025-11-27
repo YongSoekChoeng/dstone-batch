@@ -37,6 +37,10 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "tableUpdateJob")
 public class TableUpdateJobConfig extends BaseJobConfig {
 
+    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	private int gridSize = 2;
+    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+	
 	/**
 	 * Job 구성
 	 */
@@ -45,7 +49,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
         int chunkSize = 30;
-        int gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
+        gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
         
         /*** Reader/Processor/Writer 별도클래스 용 ***/
         // 단일처리 Step

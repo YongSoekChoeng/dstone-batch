@@ -73,7 +73,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
     	if(baseParams != null && baseParams.size() > 0) {
-    		this.baseParam.putAll(baseParams);
+    		this.getBaseParamMap().putAll(baseParams);
     	}
     }
 

@@ -30,7 +30,7 @@ public class ConfigListener extends BaseBatchObject{
     @Bean("jobRegisterListener")
     public JobExecutionListener jobRegisterListener() {
     	return new JobExecutionListener() {
-            @SuppressWarnings({ "rawtypes", "unchecked" })
+            @SuppressWarnings({ })
 			@Override
             public void beforeJob(JobExecution jobExecution) {
             	this.executeLog(jobExecution);
@@ -86,7 +86,8 @@ public class ConfigListener extends BaseBatchObject{
     	public static synchronized void registerByThread(Long threadId, Map<String, JobParameter<?>> jParamMap) {
     		register(THREAD_PREFIX+threadId, jParamMap);
     	}
-        protected static synchronized void register(String id, Map<String, JobParameter<?>> jParamMap) {
+        @SuppressWarnings("rawtypes")
+		protected static synchronized void register(String id, Map<String, JobParameter<?>> jParamMap) {
             Map<String,String> jobParameters = new HashMap<String,String>();
         	if( jParamMap != null ) {
         		Iterator<String> keys = jParamMap.keySet().iterator();

@@ -29,6 +29,10 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "tableInsertTaskletJob")
 public class TableInsertJobConfig extends BaseJobConfig {
 
+    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	private int dataCnt = 0;
+    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+	
 	/**
 	 * Job 구성
 	 */
@@ -36,7 +40,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		int chunkSize = 20;
-        int dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
+        dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
         
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
