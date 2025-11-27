@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.dstone.batch.common.config.ConfigListener;
+import net.dstone.batch.common.consts.ConstMaps;
 
 @RestController
 @RequestMapping("/batch")
@@ -50,7 +50,7 @@ public class RestApiRunner {
             }
             jobParametersBuilder.addJobParameter("timestamp", new JobParameter(System.currentTimeMillis(), Long.class));
             if( jobParametersBuilder.toJobParameters() != null && jobParametersBuilder.toJobParameters().getParameters() != null ) {
-            	ConfigListener.JobParamRegistry.registerByThread(Thread.currentThread().threadId(), jobParametersBuilder.toJobParameters().getParameters());
+            	ConstMaps.JobParamRegistry.registerByThread(Thread.currentThread().threadId(), jobParametersBuilder.toJobParameters().getParameters());
             }
             
             // Job 등록
@@ -64,7 +64,7 @@ public class RestApiRunner {
 			status = BatchStatus.FAILED.name();
 			e.printStackTrace();
 		} finally {
-			ConfigListener.JobParamRegistry.unregisterByThread(Thread.currentThread().threadId());
+			ConstMaps.JobParamRegistry.unregisterByThread(Thread.currentThread().threadId());
 		}
 		return status;
     }

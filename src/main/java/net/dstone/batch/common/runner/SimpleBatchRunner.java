@@ -13,7 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
-import net.dstone.batch.common.config.ConfigListener;
+import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
@@ -97,7 +97,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
                 if( jobParameters != null && jobParameters.getParameters() != null ) {
-                	ConfigListener.JobParamRegistry.registerByThread(Thread.currentThread().threadId(), jobParameters.getParameters());
+                	ConstMaps.JobParamRegistry.registerByThread(Thread.currentThread().threadId(), jobParameters.getParameters());
                 }
                 
                 // Job 등록
@@ -121,7 +121,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
 			exitCode = -1;
 			e.printStackTrace();
 		} finally {
-			ConfigListener.JobParamRegistry.unregisterByThread(Thread.currentThread().threadId());
+			ConstMaps.JobParamRegistry.unregisterByThread(Thread.currentThread().threadId());
 		}
 
     	return context;

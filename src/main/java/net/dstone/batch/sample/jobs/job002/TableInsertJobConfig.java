@@ -61,7 +61,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		
 		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())

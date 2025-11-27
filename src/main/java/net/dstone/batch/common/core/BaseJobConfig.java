@@ -21,8 +21,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.dstone.batch.common.config.ConfigListener;
+import net.dstone.batch.common.consts.ConstMaps;
 
+/**
+ * JobConfig들의 부모 클래스
+ */
 @Configuration
 public abstract class BaseJobConfig extends BaseBatchObject{
 
@@ -188,33 +191,7 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	
 	protected abstract void configJob() throws Exception;
 	
-	protected String getInitJobParamByExecutionId(Long executionId, String key) {
-		String val = "";
-		String id = ConfigListener.JobParamRegistry.EXE_PREFIX + executionId;
-		if(ConfigListener.JOB_PARAM_MAP.containsKey(id)) {
-			Map map = ConfigListener.JOB_PARAM_MAP.get(id);
-			if(map.containsKey(key)) {
-				val = map.get(key).toString();
-			}
-		}
-		return val;
-	}
-
 	protected String getInitJobParam(String key) {
-		String val = "";
-		val = getInitJobParamByThreadId(Thread.currentThread().threadId(), key);
-		return val;
-	}
-
-	protected String getInitJobParamByThreadId(Long threadId, String key) {
-		String val = "";
-		String id = ConfigListener.JobParamRegistry.THREAD_PREFIX + threadId;
-		if(ConfigListener.JOB_PARAM_MAP.containsKey(id)) {
-			Map map = ConfigListener.JOB_PARAM_MAP.get(id);
-			if(map.containsKey(key)) {
-				val = map.get(key).toString();
-			}
-		}
-		return val;
+		return ConstMaps.JobParamRegistry.getInitJobParamByThreadId(Thread.currentThread().threadId(), key);
 	}
 }

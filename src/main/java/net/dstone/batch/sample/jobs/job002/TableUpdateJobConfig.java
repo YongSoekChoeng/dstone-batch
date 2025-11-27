@@ -1,14 +1,11 @@
 package net.dstone.batch.sample.jobs.job002;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -16,7 +13,6 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -85,7 +81,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	private Step singleStep(int chunkSize) {
 		callLog(this, "singleStep", chunkSize);
 		return new StepBuilder("singleStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
@@ -115,7 +111,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	public Step parallelSlaveStep(int chunkSize) {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())

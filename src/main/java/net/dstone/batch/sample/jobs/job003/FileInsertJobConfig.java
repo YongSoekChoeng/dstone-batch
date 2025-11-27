@@ -32,10 +32,13 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "fileInsertTaskletJob")
 public class FileInsertJobConfig extends BaseJobConfig {
 
-    String filePath = "";
+    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	private int dataCnt = 0;
+	String filePath = "";
     String charset = "";
-    String outputFilePath = "";
     boolean append = false;
+    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+	
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
 	
 	/**
@@ -45,9 +48,10 @@ public class FileInsertJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-	    filePath 		= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
-	    charset 		= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    outputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("outputFilePath"), "");
+		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
+	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
+	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
+	    append 		= Boolean.valueOf(this.getInitJobParam("append"));
 	    
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
@@ -156,7 +160,7 @@ public class FileInsertJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(outputFilePath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter(filePath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
