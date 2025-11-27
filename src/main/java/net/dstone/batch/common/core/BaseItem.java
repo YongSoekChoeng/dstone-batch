@@ -30,16 +30,19 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
     	Iterator<String> keys = null;
+    	
     	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
+    	/*
     	Map<String,Object> jobParamMap = getJobParamMap();
         keys = jobParamMap.keySet().iterator();
         while(keys.hasNext()) {
         	String key = keys.next();
         	Object val = jobParamMap.get(key);
-        	if(!StringUtil.isEmpty(val)) {
+        	if(!StringUtil.isEmpty(val) && !this.getStepParamMap().containsKey(key)) {
         		this.setStepParam(key, val);
         	}
         }
+        */
     	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
 
     	/*** Base 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
