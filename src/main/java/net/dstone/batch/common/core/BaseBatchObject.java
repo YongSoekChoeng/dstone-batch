@@ -59,9 +59,7 @@ public class BaseBatchObject{
     }
 
 	protected void callLog(Object obj, String method) {
-		String logStr = obj.getClass().getName() + "."+method+"() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
-    	//this.info(logStr);
-    	this.debug(logStr);
+    	callLog(obj, method, "");
     }
 
 	protected void callLog(Object obj, String method, Object paramMsg) {
