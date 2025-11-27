@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.common.utils.LogUtil;
+import net.dstone.common.utils.StringUtil;
 
 @Component
 public class BaseBatchObject{
@@ -63,8 +64,8 @@ public class BaseBatchObject{
     	this.debug(logStr);
     }
 
-	protected void callLog(Object obj, String method, String paramMsg) {
-		String logStr = obj.getClass().getName() + "."+method+"("+paramMsg+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
+	protected void callLog(Object obj, String method, Object paramMsg) {
+		String logStr = obj.getClass().getName() + "."+method+"("+StringUtil.nullCheck(paramMsg, "")+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
     	//this.info(logStr);
     	this.debug(logStr);
     }
