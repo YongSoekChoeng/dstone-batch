@@ -7,6 +7,7 @@ import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -38,7 +39,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 */
 	@Override
 	public void configJob() throws Exception {
-		log(this.getClass().getName() + ".configJob() has been called !!!");
+		callLog(this, "configJob");
 		
         int chunkSize = 30;
         int gridSize = 4; // 파티션 개수 (병렬 처리할 스레드 수)
@@ -74,8 +75,10 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Bean
+	@JobScope
 	private Step singleStep(int chunkSize) {
-		log(this.getClass().getName() + ".singleStep("+chunkSize+" ) has been called !!!");
+		callLog(this, "singleStep", chunkSize);
 		return new StepBuilder("singleStep", jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
@@ -89,8 +92,10 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 * @param gridSize
 	 * @return
 	 */
+	@Bean
+	@JobScope
 	private Step parallelMasterStep(int chunkSize, int gridSize) {
-		log(this.getClass().getName() + ".parallelMasterStep("+chunkSize+", "+gridSize+" ) has been called !!!");
+		callLog(this, "parallelMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelMasterStep", jobRepository)
 				.partitioner("parallelSlaveStep", queryPartitioner())
 				.step(parallelSlaveStep())
@@ -105,8 +110,9 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Bean
+	@StepScope
 	public Step parallelSlaveStep() {
-		log(this.getClass().getName() + ".parallelSlaveStep() has been called !!!");
+		callLog(this, "parallelSlaveStep");
 		int chunkSize = 30;
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
@@ -125,7 +131,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-		log(this.getClass().getName() + ".itemReader() has been called !!!");
+    	callLog(this, "itemReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", baseParams);
     }
@@ -139,7 +145,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemPartitionReader() {
-		log(this.getClass().getName() + ".itemPartitionReader() has been called !!!");
+    	callLog(this, "itemPartitionReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
     }
@@ -153,12 +159,12 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-		log(this.getClass().getName() + ".itemProcessor() has been called !!!");
+    	callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
-				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+				callLog(this, "process", item);
 
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = new HashMap<>(item);
@@ -180,7 +186,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
-		log(this.getClass().getName() + ".itemWriter() has been called !!!");
+    	callLog(this, "itemWriter");
         return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
@@ -193,6 +199,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @Qualifier("queryPartitioner")
     public QueryPartitioner queryPartitioner() {
+    	callLog(this, "queryPartitioner");
         int gridSize = 4; // 파티션 개수
         QueryPartitioner queryPartitioner = new QueryPartitioner(
             sqlBatchSessionSample, 
@@ -215,6 +222,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
      * @return
      */
     private Step singleInAllStep(int chunkSize) {
+    	callLog(this, "singleInAllStep", chunkSize);
         return new StepBuilder("singleInAllStep", jobRepository)
                 .<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
                 .reader(tableUpdateReader(chunkSize))
@@ -235,7 +243,8 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public MyBatisPagingItemReader<Map<String, Object>> tableUpdateReader(int chunkSize) {
-        Map<String, Object> params = new HashMap<>();
+    	callLog(this, "tableUpdateReader", chunkSize);
+    	Map<String, Object> params = new HashMap<>();
         // 필요시 파라미터 추가 가능
         return new MyBatisPagingItemReaderBuilder<Map<String, Object>>()
                 .sqlSessionFactory(this.sqlBatchSessionSample.getSqlSessionFactory())
@@ -254,6 +263,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> tableUpdateProcessor() {
+    	callLog(this, "tableUpdateProcessor");
         return item -> {
 			// Thread-safe하게 새로운 Map 객체 생성
 	        Map<String, Object> processedItem = new HashMap<>(item);
@@ -274,6 +284,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> tableUpdateWriter() {
+    	callLog(this, "tableUpdateWriter");
         return new MyBatisBatchItemWriterBuilder<Map<String, Object>>()
                 .sqlSessionFactory(this.sqlBatchSessionSample.getSqlSessionFactory())
                 .statementId("net.dstone.batch.sample.SampleTestDao.updateSampleTest")

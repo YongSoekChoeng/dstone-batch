@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -50,6 +51,8 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 * @param chunkSize
 	 * @return
 	 */
+    @Bean
+    @JobScope
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		return new StepBuilder(stepName, jobRepository)
