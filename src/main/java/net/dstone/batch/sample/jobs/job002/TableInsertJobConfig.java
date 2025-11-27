@@ -33,7 +33,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 */
 	@Override
 	public void configJob() throws Exception {
-		log(this.getClass().getName() + ".configJob() has been called !!!");
+		callLog(this, "configJob");
 		int chunkSize = 5000;
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
@@ -51,7 +51,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	private Step workerStep(String stepName, int chunkSize) {
-		log(this.getClass().getName() + ".workerStep("+stepName+", "+chunkSize+" ) has been called !!!");
+		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
@@ -69,10 +69,12 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
+    	callLog(this, "itemReader");
     	return new AbstractItemReader() {
     		private ConcurrentLinkedQueue<Map<String, Object>> queue = null;
 
     		private void fillQueue() {
+    			callLog(this, "fillQueue");
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
     			int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString()) ;
     			for(int i=0; i<dataCnt; i++) {
@@ -87,6 +89,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     		
 			@Override
 			public Map<String, Object> read() {
+				callLog(this, "read");
 				Map<String, Object> row = null;
 				if(queue == null) {
 					fillQueue();
@@ -106,10 +109,11 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
+    	callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
 			@Override
 			public Map<String, Object> process(Map item) throws Exception {
-				this.log(this.getClass().getName() + ".process("+item+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
+				callLog(this, "process", item);
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = new HashMap<>(item);
 		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
@@ -127,6 +131,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
+    	callLog(this, "itemWriter");
     	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
     	return writer;
     }
