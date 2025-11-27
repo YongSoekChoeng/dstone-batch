@@ -1,13 +1,15 @@
 package net.dstone.batch.sample.jobs.job002;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.batch.MyBatisPagingItemReader;
 import org.mybatis.spring.batch.builder.MyBatisBatchItemWriterBuilder;
 import org.mybatis.spring.batch.builder.MyBatisPagingItemReaderBuilder;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -25,6 +27,7 @@ import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.batch.common.partitioner.QueryPartitioner;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * 테이블 SAMPLE_TEST 에 테스트데이터를 수정하는 Job.<br>
@@ -42,7 +45,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
         int chunkSize = 30;
-        int gridSize = 4; // 파티션 개수 (병렬 처리할 스레드 수)
+        int gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
         
         /*** Reader/Processor/Writer 별도클래스 용 ***/
         // 단일처리 Step
@@ -75,8 +78,6 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Bean
-	@JobScope
 	private Step singleStep(int chunkSize) {
 		callLog(this, "singleStep", chunkSize);
 		return new StepBuilder("singleStep", jobRepository)
@@ -92,13 +93,11 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 * @param gridSize
 	 * @return
 	 */
-	@Bean
-	@JobScope
 	private Step parallelMasterStep(int chunkSize, int gridSize) {
 		callLog(this, "parallelMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", queryPartitioner())
-				.step(parallelSlaveStep())
+				.partitioner("parallelSlaveStep", queryPartitioner(gridSize))
+				.step(parallelSlaveStep(chunkSize))
 				.gridSize(gridSize)
 				.taskExecutor(executor(null))
 				.build();
@@ -109,11 +108,8 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Bean
-	@StepScope
-	public Step parallelSlaveStep() {
+	public Step parallelSlaveStep(int chunkSize) {
 		callLog(this, "parallelSlaveStep");
-		int chunkSize = 30;
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
@@ -198,9 +194,9 @@ public class TableUpdateJobConfig extends BaseJobConfig {
      */
     @Bean
     @Qualifier("queryPartitioner")
-    public QueryPartitioner queryPartitioner() {
-    	callLog(this, "queryPartitioner");
-        int gridSize = 4; // 파티션 개수
+    @StepScope
+    public QueryPartitioner queryPartitioner(int gridSize) {
+    	callLog(this, "queryPartitioner", gridSize);
         QueryPartitioner queryPartitioner = new QueryPartitioner(
             sqlBatchSessionSample, 
             "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", 

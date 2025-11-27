@@ -13,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
+import net.dstone.batch.common.config.ConfigListener;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
@@ -48,7 +49,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
         String jobName = "";
         String[] jobParams = new String[0];
         JobExecution execution = null;
-        
+
     	try {
             if (args == null || args.length < 1) {
                 throw new Exception("Job name must be provided as the first argument.");
@@ -73,16 +74,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
         			throw new Exception("Job name must be provided as the first argument.");
         		}
 
-        		if(context == null) {
-                    context = new SpringApplicationBuilder(DstoneBatchApplication.class)
-                            .web(WebApplicationType.NONE)
-                            .run(jobParams);
-        		}
-
-                JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-                JobRegistry jobRegistry = context.getBean(JobRegistry.class);
-                Job job = jobRegistry.getJob(jobName);
-
+        		// Job파라메터 등록
                 JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
                 jobParametersBuilder.addLong("timestamp", System.currentTimeMillis());
                 if (jobParams.length > 0) {
@@ -104,6 +96,21 @@ public class SimpleBatchRunner extends BaseBatchObject {
                     }
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
+                if( jobParameters != null && jobParameters.getParameters() != null ) {
+                	ConfigListener.JobParamRegistry.registerByThread(Thread.currentThread().threadId(), jobParameters.getParameters());
+                }
+                
+                // Job 등록
+        		if(context == null) {
+                    context = new SpringApplicationBuilder(DstoneBatchApplication.class)
+                            .web(WebApplicationType.NONE)
+                            .run(jobParams);
+        		}
+                JobLauncher jobLauncher = context.getBean(JobLauncher.class);
+                JobRegistry jobRegistry = context.getBean(JobRegistry.class);
+                Job job = jobRegistry.getJob(jobName);
+
+                // Job 실행
                 execution = jobLauncher.run(job, jobParameters);
                 if (execution.getStatus().isUnsuccessful()) {
                 	exitCode = -1;
@@ -113,6 +120,8 @@ public class SimpleBatchRunner extends BaseBatchObject {
 		} catch (Throwable e) {
 			exitCode = -1;
 			e.printStackTrace();
+		} finally {
+			ConfigListener.JobParamRegistry.unregisterByThread(Thread.currentThread().threadId());
 		}
 
     	return context;

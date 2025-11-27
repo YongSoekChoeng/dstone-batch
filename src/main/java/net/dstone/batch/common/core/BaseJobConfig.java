@@ -1,12 +1,14 @@
 package net.dstone.batch.common.core;
 
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
@@ -19,11 +21,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import net.dstone.batch.common.config.ConfigListener;
+
 @Configuration
 public abstract class BaseJobConfig extends BaseBatchObject{
 
 	@Autowired
 	protected JobRepository jobRepository;
+
+	@Autowired
+	protected JobExplorer jobExplorer;
 
 	@Autowired
 	protected PlatformTransactionManager txManagerCommon;
@@ -165,7 +172,6 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 				}
 			}
 			job = jobBuilder.start(jobFlowBuilder.build()).end().build();
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -181,5 +187,34 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	}
 	
 	protected abstract void configJob() throws Exception;
+	
+	protected String getInitJobParamByExecutionId(Long executionId, String key) {
+		String val = "";
+		String id = ConfigListener.JobParamRegistry.EXE_PREFIX + executionId;
+		if(ConfigListener.JOB_PARAM_MAP.containsKey(id)) {
+			Map map = ConfigListener.JOB_PARAM_MAP.get(id);
+			if(map.containsKey(key)) {
+				val = map.get(key).toString();
+			}
+		}
+		return val;
+	}
 
+	protected String getInitJobParam(String key) {
+		String val = "";
+		val = getInitJobParamByThreadId(Thread.currentThread().threadId(), key);
+		return val;
+	}
+
+	protected String getInitJobParamByThreadId(Long threadId, String key) {
+		String val = "";
+		String id = ConfigListener.JobParamRegistry.THREAD_PREFIX + threadId;
+		if(ConfigListener.JOB_PARAM_MAP.containsKey(id)) {
+			Map map = ConfigListener.JOB_PARAM_MAP.get(id);
+			if(map.containsKey(key)) {
+				val = map.get(key).toString();
+			}
+		}
+		return val;
+	}
 }

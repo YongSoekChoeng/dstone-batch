@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +36,8 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		int chunkSize = 20;
+        int dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
+        
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
 		// 02. 신규데이터 입력
@@ -51,10 +53,9 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 * @param chunkSize
 	 * @return
 	 */
-    @Bean
-    @StepScope
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
+		
 		return new StepBuilder(stepName, jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerSample)
 				.reader( itemReader() )
