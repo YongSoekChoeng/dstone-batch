@@ -76,10 +76,23 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     private BufferedReader reader;
     private long lineCount = 0;
     
+    /**
+     * 파일로부터 데이터를 읽어오는 생성자
+     * @param filePath(읽어올 대상파일 전체경로)
+     * @param charset(대상파일의 캐릭터셋)
+     * @param colInfoMap(라인기준 데이터정보)
+     */
     public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
     	this(filePath, charset, colInfoMap, "");
     }
 
+    /**
+     * 파일로부터 데이터를 읽어오는 생성자
+     * @param filePath(읽어올 대상파일 전체경로)
+     * @param charset(대상파일의 캐릭터셋)
+     * @param colInfoMap(라인기준 데이터정보)
+     * @param div(라인 기준 데이터경계구분자)
+     */
     public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.filePath = filePath;
     	this.charset = charset;
@@ -91,8 +104,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open", filePath);
         try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset))
-            );
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset)));
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + filePath, e);
         }

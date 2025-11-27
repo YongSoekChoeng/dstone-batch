@@ -40,10 +40,25 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
 
     private BufferedWriter writer;
 
+    /**
+     * 읽어온 데이터를 파일로 저장하는 생성자
+     * @param outputFilePath(저장파일 전체경로)
+     * @param charset(대상파일의 캐릭터셋)
+     * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
+     * @param colInfoMap(라인 기준 데이터정보)
+     */
     public FileItemWriter(String outputFilePath, String charset, boolean append, LinkedHashMap<String,Integer> colInfoMap) {
     	this(outputFilePath, charset, append, colInfoMap, "");
     }
 
+    /**
+     * 읽어온 데이터를 파일로 저장하는 생성자
+     * @param outputFilePath(저장파일 전체경로)
+     * @param charset(대상파일의 캐릭터셋)
+     * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
+     * @param colInfoMap(라인 기준 데이터정보)
+     * @param div(라인 기준 데이터경계구분자)
+     */
     public FileItemWriter(String outputFilePath, String charset, boolean append, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.outputFilePath = outputFilePath;
     	this.charset = charset;
