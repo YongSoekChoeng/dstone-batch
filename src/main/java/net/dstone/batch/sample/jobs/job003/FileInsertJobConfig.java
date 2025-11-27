@@ -1,10 +1,10 @@
-package net.dstone.batch.sample.jobs.job002;
+package net.dstone.batch.sample.jobs.job003;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -18,30 +18,51 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.AbstractItemReader;
+import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.batch.common.items.TableItemWriter;
+import net.dstone.batch.sample.jobs.job002.TableDeleteTasklet;
 import net.dstone.common.utils.DateUtil;
+import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
  */
 @Component
-@AutoRegJob(name = "tableInsertTaskletJob")
-public class TableInsertJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileInsertTaskletJob")
+public class FileInsertJobConfig extends BaseJobConfig {
 
+    String filePath = "";
+    String charset = "";
+    String outputFilePath = "";
+    boolean append = false;
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+	
 	/**
 	 * Job 구성
 	 */
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		int chunkSize = 20;
-        int dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
-        
+		
+	    filePath 		= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
+	    charset 		= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
+	    outputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("outputFilePath"), "");
+	    
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+	    
+	    int chunkSize = 50;
+		
 		// 01. 기존데이터 삭제
-		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
+	    if( FileUtil.isFileExist(filePath) ) {
+	    	FileUtil.deleteFile(filePath);
+	    }
+	    FileUtil.writeFile(FileUtil.getFilePath(filePath), FileUtil.getFileName(filePath, true), " ", charset);
+	    
 		// 02. 신규데이터 입력
-		//this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
@@ -84,7 +105,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     			for(int i=0; i<dataCnt; i++) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );
-                    //row.put("TEST_NAME", "이름-" + i);
+                    row.put("TEST_NAME", "이름-" + i);
                     row.put("FLAG_YN", "N");
                     row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
                     queue.add(row);
@@ -120,7 +141,6 @@ public class TableInsertJobConfig extends BaseJobConfig {
 				callLog(this, "process", item);
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = new HashMap<>(item);
-		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
 		    	return processedItem;
 			}
     	};
@@ -136,7 +156,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
+    	FileItemWriter writer = new FileItemWriter(outputFilePath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
