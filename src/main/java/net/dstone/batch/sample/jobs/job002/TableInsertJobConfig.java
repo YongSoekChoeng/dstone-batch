@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +35,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		int chunkSize = 5000;
+		int chunkSize = 20;
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
 		// 02. 신규데이터 입력
@@ -52,7 +52,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	 * @return
 	 */
     @Bean
-    @JobScope
+    @StepScope
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		return new StepBuilder(stepName, jobRepository)
