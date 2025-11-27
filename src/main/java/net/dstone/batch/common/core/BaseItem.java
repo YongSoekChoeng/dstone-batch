@@ -59,7 +59,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     public ExitStatus afterStep(StepExecution stepExecution) {
     	return stepExecution.getExitStatus();
     }
-    
+
     /**
      * Job파라메터 전체를 Map형태로 얻어오는 메소드
      * @param key
@@ -106,7 +106,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     	}
     	return val;
     }
-
+	
     /**
      * Step파라메터 전체를 Map형태로 얻어오는 메소드
      * @param key
