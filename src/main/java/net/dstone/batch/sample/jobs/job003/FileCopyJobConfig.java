@@ -26,7 +26,9 @@ import net.dstone.batch.common.partitioner.FilesPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 파일을 복사 하는 Job.
+ * 파일을 복사 하는 Job.<br>
+ * 단일쓰레드처리, 병렬쓰레드처리 두 가지 모드.<br>
+ * <pre>
  * 1. 1:1복사.
  *   C:/Temp/aa.txt => C:/Temp/aa-copy.txt.
  * 2. 1:N 복사. 대량파일을 Line Range로 Partitioning하여 각각 저장.
@@ -35,6 +37,7 @@ import net.dstone.common.utils.StringUtil;
  * 3. 1:N 분할복사. 대량파일을 여러파일로 Partitioning하여 각각 저장.
  *   C:/Temp/aa.txt => C:/Temp/aa1.txt => C:/Temp/aa1-copy.txt
  *                     C:/Temp/aa2.txt    C:/Temp/aa1-copy.txt
+ * </pre>
  */
 @Component
 @AutoRegJob(name = "fileCopyJob")

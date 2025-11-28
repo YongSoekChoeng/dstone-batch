@@ -27,7 +27,8 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.<br>
- * FLAG_YN 를 'N' => 'Y'로 수정
+ * 단일쓰레드처리, 병렬쓰레드처리 두 가지 모드.<br>
+ * FLAG_YN 를 'N' => 'Y'로 수정.<br>
  */
 @Component
 @AutoRegJob(name = "tableUpdateJob")
