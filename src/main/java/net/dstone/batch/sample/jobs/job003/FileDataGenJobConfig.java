@@ -47,7 +47,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
 		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
-	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
+	    filePath 	= "";
 	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 		= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
@@ -62,8 +62,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
         1. 테스트용 파일정보를 생성
         	실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=100 append=false filePath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
         *******************************************************************/
-        
-		// 01. 신규데이터 입력
+	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	

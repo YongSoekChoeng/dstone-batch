@@ -80,7 +80,7 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
     private long lineCount = 0;
     
     /**
-     * 파일로부터 데이터를 읽어오는 생성자
+     * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
      * @param filePath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
@@ -90,7 +90,7 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
     }
 
     /**
-     * 파일로부터 데이터를 읽어오는 생성자
+     * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
      * @param filePath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)

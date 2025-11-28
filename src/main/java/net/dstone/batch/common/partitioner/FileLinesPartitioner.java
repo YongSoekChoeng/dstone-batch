@@ -18,9 +18,13 @@ import net.dstone.common.utils.FileUtil;
 public class FileLinesPartitioner extends BaseBatchObject implements Partitioner {
 
     private final String filePath;
+    private final String copyToDir;
+    private int gridSize = 0; 
 
-    public FileLinesPartitioner(String filePath) {
+    public FileLinesPartitioner(String filePath, String copyToDir, int gridSize) {
     	this.filePath = filePath;
+    	this.copyToDir = copyToDir; 
+        this.gridSize = gridSize;
     }
     
     @Override
@@ -31,22 +35,25 @@ public class FileLinesPartitioner extends BaseBatchObject implements Partitioner
     		throw new IllegalStateException("파일["+filePath+"]이 존재하지 않습니다.");
     	}
     	
+    	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
+    	
     	Map<String, ExecutionContext> result = new HashMap<String, ExecutionContext>();
     	long totalLines = FileUtil.countLines(filePath);  // 파일 라인 수
-        long chunkSize = totalLines / gridSize;
+        long chunkSize = totalLines / actualGridSize;
         long fromLine = 1;
         long toLine = chunkSize;
 
-        for (int i = 0; i < gridSize; i++) {
+        for (int i = 0; i < actualGridSize; i++) {
             ExecutionContext context = new ExecutionContext();
-            
-            context.putLong(Constants.Partition.FROM_LINE, fromLine);
-            context.putLong(Constants.Partition.TO_LINE, toLine);
-            context.putString(Constants.Partition.FILE_PATH, filePath);
+
+            context.putString(Constants.Partition.FILE_PATH, filePath);	// 원본파일 Full Path
+            context.putLong(Constants.Partition.FROM_LINE, fromLine);	// 원본파일 From Line
+            context.putLong(Constants.Partition.TO_LINE, toLine);		// 원본파일 To Line
+            context.putString(Constants.Partition.COPY_DIR, copyToDir);	// 원본파일의 Line Range(from Line~To Line)별 파일들이 복사 될 디렉토리
             result.put("partition" + i, context);
             
             fromLine = toLine + 1;
-            if(i == gridSize - 1) {
+            if(i == actualGridSize - 1) {
             	toLine = totalLines;
             }else {
             	toLine = toLine + chunkSize;

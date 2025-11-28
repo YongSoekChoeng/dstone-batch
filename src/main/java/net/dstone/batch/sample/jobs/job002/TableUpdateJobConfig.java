@@ -46,21 +46,26 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
         int chunkSize = 30;
-        gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
-        
-        /*******************************************************************
-        1. 테이블 SAMPLE_TEST에 데이터를 수정
-        	실행파라메터 : spring.batch.job.names=tableUpdateJob gridSize=2
-        *******************************************************************/
+        gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
         
         /*** Reader/Processor/Writer 별도클래스 용 ***/
-        // 단일처리 Step
+        /*******************************************************************
+        1. 테이블 SAMPLE_TEST에 데이터를 수정(단일쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
+        	실행파라메터 : spring.batch.job.names=tableUpdateJob
+        *******************************************************************/
 		//this.addStep(this.singleStep(chunkSize));
-        // 병렬처리 Step
+        
+        /*******************************************************************
+        2. 테이블 SAMPLE_TEST에 데이터를 수정(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
+        	실행파라메터 : spring.batch.job.names=tableUpdateJob gridSize=2
+        *******************************************************************/
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 
         /*** Reader/Processor/Writer 동일클래스 용 ***/
-        // 단일처리 Step
+        /*******************************************************************
+        3. 테이블 SAMPLE_TEST에 데이터를 수정(단일쓰레드처리). Reader/Processor/Writer 동일클래스 내에 구현.
+        	실행파라메터 : spring.batch.job.names=tableUpdateJob
+        *******************************************************************/
 		//this.addStep(this.singleInAllStep(chunkSize));
 	}
 	

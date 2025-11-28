@@ -7,9 +7,10 @@ public class Constants {
 		public static String GRID_SIZE 		= "GRID_SIZE";
 		public static String KEY_COLUMN 	= "KEY_COLUMN";
 
-		public static String FILE_PATH 	= "FILE_PATH";
-		public static String FROM_LINE 	= "FROM_LINE";
-		public static String TO_LINE 	= "TO_LINE";
+		public static String FILE_PATH 		= "FILE_PATH";
+		public static String FROM_LINE 		= "FROM_LINE";
+		public static String TO_LINE 		= "TO_LINE";
+		public static String COPY_DIR 		= "COPY_DIR";
 	}
 	
 }
