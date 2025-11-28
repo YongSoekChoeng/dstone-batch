@@ -75,6 +75,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	 * @param chunkSize
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		
@@ -92,7 +93,8 @@ public class FileDataGenJobConfig extends BaseJobConfig {
      * Table 읽어오는 ItemReader
      * @return
      */
-    @Bean
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
     	callLog(this, "itemReader");
@@ -138,6 +140,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
      * Table 처리용 ItemProcessor
      * @return
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
