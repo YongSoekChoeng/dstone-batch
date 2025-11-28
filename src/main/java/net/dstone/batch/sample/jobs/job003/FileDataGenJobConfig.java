@@ -24,17 +24,17 @@ import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
+ * 테스트용 파일정보를 생성하는 Job
  */
 @Component
-@AutoRegJob(name = "fileInsertJob")
-public class FileInsertJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileDataGenJob")
+public class FileDataGenJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int dataCnt = 0;
-	String filePath = "";
-    String charset = "";
-    boolean append = false;
+	private int dataCnt = 0;	// 생성데이터 갯수
+	String filePath = "";		// 생성될 Full파일 경로
+    String charset = "";		// 파일 인코딩
+    boolean append = false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
@@ -46,7 +46,7 @@ public class FileInsertJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
+		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
 	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
 	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 		= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
@@ -57,7 +57,12 @@ public class FileInsertJobConfig extends BaseJobConfig {
 	    colInfoMap.put("INPUT_DT", 14);
 	    
 	    int chunkSize = 50;
-		
+
+        /*******************************************************************
+        1. 테스트용 파일정보를 생성
+        	실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=100 append=false filePath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        *******************************************************************/
+        
 		// 01. 신규데이터 입력
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}

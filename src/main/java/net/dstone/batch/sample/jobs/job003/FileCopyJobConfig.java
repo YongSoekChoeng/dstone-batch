@@ -26,18 +26,27 @@ import net.dstone.batch.common.partitioner.FilesPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테이블 SAMPLE_TEST 에 테스트데이터를 수정하는 Job
+ * 파일을 복사 하는 Job.
+ * 1. 1:1복사.
+ *   C:/Temp/aa.txt => C:/Temp/aa-copy.txt.
+ * 2. 1:N 복사. 대량파일을 Line Range로 Partitioning하여 각각 저장.
+ *   C:/Temp/aa.txt => C:/Temp/aa-copy1.txt
+ *                     C:/Temp/aa-copy2.txt
+ * 3. 1:N 분할복사. 대량파일을 여러파일로 Partitioning하여 각각 저장.
+ *   C:/Temp/aa.txt => C:/Temp/aa1.txt => C:/Temp/aa1-copy.txt
+ *                     C:/Temp/aa2.txt    C:/Temp/aa1-copy.txt
  */
 @Component
-@AutoRegJob(name = "fileUpdateJob")
-public class FileUpdateJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileCopyJob")
+public class FileCopyJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int gridSize = 0;
-	String filePath = "";
-	String outputFilePath = "";
-    String charset = "";
-    boolean append = false;
+	private int gridSize = 0;	// 쓰레드 갯수
+	String filePath = "";		// 원본 Full파일 경로
+	String copyFilePath = "";	// 1:1 복사에서 생성될 Full파일 경로 
+	String copyToDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
+    String charset = "";		// 파일 인코딩
+    boolean append = false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
@@ -51,7 +60,8 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 		
 		gridSize 		= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
 	    filePath 		= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
-	    outputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("outputFilePath"), "");
+	    copyFilePath 	= StringUtil.nullCheck(this.getInitJobParam("copyFilePath"), "");
+	    copyToDir 		= StringUtil.nullCheck(this.getInitJobParam("copyToDir"), "");
 	    charset 		= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 			= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
@@ -61,9 +71,14 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 	    colInfoMap.put("INPUT_DT", 14);
 	    
 	    int chunkSize = 5;
-		
-		// 단일처리 Step(filePath 을 outputFilePath로 복사한다.)
-	    //this.addStep(this.workerStep("workerStep", chunkSize));
+
+        /*******************************************************************
+        1. 테스트용 파일을 복사(1:1복사)
+        	실행파라메터 : spring.batch.job.names=fileCopyJob filePath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        *******************************************************************/
+        
+		// 단일처리 Step(filePath 을 copyFilePath로 복사한다.)
+	    this.addStep(this.workerStep("workerStep", chunkSize));
 	    
 		// 병렬처리 Step
 		//this.addStep(this.parallelMasterStep(chunkSize, gridSize));
@@ -179,7 +194,7 @@ public class FileUpdateJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(outputFilePath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter(copyFilePath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

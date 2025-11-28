@@ -29,7 +29,7 @@ import net.dstone.common.utils.StringUtil;
 public class TableInsertJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int dataCnt = 0;
+	private int dataCnt = 0;	// 생성데이터 갯수
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
 	/**
@@ -38,9 +38,14 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
+		
 		int chunkSize = 20;
         dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
-        
+
+        /*******************************************************************
+        1. 테이블 SAMPLE_TEST 에 테스트데이터를 입력
+        	실행파라메터 : spring.batch.job.names=tableInsertJob dataCnt=80
+        *******************************************************************/
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
 		// 02. 신규데이터 입력

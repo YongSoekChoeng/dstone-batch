@@ -26,15 +26,15 @@ import net.dstone.batch.common.partitioner.QueryPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테이블 SAMPLE_TEST 에 테스트데이터를 수정하는 Job.<br>
- * 
+ * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.<br>
+ * FLAG_YN 를 'N' => 'Y'로 수정
  */
 @Component
 @AutoRegJob(name = "tableUpdateJob")
 public class TableUpdateJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int gridSize = 2;
+	private int gridSize = 2;	// 쓰레드 갯수
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
 	/**
@@ -47,10 +47,14 @@ public class TableUpdateJobConfig extends BaseJobConfig {
         int chunkSize = 30;
         gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 파티션 개수 (병렬 처리할 스레드 수)
         
+        /*******************************************************************
+        1. 테이블 SAMPLE_TEST에 데이터를 수정
+        	실행파라메터 : spring.batch.job.names=tableUpdateJob gridSize=2
+        *******************************************************************/
+        
         /*** Reader/Processor/Writer 별도클래스 용 ***/
         // 단일처리 Step
 		//this.addStep(this.singleStep(chunkSize));
-        
         // 병렬처리 Step
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 
