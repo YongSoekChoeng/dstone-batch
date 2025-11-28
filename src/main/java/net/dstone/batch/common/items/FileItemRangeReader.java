@@ -19,12 +19,12 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BaseItem;
-import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 파일전체 핸들링을 위한 ItemReader 구현체. 
+ * 파일 Range(From라인~To라인)핸들링을 위한 ItemReader 구현체. 
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작
@@ -61,10 +61,12 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class FileItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
+public class FileItemRangeReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
     private final String filePath;
     private final String charset;
+    private long fromLine;
+    private long toLine;
     /**
      * 컬럼정보(컬럼명, 컬럼바이트길이)
      */
@@ -83,7 +85,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
      */
-    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
+    public FileItemRangeReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
     	this(filePath, charset, colInfoMap, "");
     }
 
@@ -94,7 +96,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
      * @param colInfoMap(라인기준 데이터정보)
      * @param div(라인 기준 데이터경계구분자)
      */
-    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
+    public FileItemRangeReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.filePath = filePath;
     	this.charset = charset;
     	this.colInfoMap = colInfoMap;
@@ -103,9 +105,21 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
-    	callLog(this, "open");
+    	callLog(this, "open", filePath);
         try {
+
+        	Map<String,Object> paramMap = this.getStepParamMap();
+        	fromLine = Long.parseLong(paramMap.get(Constants.Partition.FROM_LINE).toString());
+        	toLine = Long.parseLong(paramMap.get(Constants.Partition.TO_LINE).toString());
+
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset)));
+
+            // 필요없는 라인은 스킵
+            while (lineCount < fromLine - 1) {
+                reader.readLine();
+                lineCount++;
+            }
+            
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + filePath, e);
         }
@@ -117,7 +131,12 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
         }
+        if (lineCount >= toLine) {
+            return null; // 끝
+        }
         String line = reader.readLine();
+        lineCount++;
+        
 		Map<String, Object> item = new HashMap<String, Object>();
         if (line != null) {
         	Iterator<String> colInfoKeys = colInfoMap.keySet().iterator();
@@ -145,7 +164,6 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
         			setNum++;
         		}
         	}
-            lineCount++;
             return item;
         }
         return null; // EOF → Step 종료

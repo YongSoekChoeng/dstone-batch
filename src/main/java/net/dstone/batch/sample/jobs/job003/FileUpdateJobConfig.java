@@ -1,11 +1,8 @@
 package net.dstone.batch.sample.jobs.job003;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -13,17 +10,19 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
-import net.dstone.batch.common.items.AbstractItemReader;
+import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.common.utils.DateUtil;
-import net.dstone.common.utils.FileUtil;
+import net.dstone.batch.common.partitioner.FileLinesPartitioner;
+import net.dstone.batch.common.partitioner.FilesPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
@@ -35,7 +34,7 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
 	private int gridSize = 0;
-	String inputFilePath = "";
+	String filePath = "";
 	String outputFilePath = "";
     String charset = "";
     boolean append = false;
@@ -51,7 +50,7 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
 		gridSize 		= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
-	    inputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("inputFilePath"), "");
+	    filePath 		= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
 	    outputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("outputFilePath"), "");
 	    charset 		= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 			= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
@@ -63,11 +62,11 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 	    
 	    int chunkSize = 5;
 		
-		// 01. 기존데이터 수정
-	    this.addStep(this.workerStep("workerStep", chunkSize));
+		// 단일처리 Step(filePath 을 outputFilePath로 복사한다.)
+	    //this.addStep(this.workerStep("workerStep", chunkSize));
 	    
-		// 02. 신규데이터 입력
-		//this.addStep(this.workerStep("workerStep", chunkSize));
+		// 병렬처리 Step
+		//this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
@@ -88,24 +87,67 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 				.writer((ItemWriter<? super Map>) itemWriter())
 				.build();
 	}
+	/**
+	 * 병렬처리 Master Step
+	 * @param chunkSize
+	 * @param gridSize
+	 * @return
+	 */
+	private Step parallelMasterStep(int chunkSize, int gridSize) {
+		callLog(this, "parallelMasterStep", ""+chunkSize+", "+gridSize+"");
+		return new StepBuilder("parallelMasterStep", jobRepository)
+				.partitioner("parallelSlaveStep", fileLinesPartitioner(gridSize))
+				.step(parallelSlaveStep(chunkSize))
+				.gridSize(gridSize)
+				.taskExecutor(executor(null))
+				.build();
+	}
+	
+	/**
+	 * 병렬처리 Slave Step
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Step parallelSlaveStep(int chunkSize) {
+		callLog(this, "parallelSlaveStep");
+		return new StepBuilder("parallelSlaveStep", jobRepository)
+				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.reader(itemPartitionReader()) // Spring이 런타임에 주입
+				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
+				.writer((ItemWriter<? super Map>) itemWriter())
+				.build();
+	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
     /**
-     * Table 읽어오는 ItemReader
+     * File 읽어오는 ItemReader
      * @return
      */
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
     	callLog(this, "itemReader");
-    	return new FileItemReader(inputFilePath, charset, colInfoMap);
+    	return new FileItemReader(filePath, charset, colInfoMap);
+    }
+    /**
+     * Table 읽어오는 ItemReader. Partitioner 와 함께 사용.
+     * @param minId
+     * @param maxId
+     * @return
+     */
+    @Bean
+    @StepScope
+    public ItemReader<Map<String, Object>> itemPartitionReader() {
+    	callLog(this, "itemPartitionReader");
+    	Map<String, Object> baseParams = new HashMap<String, Object>();
+        return new FileItemRangeReader(filePath, charset, colInfoMap);
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 
 	/* --------------------------------- Processor 설정 시작 ---------------------------- */ 
     /**
-     * Table 처리용 ItemProcessor
+     * File 처리용 ItemProcessor
      * @return
      */
     @Bean
@@ -130,7 +172,7 @@ public class FileUpdateJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
     /**
-     * Table 처리용 ItemWriter
+     * File 처리용 ItemWriter
      * @return
      */
     @Bean
@@ -141,7 +183,49 @@ public class FileUpdateJobConfig extends BaseJobConfig {
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
-    
+
+	/* --------------------------------- Partitioner 설정 시작 -------------------------- */
+    /**
+     * File 처리용 Partitioner(디렉토리내의 파일별로 Partition 을 생성하는 Partitioner)
+     * @return
+     */
+    @Bean
+    @Qualifier("filesPartitioner")
+    @StepScope
+    public FilesPartitioner filesPartitioner(int gridSize) {
+    	callLog(this, "filesPartitioner", gridSize);
+    	FilesPartitioner filesPartitioner = new FilesPartitioner(
+    		filePath
+    	);
+        return filesPartitioner;
+    }
+    /**
+     * File 처리용 Partitioner(대용량 파일을 라인별로 Partition 을 생성하는 Partitioner)
+     * @return
+     */
+    @Bean
+    @Qualifier("fileLinesPartitioner")
+    @StepScope
+    public FileLinesPartitioner fileLinesPartitioner(int gridSize) {
+    	callLog(this, "fileLinesPartitioner", gridSize);
+    	FileLinesPartitioner fileLinesPartitioner = new FileLinesPartitioner(
+    		filePath
+    	);
+        return fileLinesPartitioner;
+    }
+	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
+
+	/**
+	 * Step 스코프에 해당하는 TaskExecutor
+	 * @param executor
+	 * @return
+	 */
+	@Bean
+	@StepScope
+	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
+	    return executor;
+	}
+	
     /*************************************************************************************************************************/
     
 }

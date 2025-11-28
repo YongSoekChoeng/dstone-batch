@@ -50,6 +50,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
         /*** Reader/Processor/Writer 별도클래스 용 ***/
         // 단일처리 Step
 		//this.addStep(this.singleStep(chunkSize));
+        
         // 병렬처리 Step
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 
