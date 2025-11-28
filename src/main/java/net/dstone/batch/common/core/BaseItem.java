@@ -23,41 +23,11 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
-	@Autowired
 	protected StepExecution stepExecution;
 	
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
-    	Iterator<String> keys = null;
-    	
-    	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
-    	/*
-    	Map<String,Object> jobParamMap = getJobParamMap();
-        keys = jobParamMap.keySet().iterator();
-        while(keys.hasNext()) {
-        	String key = keys.next();
-        	Object val = jobParamMap.get(key);
-        	if(!StringUtil.isEmpty(val) && !this.getStepParamMap().containsKey(key)) {
-        		this.setStepParam(key, val);
-        	}
-        }
-        */
-    	/*** Job 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
-
-    	/*** Base 파라메터를 Step 파라메터로 복사하는 부분 시작 ***/
-    	/*
-    	Map<String,Object> baseParamMap = this.getBaseParamMap();
-        keys = baseParamMap.keySet().iterator();
-        while(keys.hasNext()) {
-        	String key = keys.next();
-        	Object val = baseParamMap.get(key);
-        	if(!StringUtil.isEmpty(val)) {
-        		this.setStepParam(key, val);
-        	}
-        }
-        */
-    	/*** Base 파라메터를 Step 파라메터로 복사하는 부분 끝 ***/
     }
 
     @AfterStep
