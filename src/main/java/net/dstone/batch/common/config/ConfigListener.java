@@ -33,15 +33,17 @@ public class ConfigListener extends BaseBatchObject{
 			@Override
             public void beforeJob(JobExecution jobExecution) {
             	this.executeLog(jobExecution);
-            	// Thread 등록.
+            	// Job Thread 등록.
                 ConstMaps.JobThreadRegistry.register(jobExecution.getId(), Thread.currentThread());
-                // JobParameter 등록.
+                // Job Parameter 등록.
                 ConstMaps.JobParamRegistry.registerByExecution(jobExecution.getId(), jobExecution.getJobParameters().getParameters());
             }
             @Override
             public void afterJob(JobExecution jobExecution) {
             	this.executeLog(jobExecution);
+            	// Job Thread 등록해제.
                 ConstMaps.JobThreadRegistry.unregister(jobExecution.getId());
+                // Job Parameter 등록해제.
                 ConstMaps.JobParamRegistry.unregisterByExecution(jobExecution.getId());
             }
             private void executeLog(JobExecution jobExecution) {
