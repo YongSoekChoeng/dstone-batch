@@ -1,6 +1,9 @@
-package net.dstone.batch.sample.jobs.job002;
+package net.dstone.batch.sample.jobs.job003;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,20 +20,28 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.AbstractItemReader;
-import net.dstone.batch.common.items.TableItemWriter;
+import net.dstone.batch.common.items.FileItemReader;
+import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.common.utils.DateUtil;
+import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
+ * 테이블 SAMPLE_TEST 에 테스트데이터를 수정하는 Job
  */
 @Component
-@AutoRegJob(name = "tableInsertJob")
-public class TableInsertJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileUpdateJob")
+public class FileUpdateJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int dataCnt = 0;
+	private int gridSize = 0;
+	String inputFilePath = "";
+	String outputFilePath = "";
+    String charset = "";
+    boolean append = false;
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+	
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
 	
 	/**
 	 * Job 구성
@@ -38,14 +49,25 @@ public class TableInsertJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		int chunkSize = 20;
-        dataCnt = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
-        
-		// 01. 기존데이터 삭제
-		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
+		
+		gridSize 		= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
+	    inputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("inputFilePath"), "");
+	    outputFilePath 	= StringUtil.nullCheck(this.getInitJobParam("outputFilePath"), "");
+	    charset 		= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
+	    append 			= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+	    
+	    int chunkSize = 5;
+		
+		// 01. 기존데이터 수정
+	    this.addStep(this.workerStep("workerStep", chunkSize));
+	    
 		// 02. 신규데이터 입력
-		//this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
-		this.addStep(this.workerStep("workerStep", chunkSize));
+		//this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
     /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
@@ -77,34 +99,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
     	callLog(this, "itemReader");
-    	return new AbstractItemReader() {
-    		private ConcurrentLinkedQueue<Map<String, Object>> queue = null;
-
-    		private void fillQueue() {
-    			callLog(this, "fillQueue");
-    			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
-    			int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString()) ;
-    			for(int i=0; i<dataCnt; i++) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );
-                    //row.put("TEST_NAME", "이름-" + i);
-                    row.put("FLAG_YN", "N");
-                    row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
-                    queue.add(row);
-    			}
-    		}
-    		
-			@Override
-			public Map<String, Object> read() {
-				callLog(this, "read");
-				Map<String, Object> row = null;
-				if(queue == null) {
-					fillQueue();
-				}
-				row = this.queue.poll();
-				return row;
-			}
-		};
+    	return new FileItemReader(inputFilePath, charset, colInfoMap);
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 
@@ -118,21 +113,15 @@ public class TableInsertJobConfig extends BaseJobConfig {
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
     	callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
-//			@Override
-//			public Map<String, Object> process(Map item) throws Exception {
-//				callLog(this, "process", item);
-//				// Thread-safe하게 새로운 Map 객체 생성
-//		        Map<String, Object> processedItem = new HashMap<>(item);
-//		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
-//		    	return processedItem;
-//			}
-
 			@Override
 			public Object process(Object item) throws Exception {
 				callLog(this, "process", item);
+
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = (HashMap<String, Object>)item;
-		        processedItem.put("TEST_NAME", "이름-" + processedItem.get("TEST_ID"));
+				// 예: FLAG_YN 값을 변경 
+				processedItem.put("FLAG_YN", "Y");
+
 		    	return processedItem;
 			}
     	};
@@ -148,7 +137,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
+    	FileItemWriter writer = new FileItemWriter(outputFilePath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

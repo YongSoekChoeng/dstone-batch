@@ -16,6 +16,7 @@ import org.springframework.batch.item.ItemStreamWriter;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
+import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
@@ -71,6 +72,14 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open", outputFilePath);
         try {
+        	if( !FileUtil.isFileExist(outputFilePath) ) {
+        		FileUtil.writeFile(
+        			FileUtil.getFilePath(outputFilePath)
+        			, FileUtil.getFileName(outputFilePath, true)
+        			, ""
+        			, charset
+        		);
+        	}
 			writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(outputFilePath, append), Charset.forName(charset))
 			);
@@ -98,7 +107,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
             		String key = colInfoKeys.next();
             		Integer len = colInfoMap.get(key);
             		String val = StringUtil.nullCheck(item.get(key), "");
-            		line = StringUtil.appendFld(line, val, offset, charset);
+            		line = StringUtil.appendFld(line, val, len, charset);
             		offset = offset + len;
             	}
             // 구분자 일 경우	

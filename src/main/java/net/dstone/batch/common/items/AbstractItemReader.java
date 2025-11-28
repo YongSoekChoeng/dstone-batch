@@ -10,9 +10,9 @@ import net.dstone.batch.common.core.BaseItem;
 
 @Component
 @StepScope
-public abstract class AbstractItemReader extends BaseItem implements ItemReader<Map<String, Object>>{
+public abstract class AbstractItemReader<I> extends BaseItem implements ItemReader<I>{
 
     @Override
-    public abstract Map<String, Object> read();
+    public abstract I read();
     
 }

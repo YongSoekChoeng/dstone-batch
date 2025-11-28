@@ -81,7 +81,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	private Step singleStep(int chunkSize) {
 		callLog(this, "singleStep", chunkSize);
 		return new StepBuilder("singleStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerSample)
+				.<Map, Map>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
@@ -111,7 +111,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
 	public Step parallelSlaveStep(int chunkSize) {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerSample)
+				.<Map, Map>chunk(chunkSize, txManagerCommon)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
 				.writer((ItemWriter<? super Map>) itemWriter())
@@ -157,15 +157,14 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
     	callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
-			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
-			public Map<String, Object> process(Map item) throws Exception {
+			public Object process(Object item) throws Exception {
 				callLog(this, "process", item);
 
 				// Thread-safe하게 새로운 Map 객체 생성
-		        Map<String, Object> processedItem = new HashMap<>(item);
+		        Map<String, Object> processedItem = (HashMap<String, Object>)item;
 				// 예: TEST_NAME, FLAG_YN 값을 변경 
-		        processedItem.put("TEST_NAME", item.get("TEST_ID")+"-이름");
+		        processedItem.put("TEST_NAME", processedItem.get("TEST_ID")+"-이름");
 				processedItem.put("FLAG_YN", "Y");
 
 		    	return processedItem;

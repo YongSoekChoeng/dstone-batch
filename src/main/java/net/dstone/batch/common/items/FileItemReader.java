@@ -20,6 +20,7 @@ import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
+import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
@@ -117,9 +118,8 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
             throw new IllegalStateException("Reader is not opened.");
         }
         String line = reader.readLine();
+		Map<String, Object> item = new HashMap<String, Object>();
         if (line != null) {
-        	Map<String, Object> item = new HashMap<String, Object>();
-        	
         	Iterator<String> colInfoKeys = colInfoMap.keySet().iterator();
         	// 고정길이 일 경우
         	if( StringUtil.isEmpty(div) ) {
@@ -145,11 +145,9 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
         			setNum++;
         		}
         	}
-        	
             lineCount++;
             return item;
         }
-
         return null; // EOF → Step 종료
     }
 

@@ -7,8 +7,8 @@ import org.springframework.batch.item.ItemWriter;
 
 import net.dstone.batch.common.core.BaseItem;
 
-public abstract class AbstractItemWriter extends BaseItem implements ItemWriter<Map<String, Object>> {
+public abstract class AbstractItemWriter<O> extends BaseItem implements ItemWriter<O> {
 
 	@Override
-    public abstract void write(Chunk<? extends Map<String, Object>> chunk);
+    public abstract void write(Chunk<? extends O> chunk);
 }

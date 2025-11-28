@@ -19,8 +19,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.AbstractItemReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.batch.common.items.TableItemWriter;
-import net.dstone.batch.sample.jobs.job002.TableDeleteTasklet;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
@@ -29,7 +27,7 @@ import net.dstone.common.utils.StringUtil;
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job
  */
 @Component
-@AutoRegJob(name = "fileInsertTaskletJob")
+@AutoRegJob(name = "fileInsertJob")
 public class FileInsertJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
@@ -51,7 +49,7 @@ public class FileInsertJobConfig extends BaseJobConfig {
 		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); // 생성데이터 갯수
 	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
 	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    append 		= Boolean.valueOf(this.getInitJobParam("append"));
+	    append 		= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
@@ -60,13 +58,7 @@ public class FileInsertJobConfig extends BaseJobConfig {
 	    
 	    int chunkSize = 50;
 		
-		// 01. 기존데이터 삭제
-	    if( FileUtil.isFileExist(filePath) ) {
-	    	FileUtil.deleteFile(filePath);
-	    }
-	    FileUtil.writeFile(FileUtil.getFilePath(filePath), FileUtil.getFileName(filePath, true), " ", charset);
-	    
-		// 02. 신규데이터 입력
+		// 01. 신규데이터 입력
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
@@ -104,12 +96,18 @@ public class FileInsertJobConfig extends BaseJobConfig {
 
     		private void fillQueue() {
     			callLog(this, "fillQueue");
+
+    			// 기존데이터 삭제
+    		    if( !append && FileUtil.isFileExist(filePath) ) {
+    		    	FileUtil.deleteFile(filePath);
+    		    }
+    		    
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
     			int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString()) ;
     			for(int i=0; i<dataCnt; i++) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );
-                    row.put("TEST_NAME", "이름-" + i);
+                    row.put("TEST_NAME", "이름-" + row.get("TEST_ID"));
                     row.put("FLAG_YN", "N");
                     row.put("INPUT_DT", DateUtil.getToDate("yyyyMMddHHmmss"));
                     queue.add(row);
@@ -141,10 +139,10 @@ public class FileInsertJobConfig extends BaseJobConfig {
     	callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
 			@Override
-			public Map<String, Object> process(Map item) throws Exception {
+			public Map<String, Object> process(Object item) throws Exception {
 				callLog(this, "process", item);
 				// Thread-safe하게 새로운 Map 객체 생성
-		        Map<String, Object> processedItem = new HashMap<>(item);
+		        Map<String, Object> processedItem = (HashMap)item;
 		    	return processedItem;
 			}
     	};
