@@ -17,12 +17,12 @@ import net.dstone.common.utils.FileUtil;
 @Component
 public class FileLinesPartitioner extends BaseBatchObject implements Partitioner {
 
-    private final String filePath;
+    private final String inputFileFullPath;
     private final String copyToDir;
     private int gridSize = 0; 
 
-    public FileLinesPartitioner(String filePath, String copyToDir, int gridSize) {
-    	this.filePath = filePath;
+    public FileLinesPartitioner(String inputFileFullPath, String copyToDir, int gridSize) {
+    	this.inputFileFullPath = inputFileFullPath;
     	this.copyToDir = copyToDir; 
         this.gridSize = gridSize;
     }
@@ -31,25 +31,27 @@ public class FileLinesPartitioner extends BaseBatchObject implements Partitioner
     public Map<String, ExecutionContext> partition(int gridSize) {
     	callLog(this, "partition", String.valueOf(gridSize));
 
-    	if( FileUtil.isDirectory(filePath) || !FileUtil.isFileExist(filePath) ) {
-    		throw new IllegalStateException("파일["+filePath+"]이 존재하지 않습니다.");
+    	if( FileUtil.isDirectory(inputFileFullPath) || !FileUtil.isFileExist(inputFileFullPath) ) {
+    		throw new IllegalStateException("파일["+inputFileFullPath+"]이 존재하지 않습니다.");
     	}
     	
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
     	
     	Map<String, ExecutionContext> result = new HashMap<String, ExecutionContext>();
-    	long totalLines = FileUtil.countLines(filePath);  // 파일 라인 수
+    	long totalLines = FileUtil.countLines(inputFileFullPath);  // 파일 라인 수
         long chunkSize = totalLines / actualGridSize;
         long fromLine = 1;
         long toLine = chunkSize;
 
         for (int i = 0; i < actualGridSize; i++) {
             ExecutionContext context = new ExecutionContext();
+            
+            String outFilePath = "";
 
-            context.putString(Constants.Partition.FILE_PATH, filePath);	// 원본파일 Full Path
-            context.putLong(Constants.Partition.FROM_LINE, fromLine);	// 원본파일 From Line
-            context.putLong(Constants.Partition.TO_LINE, toLine);		// 원본파일 To Line
-            context.putString(Constants.Partition.COPY_DIR, copyToDir);	// 원본파일의 Line Range(from Line~To Line)별 파일들이 복사 될 디렉토리
+            context.putString(Constants.Partition.INPUT_FILE_PATH, inputFileFullPath);		// INPUT파일 Full Path
+            context.putLong(Constants.Partition.FROM_LINE, fromLine);				// INPUT파일 From Line
+            context.putLong(Constants.Partition.TO_LINE, toLine);					// INPUT파일 To Line
+            context.putString(Constants.Partition.OUTPUT_FILE_PATH, outFilePath);	// INPUT파일의 Line Range(from Line~To Line)별 파일들이 복사 될 OUTPUT파일 Full Path
             result.put("partition" + i, context);
             
             fromLine = toLine + 1;

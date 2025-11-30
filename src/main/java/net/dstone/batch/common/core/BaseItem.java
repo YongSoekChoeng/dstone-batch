@@ -8,13 +8,16 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.annotation.AfterProcess;
+import org.springframework.batch.core.annotation.AfterRead;
 import org.springframework.batch.core.annotation.AfterStep;
+import org.springframework.batch.core.annotation.AfterWrite;
+import org.springframework.batch.core.annotation.BeforeProcess;
+import org.springframework.batch.core.annotation.BeforeRead;
 import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.core.annotation.BeforeWrite;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import net.dstone.common.utils.StringUtil;
 
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
@@ -29,12 +32,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
     }
-
-    @AfterStep
-    public ExitStatus afterStep(StepExecution stepExecution) {
-    	return stepExecution.getExitStatus();
-    }
-
+    
     /**
      * Job파라메터 전체를 Map형태로 얻어오는 메소드
      * @param key
@@ -43,7 +41,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     @SuppressWarnings("rawtypes")
 	public Map<String,Object> getJobParamMap() {
     	Map<String,Object> map = new HashMap<String,Object>();
-    	if( this.stepExecution.getJobParameters() != null ) {
+    	if( this.stepExecution != null && this.stepExecution.getJobParameters() != null ) {
     		Map<String, JobParameter<?>> jobParamMap = this.stepExecution.getJobParameters().getParameters();
     		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
     		while(jobParamMapKey.hasNext()) {
@@ -89,7 +87,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
      */
     public Map<String,Object> getStepParamMap() {
     	Map<String,Object> map = new HashMap<String,Object>();
-    	if( this.stepExecution.getExecutionContext() != null && this.stepExecution.getExecutionContext().toMap() != null ) {
+    	if( this.stepExecution != null && this.stepExecution.getExecutionContext() != null && this.stepExecution.getExecutionContext().toMap() != null ) {
     		map = new HashMap<String,Object>(this.stepExecution.getExecutionContext().toMap());
     	}
     	return map;
@@ -132,7 +130,7 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
      * @return
      */
     public void setStepParam(String key, Object val) {
-    	if( this.stepExecution.getExecutionContext() != null ) {
+    	if( this.stepExecution != null && this.stepExecution.getExecutionContext() != null ) {
     		this.stepExecution.getExecutionContext().put(key, val);
     	}
     }

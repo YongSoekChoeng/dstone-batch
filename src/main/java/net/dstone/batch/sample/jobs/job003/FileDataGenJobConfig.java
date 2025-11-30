@@ -31,10 +31,10 @@ import net.dstone.common.utils.StringUtil;
 public class FileDataGenJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int dataCnt = 0;	// 생성데이터 갯수
-	String filePath = "";		// 생성될 Full파일 경로
-    String charset = "";		// 파일 인코딩
-    boolean append = false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
+	private int dataCnt = 0;			// 생성데이터 갯수
+	String inputFileFullPath = "";		// 생성될 Full파일 경로
+    String charset = "";				// 파일 인코딩
+    boolean append = false;				// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
@@ -47,7 +47,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
 		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
-	    filePath 	= "";
+	    inputFileFullPath 	= "";
 	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 		= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
@@ -60,9 +60,9 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 
         /*******************************************************************
         1. 테스트용 파일정보를 생성
-        	실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=100 append=false filePath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        	실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
         *******************************************************************/
-	    filePath 	= StringUtil.nullCheck(this.getInitJobParam("filePath"), "");
+	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
@@ -104,8 +104,8 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     			callLog(this, "fillQueue");
 
     			// 기존데이터 삭제
-    		    if( !append && FileUtil.isFileExist(filePath) ) {
-    		    	FileUtil.deleteFile(filePath);
+    		    if( !append && FileUtil.isFileExist(inputFileFullPath) ) {
+    		    	FileUtil.deleteFile(inputFileFullPath);
     		    }
     		    
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
@@ -165,7 +165,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(filePath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

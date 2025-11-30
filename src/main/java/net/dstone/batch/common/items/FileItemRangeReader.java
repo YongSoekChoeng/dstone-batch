@@ -63,7 +63,7 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class FileItemRangeReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
-    private final String filePath;
+    private final String inputFileFullPath;
     private final String charset;
     private long fromLine;
     private long toLine;
@@ -81,23 +81,23 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
     
     /**
      * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
-     * @param filePath(읽어올 대상파일 전체경로)
+     * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
      */
-    public FileItemRangeReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
-    	this(filePath, charset, colInfoMap, "");
+    public FileItemRangeReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
+    	this(inputFileFullPath, charset, colInfoMap, "");
     }
 
     /**
      * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
-     * @param filePath(읽어올 대상파일 전체경로)
+     * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
      * @param div(라인 기준 데이터경계구분자)
      */
-    public FileItemRangeReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
-    	this.filePath = filePath;
+    public FileItemRangeReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
+    	this.inputFileFullPath = inputFileFullPath;
     	this.charset = charset;
     	this.colInfoMap = colInfoMap;
     	this.div = div;
@@ -105,14 +105,14 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
-    	callLog(this, "open", filePath);
+    	callLog(this, "open", inputFileFullPath);
         try {
 
         	Map<String,Object> paramMap = this.getStepParamMap();
         	fromLine = Long.parseLong(paramMap.get(Constants.Partition.FROM_LINE).toString());
         	toLine = Long.parseLong(paramMap.get(Constants.Partition.TO_LINE).toString());
 
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset)));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileFullPath), Charset.forName(charset)));
 
             // 필요없는 라인은 스킵
             while (lineCount < fromLine - 1) {
@@ -121,7 +121,7 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
             }
             
         } catch (Exception e) {
-            throw new ItemStreamException("파일 오픈 실패: " + filePath, e);
+            throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath, e);
         }
     }
 

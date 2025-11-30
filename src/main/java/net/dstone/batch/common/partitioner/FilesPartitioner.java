@@ -40,7 +40,7 @@ public class FilesPartitioner extends BaseBatchObject implements Partitioner {
         int partitionNumber = 0;
         for (String file : files) {
             ExecutionContext context = new ExecutionContext();
-            context.putString(Constants.Partition.FILE_PATH, directoryPath + "/" + file);
+            context.putString(Constants.Partition.INPUT_FILE_PATH, directoryPath + "/" + file);
             result.put("partition" + partitionNumber, context);
             partitionNumber++;
             // gridSize 제한

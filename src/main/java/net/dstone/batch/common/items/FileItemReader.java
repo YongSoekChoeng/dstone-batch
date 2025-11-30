@@ -19,6 +19,7 @@ import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
 
+import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
@@ -63,7 +64,7 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class FileItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
-    private final String filePath;
+    private final String inputFileFullPath;
     private final String charset;
     /**
      * 컬럼정보(컬럼명, 컬럼바이트길이)
@@ -79,23 +80,23 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     
     /**
      * 파일로부터 데이터를 읽어오는 생성자
-     * @param filePath(읽어올 대상파일 전체경로)
+     * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
      */
-    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
-    	this(filePath, charset, colInfoMap, "");
+    public FileItemReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
+    	this(inputFileFullPath, charset, colInfoMap, "");
     }
 
     /**
      * 파일로부터 데이터를 읽어오는 생성자
-     * @param filePath(읽어올 대상파일 전체경로)
+     * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
      * @param colInfoMap(라인기준 데이터정보)
      * @param div(라인 기준 데이터경계구분자)
      */
-    public FileItemReader(String filePath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
-    	this.filePath = filePath;
+    public FileItemReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
+    	this.inputFileFullPath = inputFileFullPath;
     	this.charset = charset;
     	this.colInfoMap = colInfoMap;
     	this.div = div;
@@ -105,9 +106,15 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
         try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName(charset)));
+        	if( !FileUtil.isFileExist(this.inputFileFullPath) ) {
+        		throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath );
+        	}
+        	// Default OUTPUT 파일명 Step Parameter 로 저장.
+        	this.setStepParam( Constants.Partition.OUTPUT_FILE_PATH, this.getDefaultOutputFileFullPath(inputFileFullPath));
+        	
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileFullPath), Charset.forName(charset)));
         } catch (Exception e) {
-            throw new ItemStreamException("파일 오픈 실패: " + filePath, e);
+            throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath, e);
         }
     }
 
@@ -168,6 +175,26 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
         } catch (Exception e) {
             throw new ItemStreamException("파일 종료 실패", e);
         }
+    }
+    
+    private String getDefaultOutputFileFullPath(String inputFileFullPath) {
+    	String outputFileFullPath = "";
+    	
+    	String outputFileDir = "";
+    	String outputFileName = "";
+    	String outputFileExt = "";
+    	
+    	String inputFileDir = FileUtil.getFilePath(inputFileFullPath);
+    	String inputFileName = FileUtil.getFileName(inputFileFullPath, false);
+    	String inputFileExt = FileUtil.getFileExt(inputFileFullPath);
+    	
+    	outputFileDir = inputFileDir;
+    	outputFileName = inputFileName + "-out";
+    	outputFileExt = inputFileExt;
+    	
+    	outputFileFullPath = outputFileDir + "/" + outputFileName +"."+ outputFileExt;
+
+    	return outputFileFullPath;
     }
 
 }
