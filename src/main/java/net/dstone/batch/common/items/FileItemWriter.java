@@ -86,11 +86,13 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	this.checkParam();
     	String outputFile = "";
         try {
-        	// Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 우선.
+        	// 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
         	if(!StringUtil.isEmpty(this.outputFileFullPath)) {
         		outputFile = this.outputFileFullPath;
+        	// Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
         	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH))) {
         		outputFile = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH).toString();
+        	// 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
         	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.INPUT_FILE_PATH))) {
         		outputFile = this.getDefaultOutputFileFullPath(this.getStepParam(Constants.Partition.INPUT_FILE_PATH).toString());
         	}else {
@@ -98,14 +100,6 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
         	}
         	if( !FileUtil.isFileExist(outputFile) ) {
         		FileUtil.makeDir(FileUtil.getFilePath(outputFile));
-        		/*
-        		FileUtil.writeFile(
-        			FileUtil.getFilePath(outputFile)
-        			, FileUtil.getFileName(outputFile, true)
-        			, ""
-        			, charset
-        		);
-        		*/
         	}
 			writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(outputFile, append), Charset.forName(charset))
@@ -121,7 +115,6 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
         if (writer == null) {
             throw new IllegalStateException("Writer is not opened.");
         }
-//sysout("chunk.size()=============================>>>>" + chunk.size());        
         for (Map<String, Object> item : chunk) {
         	
         	String line = "";
@@ -148,7 +141,6 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
         			line = line + val;
         		}
         	}
-//sysout( "write :: line["+line+"]" +  " item["+item+"]" );   
             writer.write(line);
             writer.newLine();
         }
