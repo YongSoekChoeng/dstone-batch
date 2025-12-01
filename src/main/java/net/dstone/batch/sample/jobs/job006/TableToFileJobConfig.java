@@ -1,6 +1,7 @@
-package net.dstone.batch.sample.jobs.job003;
+package net.dstone.batch.sample.jobs.job006;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.batch.core.Step;
@@ -17,14 +18,16 @@ import org.springframework.stereotype.Component;
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
+import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.batch.common.partitioner.QueryPartitioner;
+import net.dstone.batch.common.partitioner.QueryToFilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
  * <pre>
- * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
+ * 테이블 SAMPLE_TEST 의 데이터를 파일로 저장하는 Job.
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
  *   TEST_NAME VARCHAR(200), 
@@ -32,17 +35,21 @@ import net.dstone.common.utils.StringUtil;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
- * 병렬쓰레드처리. Reader/Processor/Writer 별도클래스로 생성
- * FLAG_YN 를 'N' => 'Y'로 수정.
+ * 병렬쓰레드처리
  * </pre>
  */
 @Component
-@AutoRegJob(name = "tableUpdateType02Job")
-public class TableUpdateType02JobConfig extends BaseJobConfig {
+@AutoRegJob(name = "tableToFileJob")
+public class TableToFileJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int gridSize = 2;	// 쓰레드 갯수
+	private int gridSize = 0;		// 쓰레드 갯수
+	String inputFileFullPath = "";
+    String charset = "";			// 파일 인코딩
+    boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
 	
 	/**
 	 * Job 구성
@@ -51,12 +58,22 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-        int chunkSize = 30;
+		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
+		inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
+	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
+	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+	    
+	    int chunkSize = 500;
         gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
         
         /*******************************************************************
-        테이블 SAMPLE_TEST에 데이터를 수정(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
-        실행파라메터 : spring.batch.job.names=tableUpdateType02Job gridSize=3
+        테이블 SAMPLE_TEST에 데이터를 파일로 저장(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
+        실행파라메터 : spring.batch.job.names=tableToFileJob gridSize=3 inputFileFullPath=C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam
         *******************************************************************/
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 	}
@@ -71,7 +88,7 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
 	    return executor;
 	}
-	
+
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
 	/**
 	 * 병렬처리 Master Step
@@ -82,7 +99,7 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	private Step parallelMasterStep(int chunkSize, int gridSize) {
 		callLog(this, "parallelMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", queryPartitioner(gridSize))
+				.partitioner("parallelSlaveStep", queryToFilePartitioner(gridSize))
 				.step(parallelSlaveStep(chunkSize))
 				.gridSize(gridSize)
 				.taskExecutor(executor(null))
@@ -111,22 +128,22 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
      * @return
      */
     @Bean
-    @Qualifier("queryPartitioner")
+    @Qualifier("queryToFilePartitioner")
     @StepScope
-    public QueryPartitioner queryPartitioner(int gridSize) {
+    public QueryToFilePartitioner queryToFilePartitioner(int gridSize) {
     	callLog(this, "queryPartitioner", gridSize);
-        QueryPartitioner queryPartitioner = new QueryPartitioner(
+    	QueryToFilePartitioner queryPartitioner = new QueryToFilePartitioner(
             sqlBatchSessionSample, 
             "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", 
             "TEST_ID", 
-            gridSize
+            gridSize,
+            this.inputFileFullPath
         );
         return queryPartitioner;
     }
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
-    
     /**
      * Table 읽어오는 ItemReader. Partitioner 와 함께 사용.
      * @param minId
@@ -141,15 +158,15 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
-
+	
 	/* --------------------------------- Processor 설정 시작 ---------------------------- */ 
     /**
      * Table 처리용 ItemProcessor
      * @return
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Bean
     @StepScope
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
     	//callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
@@ -171,15 +188,16 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
     /**
-     * Table 처리용 ItemWriter
+     * File 처리용 ItemWriter
      * @return
      */
     @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-        return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
+    	FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap);
+    	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
-    
+
 }

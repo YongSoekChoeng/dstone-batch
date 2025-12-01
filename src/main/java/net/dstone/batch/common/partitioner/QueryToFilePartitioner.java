@@ -16,28 +16,31 @@ import net.dstone.batch.common.core.BasePartitioner;
  * 범용 쿼리 기반 Partitioner
  */
 @Component
-public class QueryPartitioner extends BasePartitioner implements Partitioner {
+public class QueryToFilePartitioner extends BasePartitioner implements Partitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;
     private final String queryId;
     private final String keyColumn;
     private int gridSize = 0;
+    private final String inputFileFullPath;
     private final Map<String, Object> params = new HashMap<String, Object>();
 
-    public QueryPartitioner(
-    		SqlSessionTemplate sqlSessionTemplate,
-            String queryId,
-            String keyColumn,
-            int gridSize
-    ) {
-        this(sqlSessionTemplate, queryId, keyColumn, gridSize, new HashMap<>());
-    }
-
-    public QueryPartitioner(
+    public QueryToFilePartitioner(
     		SqlSessionTemplate sqlSessionTemplate,
             String queryId,
             String keyColumn,
             int gridSize,
+            String outputFileDir
+    ) {
+        this(sqlSessionTemplate, queryId, keyColumn, gridSize, outputFileDir, new HashMap<>());
+    }
+
+    public QueryToFilePartitioner(
+    		SqlSessionTemplate sqlSessionTemplate,
+            String queryId,
+            String keyColumn,
+            int gridSize,
+            String inputFileFullPath,
             Map<String, Object> params
      ) {
     	
@@ -45,10 +48,10 @@ public class QueryPartitioner extends BasePartitioner implements Partitioner {
         this.queryId = queryId;
         this.keyColumn = keyColumn;
         this.gridSize = gridSize;
+        this.inputFileFullPath = inputFileFullPath;
         if( params!= null && params.size()>0) {
         	this.params.putAll(params);
         }
-        
         this.params.put(Constants.Partition.PARTITION_YN, "Y");
         this.params.put(Constants.Partition.KEY_COLUMN, this.keyColumn);
         this.params.put(Constants.Partition.GRID_SIZE, this.gridSize);
@@ -65,10 +68,14 @@ public class QueryPartitioner extends BasePartitioner implements Partitioner {
         try {
             List<Map<String, Object>> partitionList = this.sqlSessionTemplate.selectList(this.queryId, this.params);
             if( partitionList != null && partitionList.size() > 0 ) {
-            	for(Map<String, Object> row : partitionList) {
+            	
+            	for(int i= 0; i<partitionList.size(); i++) {
+            		Map<String, Object> row = partitionList.get(i);
             		ExecutionContext context = new ExecutionContext();
+            		String outputFile = this.getOutputFileFullPath(this.inputFileFullPath, i);
             		context.put("MIN_ID", row.get("MIN_ID"));
             		context.put("MAX_ID", row.get("MAX_ID"));
+                    context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);
             		result.put("partition"+row.get("PARTITION_NO").toString(), context);
             	}
             }
@@ -91,7 +98,7 @@ public class QueryPartitioner extends BasePartitioner implements Partitioner {
     	upperSql.append("FROM ( ").append("\n");
     	upperSql.append("    SELECT ").append("\n");
     	upperSql.append("        Original."+keyColumn+", ").append("\n");
-    	upperSql.append("        (CEIL(ROW_NUMBER() OVER (ORDER BY Original."+keyColumn+") / (COUNT(0) OVER ()/"+ gridSize +"))-1) AS PARTITION_NO ").append("\n");
+    	upperSql.append("        (CEIL(ROW_NUMBER() OVER (ORDER BY Original."+keyColumn+") / "+ gridSize +")-1) AS PARTITION_NO ").append("\n");
     	upperSql.append("    FROM  ").append("\n");
     	upperSql.append("		( ").append("\n");
     	upperSql.append("		/*** Original SQL Start ***/ ").append("\n");

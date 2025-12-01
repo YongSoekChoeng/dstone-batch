@@ -80,7 +80,6 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	}
 	
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
-	
 	/**
 	 * 병렬처리(Line Range) Master Step
 	 * @param chunkSize

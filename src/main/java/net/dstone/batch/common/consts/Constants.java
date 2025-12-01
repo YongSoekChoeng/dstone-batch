@@ -6,6 +6,7 @@ public class Constants {
 		/*** DB Partition 관련 Key 값 ***/
 		public final static String PARTITION_YN 		= "PARTITION_YN";
 		public final static String GRID_SIZE 			= "GRID_SIZE";
+		public final static String CHUNK_SIZE 			= "CHUNK_SIZE";
 		public final static String KEY_COLUMN 			= "KEY_COLUMN";
 
 		/*** File Partition 관련 Key 값 ***/
