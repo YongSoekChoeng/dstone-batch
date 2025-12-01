@@ -86,33 +86,4 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
         return result;
     }
     
-    public static String getPartitionQuery(String originalQuery, String keyColumn, int gridSize) {
-    	StringBuffer query = new StringBuffer();
-    	StringBuffer upperSql = new StringBuffer();
-    	StringBuffer lowerSql = new StringBuffer();
-    	
-    	upperSql.append("SELECT ").append("\n");
-    	upperSql.append("    PARTITION_NO, ").append("\n");
-    	upperSql.append("    MIN("+keyColumn+") AS MIN_ID, ").append("\n");
-    	upperSql.append("    MAX("+keyColumn+") AS MAX_ID ").append("\n");
-    	upperSql.append("FROM ( ").append("\n");
-    	upperSql.append("    SELECT ").append("\n");
-    	upperSql.append("        Original."+keyColumn+", ").append("\n");
-    	upperSql.append("        (CEIL(ROW_NUMBER() OVER (ORDER BY Original."+keyColumn+") / "+ gridSize +")-1) AS PARTITION_NO ").append("\n");
-    	upperSql.append("    FROM  ").append("\n");
-    	upperSql.append("		( ").append("\n");
-    	upperSql.append("		/*** Original SQL Start ***/ ").append("\n");
-    			
-    	lowerSql.append("		/*** Original SQL End ***/ ").append("\n");
-    	lowerSql.append("		) Original ").append("\n");
-    	lowerSql.append(") A ").append("\n");
-    	lowerSql.append("GROUP BY PARTITION_NO ").append("\n");
-    	lowerSql.append("ORDER BY PARTITION_NO ").append("\n");
-    	
-    	query.append(upperSql).append("\n");
-    	query.append(originalQuery).append("\n");
-    	query.append(lowerSql).append("\n");
-    	
-    	return query.toString();
-    }
 }
