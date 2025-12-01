@@ -101,7 +101,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     		
 			@Override
 			public Map<String, Object> read() {
-				callLog(this, "read");
+				//callLog(this, "read");
 				Map<String, Object> row = null;
 				if(queue == null) {
 					fillQueue();
@@ -121,7 +121,7 @@ public class TableInsertJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	callLog(this, "itemProcessor");
+    	//callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
 //			@Override
 //			public Map<String, Object> process(Map item) throws Exception {

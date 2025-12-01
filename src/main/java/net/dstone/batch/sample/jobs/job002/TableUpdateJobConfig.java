@@ -138,7 +138,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemReader() {
-    	callLog(this, "itemReader");
+    	//callLog(this, "itemReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", baseParams);
     }
@@ -152,7 +152,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemPartitionReader() {
-    	callLog(this, "itemPartitionReader");
+    	//callLog(this, "itemPartitionReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
     }
@@ -166,7 +166,7 @@ public class TableUpdateJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
-    	callLog(this, "itemProcessor");
+    	//callLog(this, "itemProcessor");
     	return new AbstractItemProcessor() {
 			@Override
 			public Object process(Object item) throws Exception {

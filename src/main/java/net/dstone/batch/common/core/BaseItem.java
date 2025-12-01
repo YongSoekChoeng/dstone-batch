@@ -4,33 +4,38 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
-import org.springframework.batch.core.annotation.AfterProcess;
-import org.springframework.batch.core.annotation.AfterRead;
-import org.springframework.batch.core.annotation.AfterStep;
-import org.springframework.batch.core.annotation.AfterWrite;
-import org.springframework.batch.core.annotation.BeforeProcess;
-import org.springframework.batch.core.annotation.BeforeRead;
 import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.core.annotation.BeforeWrite;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.stereotype.Component;
+
+import net.dstone.common.utils.FileUtil;
 
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
  */
 @Component
 @StepScope
-public class BaseItem extends BaseBatchObject implements StepExecutionListener {
+public abstract class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
 	protected StepExecution stepExecution;
 	
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
     	this.stepExecution = stepExecution;
+    	if( this.stepExecution != null && this.stepExecution.getJobParameters() != null ) {
+    		Map<String, JobParameter<?>> jobParamMap = this.stepExecution.getJobParameters().getParameters();
+    		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
+    		while(jobParamMapKey.hasNext()) {
+    			String key = jobParamMapKey.next();
+    			JobParameter val = jobParamMap.get(key);
+    			if( val != null ) {
+    				this.setStepParam(key, val.getValue());
+    			}
+    		}
+    	}
     }
     
     /**
@@ -148,7 +153,28 @@ public class BaseItem extends BaseBatchObject implements StepExecutionListener {
     	}
     	if(buff.length() > 0) {
 	    	buff.append("\n");
-    		this.log( "stepExecution[" + this.stepExecution + "] 파라메터 - " + buff);
+    		this.info( "stepExecution[" + this.stepExecution + "] 파라메터 - " + buff);
     	}
     }
+
+    protected String getDefaultOutputFileFullPath(String inputFileFullPath) {
+    	String outputFileFullPath = "";
+    	
+    	String outputFileDir = "";
+    	String outputFileName = "";
+    	String outputFileExt = "";
+    	
+    	String inputFileDir = FileUtil.getFilePath(inputFileFullPath);
+    	String inputFileName = FileUtil.getFileName(inputFileFullPath, false);
+    	String inputFileExt = FileUtil.getFileExt(inputFileFullPath);
+    	
+    	outputFileDir = inputFileDir;
+    	outputFileName = inputFileName + "-out";
+    	outputFileExt = inputFileExt;
+    	
+    	outputFileFullPath = outputFileDir + "/" + outputFileName +"."+ outputFileExt;
+
+    	return outputFileFullPath;
+    }
+
 }

@@ -103,7 +103,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
 
     @Override
     public Map<String, Object> read() {
-    	callLog(this, "read");
+    	//callLog(this, "read");
         if (this.cursor == null) {
         	return null;
         }

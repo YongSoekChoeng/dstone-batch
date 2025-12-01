@@ -147,7 +147,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     	return new AbstractItemProcessor() {
 			@Override
 			public Map<String, Object> process(Object item) throws Exception {
-				callLog(this, "process", item);
+				//callLog(this, "process", item);
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = (HashMap)item;
 		    	return processedItem;

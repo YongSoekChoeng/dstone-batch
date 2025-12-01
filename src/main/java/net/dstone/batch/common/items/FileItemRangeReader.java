@@ -113,13 +113,14 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
         	toLine = Long.parseLong(paramMap.get(Constants.Partition.TO_LINE).toString());
 
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileFullPath), Charset.forName(charset)));
-
+            lineCount = 0;
+            
             // 필요없는 라인은 스킵
-            while (lineCount < fromLine - 1) {
+            while(lineCount < fromLine - 1) {
                 reader.readLine();
                 lineCount++;
             }
-            
+
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath, e);
         }
@@ -127,13 +128,14 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
 
     @Override
     public synchronized Map<String, Object> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-    	callLog(this, "read");
+    	//callLog(this, "read");
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
         }
-        if (lineCount >= toLine) {
+        if (lineCount >= toLine) {     	
             return null; // 끝
         }
+        
         String line = reader.readLine();
         lineCount++;
         
@@ -164,14 +166,13 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
         			setNum++;
         		}
         	}
-            return item;
         }
-        return null; // EOF → Step 종료
+        return item; // EOF → Step 종료
     }
 
     @Override
     public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	callLog(this, "update");
+    	//callLog(this, "update");
         executionContext.put("fileItemReader.lineCount", lineCount);
     }
 

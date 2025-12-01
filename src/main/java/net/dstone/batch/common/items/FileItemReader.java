@@ -17,6 +17,7 @@ import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -105,22 +106,27 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
+    	String inputFile = "";
         try {
-        	if( !FileUtil.isFileExist(this.inputFileFullPath) ) {
-        		throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath );
+        	
+        	// Step 파라메터로 Input파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Input파일명 이 우선.
+        	inputFile = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, this.inputFileFullPath).toString();
+        	
+        	if( !FileUtil.isFileExist(inputFile) ) {
+        		throw new ItemStreamException("파일 오픈 실패: " + inputFile );
         	}
         	// Default OUTPUT 파일명 Step Parameter 로 저장.
-        	this.setStepParam( Constants.Partition.OUTPUT_FILE_PATH, this.getDefaultOutputFileFullPath(inputFileFullPath));
+        	this.setStepParam( Constants.Partition.OUTPUT_FILE_PATH, this.getDefaultOutputFileFullPath(inputFile));
         	
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileFullPath), Charset.forName(charset)));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile), Charset.forName(charset)));
         } catch (Exception e) {
-            throw new ItemStreamException("파일 오픈 실패: " + inputFileFullPath, e);
+            throw new ItemStreamException("파일 오픈 실패: " + inputFile, e);
         }
     }
 
     @Override
     public synchronized Map<String, Object> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-    	callLog(this, "read");
+    	//callLog(this, "read");
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
         }
@@ -160,7 +166,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
 
     @Override
     public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	callLog(this, "update");
+    	//callLog(this, "update");
         executionContext.put("fileItemReader.lineCount", lineCount);
     }
 
@@ -177,24 +183,4 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
         }
     }
     
-    private String getDefaultOutputFileFullPath(String inputFileFullPath) {
-    	String outputFileFullPath = "";
-    	
-    	String outputFileDir = "";
-    	String outputFileName = "";
-    	String outputFileExt = "";
-    	
-    	String inputFileDir = FileUtil.getFilePath(inputFileFullPath);
-    	String inputFileName = FileUtil.getFileName(inputFileFullPath, false);
-    	String inputFileExt = FileUtil.getFileExt(inputFileFullPath);
-    	
-    	outputFileDir = inputFileDir;
-    	outputFileName = inputFileName + "-out";
-    	outputFileExt = inputFileExt;
-    	
-    	outputFileFullPath = outputFileDir + "/" + outputFileName +"."+ outputFileExt;
-
-    	return outputFileFullPath;
-    }
-
 }

@@ -1,6 +1,6 @@
 package net.dstone.batch.common.partitioner;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.batch.core.partition.support.Partitioner;
@@ -8,22 +8,35 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
-import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.batch.common.core.BasePartitioner;
 import net.dstone.common.utils.FileUtil;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
  */
 @Component
-public class FileLinesPartitioner extends BaseBatchObject implements Partitioner {
+public class FileLinesPartitioner extends BasePartitioner implements Partitioner {
 
     private final String inputFileFullPath;
-    private final String copyToDir;
+    private String outputFileFullPath = "";
+    private String outputFileDir = "";
     private int gridSize = 0; 
 
-    public FileLinesPartitioner(String inputFileFullPath, String copyToDir, int gridSize) {
+    public FileLinesPartitioner(String inputFileFullPath, int gridSize) {
     	this.inputFileFullPath = inputFileFullPath;
-    	this.copyToDir = copyToDir; 
+        this.gridSize = gridSize;
+    }
+
+    public FileLinesPartitioner(String inputFileFullPath, String outputFileFullPath, int gridSize) {
+    	this.inputFileFullPath = inputFileFullPath;
+    	this.outputFileFullPath = outputFileFullPath;
+        this.gridSize = gridSize;
+    }
+
+    public FileLinesPartitioner(String inputFileFullPath, int gridSize, String outputFileDir) {
+    	this.inputFileFullPath = inputFileFullPath;
+    	this.outputFileDir = outputFileDir; 
         this.gridSize = gridSize;
     }
     
@@ -37,7 +50,7 @@ public class FileLinesPartitioner extends BaseBatchObject implements Partitioner
     	
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
     	
-    	Map<String, ExecutionContext> result = new HashMap<String, ExecutionContext>();
+    	Map<String, ExecutionContext> result = new LinkedHashMap<String, ExecutionContext>();
     	long totalLines = FileUtil.countLines(inputFileFullPath);  // 파일 라인 수
         long chunkSize = totalLines / actualGridSize;
         long fromLine = 1;
@@ -46,13 +59,26 @@ public class FileLinesPartitioner extends BaseBatchObject implements Partitioner
         for (int i = 0; i < actualGridSize; i++) {
             ExecutionContext context = new ExecutionContext();
             
-            String outFilePath = "";
-
-            context.putString(Constants.Partition.INPUT_FILE_PATH, inputFileFullPath);		// INPUT파일 Full Path
-            context.putLong(Constants.Partition.FROM_LINE, fromLine);				// INPUT파일 From Line
-            context.putLong(Constants.Partition.TO_LINE, toLine);					// INPUT파일 To Line
-            context.putString(Constants.Partition.OUTPUT_FILE_PATH, outFilePath);	// INPUT파일의 Line Range(from Line~To Line)별 파일들이 복사 될 OUTPUT파일 Full Path
+            /*** Output 파일명 ***/
+            String outputFile = "";
+            // Output 파일명 이 명시되었을 경우	(명시된 Output 파일명으로 결정)
+            if( !StringUtil.isEmpty(this.outputFileFullPath) ) {
+            	outputFile =  this.outputFileFullPath;
+            // Output 디렉토리 가 명시되었을 경우(Output 디렉토리 + Input 파일명 으로 결정)
+            }else  if( !StringUtil.isEmpty(this.outputFileDir) ) {
+            	outputFile = this.getOutputFileFullPath(this.inputFileFullPath, this.outputFileDir, i);
+            // Output 파일명, Output 디렉토리 가 명시되지 않았을 경우(Input 파일명으로 Output 파일명을 결정)
+            }else {
+            	outputFile = this.getOutputFileFullPath(this.inputFileFullPath, i);
+            }
+            
+            context.putString(Constants.Partition.INPUT_FILE_PATH, this.inputFileFullPath);	// INPUT파일 Full Path
+            context.putLong(Constants.Partition.FROM_LINE, fromLine);						// INPUT파일 From Line
+            context.putLong(Constants.Partition.TO_LINE, toLine);							// INPUT파일 To Line
+            context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);			// INPUT파일의 Line Range(from Line~To Line)별 파일들이 복사 될 OUTPUT파일 Full Path
             result.put("partition" + i, context);
+            
+            debug("totalLines["+totalLines+"] " + "chunkSize["+chunkSize+"] " + "fromLine["+fromLine+"] " + "toLine["+toLine+"] ");
             
             fromLine = toLine + 1;
             if(i == actualGridSize - 1) {
@@ -61,8 +87,7 @@ public class FileLinesPartitioner extends BaseBatchObject implements Partitioner
             	toLine = toLine + chunkSize;
             }
         }
-        debug("총 " + result.size() + "개의 파티션 생성");
+        info("총 " + result.size() + "개의 파티션 생성. " + result);
         return result;
     }
-
 }

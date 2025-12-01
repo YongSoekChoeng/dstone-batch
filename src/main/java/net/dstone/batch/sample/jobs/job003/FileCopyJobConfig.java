@@ -34,9 +34,6 @@ import net.dstone.common.utils.StringUtil;
  * 2. 1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
  *   C:/Temp/aa.txt => C:/Temp/aa-copy1.txt
  *                     C:/Temp/aa-copy2.txt
- * 3. 1:N 분할복사(병렬쓰레드처리). 대량파일을 여러파일로 Partitioning하여 각각 저장.
- *   C:/Temp/aa.txt => C:/Temp/aa1.txt => C:/Temp/aa1-copy.txt
- *                     C:/Temp/aa2.txt    C:/Temp/aa1-copy.txt
  * </pre>
  */
 @Component
@@ -46,8 +43,8 @@ public class FileCopyJobConfig extends BaseJobConfig {
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
 	private int gridSize = 0;		// 쓰레드 갯수
 	String inputFileFullPath = "";	// 원본 Full파일 경로
-	String copyFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
-	String copyToDir = "";			// 1:N 복사에서 복사파일들이 생성될 디렉토리
+	String outputFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
+	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
     String charset = "";			// 파일 인코딩
     boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
@@ -63,8 +60,8 @@ public class FileCopyJobConfig extends BaseJobConfig {
 		
 		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
 	    inputFileFullPath 	= "";
-	    copyFileFullPath 	= "";
-	    copyToDir 			= "";
+	    outputFileFullPath 	= "";
+	    outputFileDir 		= "";
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
@@ -77,21 +74,21 @@ public class FileCopyJobConfig extends BaseJobConfig {
 
         /*******************************************************************
         1. 1:1복사(단일쓰레드처리).
-        	실행파라메터 : spring.batch.job.names=fileCopyJob inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam copyFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam
+        	실행파라메터 : spring.batch.job.names=fileCopyJob inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam
         *******************************************************************/
 	    /*
 	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    copyFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("copyFileFullPath"), "");
+	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
 	    this.addStep(this.workerStep("workerStep", chunkSize));
 	    */
-
+		
         /*******************************************************************
         2. 1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
-        	실행파라메터 : spring.batch.job.names=fileCopyJob gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam copyToDir=C:/Temp/SAMPLE_DATA/split
+        	실행파라메터 : spring.batch.job.names=fileCopyJob gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileDir=C:/Temp/SAMPLE_DATA/split
         *******************************************************************/
 	    
 	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    copyToDir 			= StringUtil.nullCheck(this.getInitJobParam("copyToDir"), "");
+	    outputFileDir 			= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
 		this.addStep(this.parallelLinesRangeMasterStep(chunkSize, gridSize));
 		
 	}
@@ -148,33 +145,29 @@ public class FileCopyJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Partitioner 설정 시작 -------------------------- */
     /**
-     * File 처리용 Partitioner(디렉토리내의 파일별로 Partition 을 생성하는 Partitioner)
-     * @return
-     */
-    @Bean
-    @Qualifier("filesPartitioner")
-    @StepScope
-    public FilesPartitioner filesPartitioner(int gridSize) {
-    	callLog(this, "filesPartitioner", gridSize);
-    	FilesPartitioner filesPartitioner = new FilesPartitioner(
-    		inputFileFullPath
-    	);
-        return filesPartitioner;
-    }
-    /**
      * File 처리용 Partitioner(대용량 파일을 라인별로 Partition 을 생성하는 Partitioner)
      * @return
      */
     @Bean
     @Qualifier("fileLinesPartitioner")
     @StepScope
-    public FileLinesPartitioner fileLinesPartitioner(int gridSize) {
-    	callLog(this, "fileLinesPartitioner", gridSize);
-    		FileLinesPartitioner fileLinesPartitioner = new FileLinesPartitioner(
-    		inputFileFullPath, copyToDir, gridSize
-    	);
-        return fileLinesPartitioner;
-    }
+	public FileLinesPartitioner fileLinesPartitioner(int gridSize) {
+		callLog(this, "fileLinesPartitioner", gridSize);
+		FileLinesPartitioner fileLinesPartitioner = new FileLinesPartitioner(inputFileFullPath, gridSize, outputFileDir);
+		return fileLinesPartitioner;
+	}
+    /**
+     * File 처리용 Partitioner(디렉토리내의 파일별로 Partition 을 생성하는 Partitioner)
+     * @return
+     */
+    @Bean
+    @Qualifier("filesPartitioner")
+    @StepScope
+	public FilesPartitioner filesPartitioner(int gridSize) {
+		callLog(this, "filesPartitioner", gridSize);
+		FilesPartitioner filesPartitioner = new FilesPartitioner(inputFileFullPath);
+		return filesPartitioner;
+	}
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
@@ -197,7 +190,7 @@ public class FileCopyJobConfig extends BaseJobConfig {
     @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemLinesRangeReader() {
-    	callLog(this, "itemLinesRangePartitionReader");
+    	callLog(this, "itemLinesRangeReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new FileItemRangeReader(inputFileFullPath, charset, colInfoMap);
     }
@@ -215,7 +208,7 @@ public class FileCopyJobConfig extends BaseJobConfig {
     	return new AbstractItemProcessor() {
 			@Override
 			public Object process(Object item) throws Exception {
-				callLog(this, "process", item);
+				//callLog(this, "process", item);
 
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = (HashMap<String, Object>)item;
@@ -237,7 +230,7 @@ public class FileCopyJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(copyFileFullPath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
     	return writer;
     }
     /**
@@ -248,7 +241,7 @@ public class FileCopyJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemLinesRangeWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(copyFileFullPath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
