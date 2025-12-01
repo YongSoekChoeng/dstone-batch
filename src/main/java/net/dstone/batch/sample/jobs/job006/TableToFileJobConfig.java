@@ -20,8 +20,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.batch.common.items.TableItemReader;
-import net.dstone.batch.common.items.TableItemWriter;
-import net.dstone.batch.common.partitioner.QueryPartitioner;
 import net.dstone.batch.common.partitioner.QueryToFilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
