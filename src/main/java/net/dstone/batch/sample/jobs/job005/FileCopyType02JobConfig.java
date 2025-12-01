@@ -20,7 +20,7 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.batch.common.partitioner.FileLinesPartitioner;
+import net.dstone.batch.common.partitioner.FilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
@@ -120,9 +120,9 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
     @Bean
     @Qualifier("fileLinesPartitioner")
     @StepScope
-	public FileLinesPartitioner fileLinesPartitioner(int gridSize) {
+	public FilePartitioner fileLinesPartitioner(int gridSize) {
 		callLog(this, "fileLinesPartitioner", gridSize);
-		FileLinesPartitioner fileLinesPartitioner = new FileLinesPartitioner(inputFileFullPath, gridSize, outputFileDir);
+		FilePartitioner fileLinesPartitioner = new FilePartitioner(inputFileFullPath, gridSize, outputFileDir);
 		return fileLinesPartitioner;
 	}
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */

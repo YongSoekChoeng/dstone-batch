@@ -16,25 +16,25 @@ import net.dstone.common.utils.StringUtil;
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
  */
 @Component
-public class FileLinesPartitioner extends BasePartitioner implements Partitioner {
+public class FilePartitioner extends BasePartitioner implements Partitioner {
 
     private final String inputFileFullPath;
     private String outputFileFullPath = "";
     private String outputFileDir = "";
     private int gridSize = 0; 
 
-    public FileLinesPartitioner(String inputFileFullPath, int gridSize) {
+    public FilePartitioner(String inputFileFullPath, int gridSize) {
     	this.inputFileFullPath = inputFileFullPath;
         this.gridSize = gridSize;
     }
 
-    public FileLinesPartitioner(String inputFileFullPath, String outputFileFullPath, int gridSize) {
+    public FilePartitioner(String inputFileFullPath, String outputFileFullPath, int gridSize) {
     	this.inputFileFullPath = inputFileFullPath;
     	this.outputFileFullPath = outputFileFullPath;
         this.gridSize = gridSize;
     }
 
-    public FileLinesPartitioner(String inputFileFullPath, int gridSize, String outputFileDir) {
+    public FilePartitioner(String inputFileFullPath, int gridSize, String outputFileDir) {
     	this.inputFileFullPath = inputFileFullPath;
     	this.outputFileDir = outputFileDir; 
         this.gridSize = gridSize;
