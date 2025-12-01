@@ -89,7 +89,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	private Step parallelLinesRangeMasterStep(int chunkSize, int gridSize) {
 		callLog(this, "parallelLinesRangeMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelLinesRangeMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", fileLinesPartitioner(gridSize))
+				.partitioner("parallelSlaveStep", filePartitioner(gridSize))
 				.step(parallelLinesRangeSlaveStep(chunkSize))
 				.gridSize(gridSize)
 				.taskExecutor(executor(null))
@@ -118,12 +118,12 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
      * @return
      */
     @Bean
-    @Qualifier("fileLinesPartitioner")
+    @Qualifier("filePartitioner")
     @StepScope
-	public FilePartitioner fileLinesPartitioner(int gridSize) {
-		callLog(this, "fileLinesPartitioner", gridSize);
-		FilePartitioner fileLinesPartitioner = new FilePartitioner(inputFileFullPath, gridSize, outputFileDir);
-		return fileLinesPartitioner;
+	public FilePartitioner filePartitioner(int gridSize) {
+		callLog(this, "filePartitioner", gridSize);
+		FilePartitioner filePartitioner = new FilePartitioner(inputFileFullPath, gridSize, outputFileDir);
+		return filePartitioner;
 	}
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 

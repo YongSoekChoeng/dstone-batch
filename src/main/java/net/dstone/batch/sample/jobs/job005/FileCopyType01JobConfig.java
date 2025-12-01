@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
-import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemReader;
 import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.common.utils.StringUtil;
@@ -110,7 +109,8 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
      * File 처리용 ItemProcessor
      * @return
      */
-    @Bean
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
     	callLog(this, "itemProcessor");
