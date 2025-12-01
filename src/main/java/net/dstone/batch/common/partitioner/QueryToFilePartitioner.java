@@ -22,7 +22,7 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
     private final String queryId;
     private final String keyColumn;
     private int gridSize = 0;
-    private final String inputFileFullPath;
+    private final String outputFileFullPath;
     private final Map<String, Object> params = new HashMap<String, Object>();
 
     public QueryToFilePartitioner(
@@ -30,9 +30,9 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
             String queryId,
             String keyColumn,
             int gridSize,
-            String outputFileDir
+            String outputFileFullPath
     ) {
-        this(sqlSessionTemplate, queryId, keyColumn, gridSize, outputFileDir, new HashMap<>());
+        this(sqlSessionTemplate, queryId, keyColumn, gridSize, outputFileFullPath, new HashMap<>());
     }
 
     public QueryToFilePartitioner(
@@ -40,7 +40,7 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
             String queryId,
             String keyColumn,
             int gridSize,
-            String inputFileFullPath,
+            String outputFileFullPath,
             Map<String, Object> params
      ) {
     	
@@ -48,7 +48,7 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
         this.queryId = queryId;
         this.keyColumn = keyColumn;
         this.gridSize = gridSize;
-        this.inputFileFullPath = inputFileFullPath;
+        this.outputFileFullPath = outputFileFullPath;
         if( params!= null && params.size()>0) {
         	this.params.putAll(params);
         }
@@ -72,7 +72,7 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
             	for(int i= 0; i<partitionList.size(); i++) {
             		Map<String, Object> row = partitionList.get(i);
             		ExecutionContext context = new ExecutionContext();
-            		String outputFile = this.getOutputFileFullPath(this.inputFileFullPath, i);
+            		String outputFile = this.getOutputFileFullPath(this.outputFileFullPath, i);
             		context.put("MIN_ID", row.get("MIN_ID"));
             		context.put("MAX_ID", row.get("MAX_ID"));
                     context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);
@@ -82,7 +82,7 @@ public class QueryToFilePartitioner extends BasePartitioner implements Partition
         } catch (Exception e) {
             throw new RuntimeException("Failed to create query-based partitions", e);
         } 
-    	log(this.getClass().getName() + ".partition() return ["+result+"]" );
+    	info(this.getClass().getName() + ".partition() return ["+result+"]" );
         return result;
     }
     

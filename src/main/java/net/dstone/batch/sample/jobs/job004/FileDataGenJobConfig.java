@@ -24,13 +24,31 @@ import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 테스트용 파일정보를 생성하는 Job
+ * <pre>
+ * 테스트용 파일정보를 생성하는 Job.
+ * 아래의 LAYOUT 구조와 동일한 파일 데이터를 생성하는 Job.
+ * 
+ * CREATE TABLE SAMPLE_TEST (
+ *   TEST_ID VARCHAR(30) NOT NULL, 
+ *   TEST_NAME VARCHAR(200), 
+ *   FLAG_YN VARCHAR(1), 
+ *   INPUT_DT DATE NOT NULL,  
+ *   PRIMARY KEY  (TEST_ID)
+ * )
+ * 
+ * 단일쓰레드처리. 
+ * </pre>
  */
 @Component
 @AutoRegJob(name = "fileDataGenJob")
 public class FileDataGenJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// dataCnt : 생성할 데이터 건수
+	// inputFileFullPath : 생성될 Full파일 경로
+	// charset : 생성할 파일의 캐릭터셋
+	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	private int dataCnt = 0;			// 생성데이터 갯수
 	String inputFileFullPath = "";		// 생성될 Full파일 경로
     String charset = "";				// 파일 인코딩

@@ -41,8 +41,15 @@ import net.dstone.common.utils.StringUtil;
 public class TableToFileJobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// gridSize : 병렬처리할 쓰레드 갯수
+	// chunkSize : 트랜젝션묶음 크기
+	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 경로 + outputFileFullPath 의 파일명을 참고하여 자동으로 생성된 파일명
+	// charset : 생성할 파일의 캐릭터셋
+	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	private int gridSize = 0;		// 쓰레드 갯수
-	String inputFileFullPath = "";
+	private int chunkSize = 0;		// 청크 사이즈
+	String outputFileFullPath = "";
     String charset = "";			// 파일 인코딩
     boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
@@ -57,7 +64,8 @@ public class TableToFileJobConfig extends BaseJobConfig {
 		callLog(this, "configJob");
 		
 		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
-		inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
+	    chunkSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("chunkSize"), "20"));
+		outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
@@ -66,12 +74,11 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	    colInfoMap.put("FLAG_YN", 1);
 	    colInfoMap.put("INPUT_DT", 14);
 	    
-	    int chunkSize = 500;
         gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
         
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 파일로 저장(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
-        실행파라메터 : spring.batch.job.names=tableToFileJob gridSize=3 inputFileFullPath=C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam
+        실행파라메터 : spring.batch.job.names=tableToFileJob gridSize=3 chunkSize=20 outputFileFullPath=C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam
         *******************************************************************/
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
 	}
@@ -130,14 +137,14 @@ public class TableToFileJobConfig extends BaseJobConfig {
     @StepScope
     public QueryToFilePartitioner queryToFilePartitioner(int gridSize) {
     	callLog(this, "queryPartitioner", gridSize);
-    	QueryToFilePartitioner queryPartitioner = new QueryToFilePartitioner(
+    	QueryToFilePartitioner queryToFilePartitioner = new QueryToFilePartitioner(
             sqlBatchSessionSample, 
             "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", 
             "TEST_ID", 
             gridSize,
-            this.inputFileFullPath
+            this.outputFileFullPath
         );
-        return queryPartitioner;
+        return queryToFilePartitioner;
     }
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 

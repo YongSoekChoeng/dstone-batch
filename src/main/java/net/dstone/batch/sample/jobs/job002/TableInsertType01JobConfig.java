@@ -17,6 +17,8 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
+ * 
+ * 두 개의 Tasklet 으로 구현.
  * 01. 기존데이터 삭제 - Tasklet
  * 02. 신규데이터 입력 - Tasklet
  * </pre>
@@ -26,7 +28,8 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
 public class TableInsertType01JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// dataCnt : 생성할 데이터 건수
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
 	/**

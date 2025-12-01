@@ -32,6 +32,8 @@ import net.dstone.common.utils.StringUtil;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
+ * 
+ * 삭제는 Tasklet으로 진행하고 입력은 Reader/Processor/Writer으로 된 Step 으로 구현.
  * 01. 기존데이터 삭제 - Tasklet
  * 02. 신규데이터 입력 - Step
  * </pre>
@@ -41,7 +43,8 @@ import net.dstone.common.utils.StringUtil;
 public class TableInsertType02JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// dataCnt : 생성할 데이터 건수
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
 	/**

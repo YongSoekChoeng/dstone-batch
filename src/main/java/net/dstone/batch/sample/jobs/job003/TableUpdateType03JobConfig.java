@@ -29,8 +29,10 @@ import net.dstone.batch.common.core.BaseJobConfig;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
- * 단일쓰레드처리. Reader/Processor/Writer 동일클래스 내에 구현.
- * FLAG_YN 를 'N' => 'Y'로 수정.
+ * 
+ * SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
+ * 단일쓰레드처리. 
+ * Reader/Processor/Writer 동일클래스 내에 구현.
  * </pre>
  */
 @Component
@@ -38,7 +40,7 @@ import net.dstone.batch.common.core.BaseJobConfig;
 public class TableUpdateType03JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
 	/**

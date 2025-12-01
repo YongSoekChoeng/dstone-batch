@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.FileUtil;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
@@ -31,7 +32,7 @@ public abstract class BaseItem extends BaseBatchObject implements StepExecutionL
     		while(jobParamMapKey.hasNext()) {
     			String key = jobParamMapKey.next();
     			JobParameter val = jobParamMap.get(key);
-    			if( val != null ) {
+    			if( val != null && StringUtil.isEmpty(this.getStepParam(key)) ) {
     				this.setStepParam(key, val.getValue());
     			}
     		}

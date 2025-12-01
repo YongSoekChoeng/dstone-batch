@@ -35,6 +35,12 @@ import net.dstone.common.utils.StringUtil;
 public class FileCopyType01JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// inputFileFullPath : 복사될 Full파일 경로
+	// outputFileFullPath : 복사생성될 Full파일 경로.
+	// outputFileDir : 복사생성될 파일의 디렉토리. outputFileFullPath가 존재할 경우 무시. outputFileFullPath가 존재하지 않을 경우 이 디렉토리에 생성하되 파일명은 inputFileFullPath의 파일명을 참고하여 자동으로 결정.
+	// charset : 생성할 파일의 캐릭터셋
+	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	String inputFileFullPath = "";	// 원본 Full파일 경로
 	String outputFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
 	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리

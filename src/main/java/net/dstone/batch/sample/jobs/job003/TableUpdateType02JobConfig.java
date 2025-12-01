@@ -32,8 +32,10 @@ import net.dstone.common.utils.StringUtil;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
- * 병렬쓰레드처리. Reader/Processor/Writer 별도클래스로 생성
- * FLAG_YN 를 'N' => 'Y'로 수정.
+ * 
+ * SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
+ * 병렬쓰레드처리. 
+ * Reader/Processor/Writer 별도클래스로 구현.
  * </pre>
  */
 @Component
@@ -41,6 +43,8 @@ import net.dstone.common.utils.StringUtil;
 public class TableUpdateType02JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// gridSize : 병렬처리할 쓰레드 갯수
 	private int gridSize = 2;	// 쓰레드 갯수
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 	
