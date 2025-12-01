@@ -87,7 +87,15 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	String outputFile = "";
         try {
         	// Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 우선.
-        	outputFile = StringUtil.ifEmpty(this.outputFileFullPath, this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH).toString());
+        	if(!StringUtil.isEmpty(this.outputFileFullPath)) {
+        		outputFile = this.outputFileFullPath;
+        	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH))) {
+        		outputFile = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH).toString();
+        	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.INPUT_FILE_PATH))) {
+        		outputFile = this.getDefaultOutputFileFullPath(this.getStepParam(Constants.Partition.INPUT_FILE_PATH).toString());
+        	}else {
+        		throw new ItemStreamException("Out파일 경로를 결정하는데 실패했습니다." + " outputFileFullPath["+outputFileFullPath+"]" + " this.getStepParam("+Constants.Partition.OUTPUT_FILE_PATH+")["+this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH)+"]"  + " this.getStepParam("+Constants.Partition.INPUT_FILE_PATH+")["+this.getStepParam(Constants.Partition.INPUT_FILE_PATH)+"]" );
+        	}
         	if( !FileUtil.isFileExist(outputFile) ) {
         		FileUtil.makeDir(FileUtil.getFilePath(outputFile));
         		/*

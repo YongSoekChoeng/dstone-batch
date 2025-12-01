@@ -1,4 +1,4 @@
-package net.dstone.batch.sample.jobs.job003;
+package net.dstone.batch.sample.jobs.job004;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,10 +46,10 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-		dataCnt 	= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
+		dataCnt 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
 	    inputFileFullPath 	= "";
-	    charset 	= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    append 		= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
+	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
@@ -59,8 +59,8 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	    int chunkSize = 50;
 
         /*******************************************************************
-        1. 테스트용 파일정보를 생성
-        	실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        테스트용 파일정보를 생성
+        실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
         *******************************************************************/
 	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
 		this.addStep(this.workerStep("workerStep", chunkSize));
@@ -122,7 +122,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     		
 			@Override
 			public Map<String, Object> read() {
-				callLog(this, "read");
+				//callLog(this, "read");
 				Map<String, Object> row = null;
 				if(queue == null) {
 					fillQueue();

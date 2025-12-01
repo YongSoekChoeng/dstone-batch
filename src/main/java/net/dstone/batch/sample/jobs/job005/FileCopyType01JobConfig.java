@@ -1,4 +1,4 @@
-package net.dstone.batch.sample.jobs.job003;
+package net.dstone.batch.sample.jobs.job005;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,27 +21,21 @@ import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.batch.common.partitioner.FileLinesPartitioner;
-import net.dstone.batch.common.partitioner.FilesPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * 파일을 복사 하는 Job.<br>
- * 단일쓰레드처리, 병렬쓰레드처리 두 가지 모드.<br>
  * <pre>
- * 1. 1:1복사(단일쓰레드처리).
+ * 파일을 복사 하는 Job.
+ * 단일쓰레드처리
+ * 1:1복사(단일쓰레드처리).
  *   C:/Temp/aa.txt => C:/Temp/aa-copy.txt.
- * 2. 1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
- *   C:/Temp/aa.txt => C:/Temp/aa-copy1.txt
- *                     C:/Temp/aa-copy2.txt
  * </pre>
  */
 @Component
-@AutoRegJob(name = "fileCopyJob")
-public class FileCopyJobConfig extends BaseJobConfig {
+@AutoRegJob(name = "fileCopyType01Job")
+public class FileCopyType01JobConfig extends BaseJobConfig {
 
     /**************************************** 00. Job Parameter 선언 시작 ****************************************/
-	private int gridSize = 0;		// 쓰레드 갯수
 	String inputFileFullPath = "";	// 원본 Full파일 경로
 	String outputFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
 	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
@@ -58,7 +52,6 @@ public class FileCopyJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
 	    inputFileFullPath 	= "";
 	    outputFileFullPath 	= "";
 	    outputFileDir 		= "";
@@ -73,28 +66,14 @@ public class FileCopyJobConfig extends BaseJobConfig {
 	    int chunkSize = 5;
 
         /*******************************************************************
-        1. 1:1복사(단일쓰레드처리).
-        	실행파라메터 : spring.batch.job.names=fileCopyJob inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam
+        1:1복사(단일쓰레드처리).
+        실행파라메터 : spring.batch.job.names=fileCopyType01Job inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam
         *******************************************************************/
-	    /*
 	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
 	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
 	    this.addStep(this.workerStep("workerStep", chunkSize));
-	    */
-		
-        /*******************************************************************
-        2. 1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
-        	실행파라메터 : spring.batch.job.names=fileCopyJob gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileDir=C:/Temp/SAMPLE_DATA/split
-        *******************************************************************/
-	    
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    outputFileDir 			= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
-		this.addStep(this.parallelLinesRangeMasterStep(chunkSize, gridSize));
-		
 	}
 	
-    /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
 	/**
 	 * 단일처리 Step
@@ -111,64 +90,7 @@ public class FileCopyJobConfig extends BaseJobConfig {
 				.writer((ItemWriter<? super Map>) itemWriter())
 				.build();
 	}
-	/**
-	 * 병렬처리(Line Range) Master Step
-	 * @param chunkSize
-	 * @param gridSize
-	 * @return
-	 */
-	private Step parallelLinesRangeMasterStep(int chunkSize, int gridSize) {
-		callLog(this, "parallelLinesRangeMasterStep", ""+chunkSize+", "+gridSize+"");
-		return new StepBuilder("parallelLinesRangeMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", fileLinesPartitioner(gridSize))
-				.step(parallelLinesRangeSlaveStep(chunkSize))
-				.gridSize(gridSize)
-				.taskExecutor(executor(null))
-				.build();
-	}
-	
-	/**
-	 * 병렬처리(Line Range) Slave Step
-	 * @return
-	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Step parallelLinesRangeSlaveStep(int chunkSize) {
-		callLog(this, "parallelLinesRangeSlaveStep");
-		return new StepBuilder("parallelLinesRangeSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
-				.reader(itemLinesRangeReader()) // Spring이 런타임에 주입
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
-				.build();
-	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
-
-	/* --------------------------------- Partitioner 설정 시작 -------------------------- */
-    /**
-     * File 처리용 Partitioner(대용량 파일을 라인별로 Partition 을 생성하는 Partitioner)
-     * @return
-     */
-    @Bean
-    @Qualifier("fileLinesPartitioner")
-    @StepScope
-	public FileLinesPartitioner fileLinesPartitioner(int gridSize) {
-		callLog(this, "fileLinesPartitioner", gridSize);
-		FileLinesPartitioner fileLinesPartitioner = new FileLinesPartitioner(inputFileFullPath, gridSize, outputFileDir);
-		return fileLinesPartitioner;
-	}
-    /**
-     * File 처리용 Partitioner(디렉토리내의 파일별로 Partition 을 생성하는 Partitioner)
-     * @return
-     */
-    @Bean
-    @Qualifier("filesPartitioner")
-    @StepScope
-	public FilesPartitioner filesPartitioner(int gridSize) {
-		callLog(this, "filesPartitioner", gridSize);
-		FilesPartitioner filesPartitioner = new FilesPartitioner(inputFileFullPath);
-		return filesPartitioner;
-	}
-	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
     /**
@@ -180,19 +102,6 @@ public class FileCopyJobConfig extends BaseJobConfig {
     public ItemReader<Map<String, Object>> itemReader() {
     	callLog(this, "itemReader");
     	return new FileItemReader(inputFileFullPath, charset, colInfoMap);
-    }
-    /**
-     * File 읽어오는 ItemReader. Partitioner 와 함께 사용.
-     * @param minId
-     * @param maxId
-     * @return
-     */
-    @Bean
-    @StepScope
-    public ItemReader<Map<String, Object>> itemLinesRangeReader() {
-    	callLog(this, "itemLinesRangeReader");
-    	Map<String, Object> baseParams = new HashMap<String, Object>();
-        return new FileItemRangeReader(inputFileFullPath, charset, colInfoMap);
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 

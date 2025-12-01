@@ -1,4 +1,4 @@
-package net.dstone.batch.sample.jobs.job002;
+package net.dstone.batch.sample.jobs.job002.items;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.StepContribution;

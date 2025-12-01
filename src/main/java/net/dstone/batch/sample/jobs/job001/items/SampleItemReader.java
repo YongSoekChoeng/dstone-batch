@@ -1,4 +1,4 @@
-package net.dstone.batch.sample.jobs.job001;
+package net.dstone.batch.sample.jobs.job001.items;
 
 import java.util.LinkedList;
 import java.util.Queue;
