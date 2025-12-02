@@ -27,6 +27,7 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일전체 핸들링을 위한 ItemReader 구현체. 
+ * 
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작
@@ -65,17 +66,18 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class FileItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
+    /**************************************** 멤버 선언 시작 ****************************************
+	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
+	charset : 대상파일의 캐릭터셋. 생성자로 주입.
+	colInfoMap : 컬럼정보(컬럼명, 컬럼바이트길이)맵.
+	div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
+    **************************************** 멤버 선언 끝 ******************************************/
+	
     private final String inputFileFullPath;
     private final String charset;
-    /**
-     * 컬럼정보(컬럼명, 컬럼바이트길이)
-     */
     private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
-    /**
-     * 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
-     */
     private String div = "";
-
+    
     private BufferedReader reader;
     private long lineCount = 0;
     
@@ -108,10 +110,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     	callLog(this, "open");
     	String inputFile = "";
         try {
-        	
-        	// Step 파라메터로 Input파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Input파일명 이 우선.
-        	inputFile = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, this.inputFileFullPath).toString();
-        	
+        	inputFile = this.inputFileFullPath;
         	if( !FileUtil.isFileExist(inputFile) ) {
         		throw new ItemStreamException("파일 오픈 실패: " + inputFile );
         	}
@@ -182,5 +181,5 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
             throw new ItemStreamException("파일 종료 실패", e);
         }
     }
-    
+
 }

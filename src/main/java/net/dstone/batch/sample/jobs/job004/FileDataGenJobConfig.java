@@ -63,7 +63,6 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		
 		dataCnt 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
 	    inputFileFullPath 	= "";
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
@@ -125,7 +124,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     		    if( !append && FileUtil.isFileExist(inputFileFullPath) ) {
     		    	FileUtil.deleteFile(inputFileFullPath);
     		    }
-    		    
+
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
     			int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString()) ;
     			for(int i=0; i<dataCnt; i++) {

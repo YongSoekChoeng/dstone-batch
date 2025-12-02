@@ -13,7 +13,6 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -28,18 +27,22 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
 
+    /**************************************** 멤버 선언 시작 ****************************************
+	outputFileFullPath : 저장할 대상파일 전체경로. 생성자로 주입.
+		- 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
+		- Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
+		- 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
+	charset : 대상파일의 캐릭터셋. 생성자로 주입.
+	append : 파일이 존재할 경우 데이터를 추가할지 여부.
+	colInfoMap : 컬럼정보(컬럼명, 컬럼바이트길이)맵.
+	div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
+    **************************************** 멤버 선언 끝 ******************************************/
+	
     private final String outputFileFullPath;
     private final String charset;
     private boolean append;
-    /**
-     * 컬럼정보(컬럼명, 컬럼바이트길이)
-     */
     private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
-    /**
-     * 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
-     */
     private String div = "";
-
 
     private BufferedWriter writer;
 

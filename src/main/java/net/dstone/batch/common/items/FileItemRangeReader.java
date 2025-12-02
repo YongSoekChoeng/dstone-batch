@@ -25,8 +25,10 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일 Range(From라인~To라인)핸들링을 위한 ItemReader 구현체. 
- * 아래와 같은 흐름을 갖는다.
+ * 통상 FilePartitioner 를 통해서 호출됨. 
+ * FilePartitioner 에서 Step Parameter 로 주입된 fromLine, toLine 변수로 대상파일의 Range를 읽어온다.
  * 
+ * 아래와 같은 흐름을 갖는다.
  * Job 시작
  *     │
  *     ▼
@@ -63,6 +65,13 @@ import net.dstone.common.utils.StringUtil;
 @StepScope
 public class FileItemRangeReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
 
+    /**************************************** 멤버 선언 시작 ****************************************
+	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
+	charset : 대상파일의 캐릭터셋. 생성자로 주입.
+	fromLine : From라인. Step Parameter 로 주입.
+	toLine : To라인. Step Parameter 로 주입.
+    **************************************** 멤버 선언 끝 ******************************************/
+	
     private final String inputFileFullPath;
     private final String charset;
     private long fromLine;
