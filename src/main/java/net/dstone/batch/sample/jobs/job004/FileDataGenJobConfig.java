@@ -12,6 +12,8 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -91,15 +93,14 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	 * @param chunkSize
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		
 		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor(itemProcessor())
+				.writer(itemWriter())
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -182,7 +183,8 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
+    	//FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter();
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

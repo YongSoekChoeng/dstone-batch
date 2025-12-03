@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -24,39 +24,43 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일핸들링을 위한 ItemWriter 구현체. 
- * <pre>
- * 멀티쓰레드에서 writer 는 메서드호출 방식이 아닌, 프록시주입(Lazy) 형식으로 해야 함.
- * 예)
- * new StepBuilder("parallelSlaveStep", jobRepository)
- * ....
- * .writer(itemWriter()) ==>> X
- * .writer(itemWriter)   ==>> O
- * </pre>
  */
 @Component
 @StepScope
 public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
 
-    /**************************************** 생성자-주입 멤버선언 시작 ****************************************/
-	// outputFileFullPath : 저장할 대상파일 전체경로. 생성자로 주입.
-	// 	 - 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
-	// 	 - Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
-	// 	 - 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
-	// charset : 대상파일의 캐릭터셋. 생성자로 주입.
-	// append : 파일이 존재할 경우 데이터를 추가할지 여부.
-	// colInfoMap : 컬럼정보(컬럼명, 컬럼바이트길이)맵.
-	// div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
+    /**************************************** 멤버 선언 시작 ****************************************
+	outputFileFullPath : 저장할 대상파일 전체경로. 생성자로 주입.
+		- 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
+		- Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
+		- 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
+	charset : 대상파일의 캐릭터셋. 생성자로 주입.
+	append : 파일이 존재할 경우 데이터를 추가할지 여부.
+	colInfoMap : 컬럼정보(컬럼명, 컬럼바이트길이)맵.
+	div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
+    **************************************** 멤버 선언 끝 ******************************************/
+	
     private String outputFileFullPath = "";
     private String charset = "UTF-8";
     private boolean append = false;
     private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
     private String div = "";
-    /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
-
-    BufferedWriter writer;
     
+    BufferedWriter writer;
+
+    /**
+     * 읽어온 데이터를 파일로 저장하는 생성자
+     * @param charset(대상파일의 캐릭터셋)
+     * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
+     * @param colInfoMap(라인 기준 데이터정보)
+     */
     public FileItemWriter() {
-    	
+
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+	    
     }
 
     /**
@@ -86,7 +90,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
      * @param charset(대상파일의 캐릭터셋)
      * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
      * @param colInfoMap(라인 기준 데이터정보)
-     * @param div(라인기준 컬럼정보구분자. 구분자가 없을 경우 고정길이.)
+     * @param div(라인 기준 데이터경계구분자. 구분자가 없을 경우 고정길이.)
      */
     public FileItemWriter( String outputFileFullPath, String charset, boolean append, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.outputFileFullPath = outputFileFullPath;
@@ -96,12 +100,27 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	this.div = div;
     }
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open", executionContext);
     	//this.checkParam();
     	String outputFile = "";
         try {
+        	
+            System.out.println("========== FileItemWriter.open() ==========");
+            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
+            System.out.println("Thread: " + Thread.currentThread().getName());
+            System.out.println("==========================================");
+            
+        	//this.setExecutionContext(executionContext);
         	
         	String outputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH, "").toString();
         	String inputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, "").toString();
@@ -124,6 +143,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
 				new OutputStreamWriter(new FileOutputStream(outputFile, append), Charset.forName(charset))
 			);
 			this.outputFileFullPath = outputFile;
+sysout("open ::: writer==================================>>>" + writer);			
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + outputFile, e);
         }
@@ -132,12 +152,18 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     @Override
     public void write(Chunk<? extends Map<String, Object>> chunk) throws Exception {
     	callLog(this, "write", "chunk[size:"+chunk.size()+"]");
+    	
+sysout(this.getClass().getName() + " [" +Thread.currentThread()+ "] ===>>>" + "chunk[size:"+chunk.size()+"]");    	
+        
 		if (writer == null) {
             throw new IllegalStateException("Writer is not opened.");
         }
+sysout( this + " ::: writer==================================>>>" + writer);
         for (Map<String, Object> item : chunk) {
+        	
         	String line = "";
         	Iterator<String> colInfoKeys = colInfoMap.keySet().iterator();
+        	
         	// 고정길이 일 경우
         	if( StringUtil.isEmpty(div) ) {
             	int offset = 0;
@@ -169,6 +195,13 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     public void close() throws ItemStreamException {
     	callLog(this, "close");
         try {
+        	
+            System.out.println("========== FileItemWriter.close() ==========");
+            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
+            System.out.println("Thread: " + Thread.currentThread().getName());
+            System.out.println("==========================================");
+            
+            
             if (writer != null) {
                 log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
                 writer.close();

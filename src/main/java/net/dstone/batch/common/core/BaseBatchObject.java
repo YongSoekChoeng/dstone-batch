@@ -3,6 +3,9 @@ package net.dstone.batch.common.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
+import net.dstone.batch.common.consts.Constants;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 

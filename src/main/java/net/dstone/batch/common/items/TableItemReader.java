@@ -1,13 +1,12 @@
 package net.dstone.batch.common.items;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
@@ -56,12 +55,8 @@ import net.dstone.batch.common.core.BaseItem;
 @StepScope
 public class TableItemReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
 
-    /**************************************** 생성자-주입 멤버선언 시작 ****************************************/
-	// sqlSessionFactory : SqlSessionFactory. 생성자로 주입.
-	// queryId : MyBatis 쿼리 ID. 생성자로 주입.
     private final SqlSessionFactory sqlSessionFactory;
     private final String queryId;
-    /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
 
     private SqlSession sqlSession;
     private Cursor<Map<String, Object>> cursor;
@@ -81,35 +76,40 @@ public class TableItemReader extends BaseItem implements ItemStreamReader<Map<St
     	}
     }
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
-    }
-    
-    private Iterator<Map<String, Object>> initConnection() {
-    	Iterator<Map<String, Object>> iterator = null;
         try {
+        	//this.setExecutionContext(executionContext);
         	Map<String,Object> paramMap = this.getStepParamMap();
+
             this.sqlSession = this.sqlSessionFactory.openSession();
             this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
-            iterator = this.cursor.iterator();
+            this.iterator = this.cursor.iterator();
             log(">>> Cursor 열기 성공");
         } catch (Exception e) {
         	log(">>> Cursor 열기 실패. 상세사항:" + e);
         	close();
             throw new ItemStreamException("Cursor 열기 실패: " + queryId, e);
         }
-        return iterator;
     }
 
     @Override
     public synchronized Map<String, Object> read() {
     	//callLog(this, "read");
         if (this.cursor == null) {
-        	this.iterator = this.initConnection();
+        	return null;
         }
-        if (iterator != null && iterator.hasNext()) {
-			Map<String, Object> item = iterator.next();
+        if (this.iterator != null && this.iterator.hasNext()) {
+			Map<String, Object> item = this.iterator.next();
 			readCnt++;
 			this.setStepParam("readCnt", readCnt);
         	return item;

@@ -107,14 +107,13 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	 * 병렬처리(Line Range) Slave Step
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Step parallelLinesRangeSlaveStep(int chunkSize) {
 		callLog(this, "parallelLinesRangeSlaveStep");
 		return new StepBuilder("parallelLinesRangeSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader(itemLinesRangeReader()) // Spring이 런타임에 주입
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor( itemProcessor())
+				.writer( itemWriter())
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -184,7 +183,8 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
+    	//FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter();
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

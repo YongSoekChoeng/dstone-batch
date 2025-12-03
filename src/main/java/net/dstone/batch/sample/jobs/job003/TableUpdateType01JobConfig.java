@@ -78,14 +78,13 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
 	 * @param chunkSize
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Step singleStep(int chunkSize) {
 		callLog(this, "singleStep", chunkSize);
 		return new StepBuilder("singleStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor( itemProcessor())
+				.writer( itemWriter())
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 

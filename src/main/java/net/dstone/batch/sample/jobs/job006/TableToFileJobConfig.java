@@ -132,15 +132,14 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * 병렬처리 Slave Step
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Step parallelSlaveStep() {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
+				.processor(itemProcessor())
 				/* 멀티쓰레드에서 writer 는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
-				.writer((ItemWriter<? super Map>) itemWriter)
+				.writer(itemWriter)
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -177,7 +176,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
      * @param maxId
      * @return
      */
-    @Bean(name = "itemPartitionReader")
+    @Bean
     @StepScope
     public ItemReader<Map<String, Object>> itemPartitionReader() {
     	//callLog(this, "itemPartitionReader");
@@ -216,7 +215,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	@Autowired
 	FileItemWriter itemWriter;
 	
-    @Bean(name = "itemWriter")
+    @Bean
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");

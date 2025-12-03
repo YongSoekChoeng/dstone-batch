@@ -78,10 +78,10 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
 		
 		return new StepBuilder(stepName, jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor(itemProcessor())
+				.writer(itemWriter())
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 

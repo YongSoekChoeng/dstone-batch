@@ -98,14 +98,13 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	 * 병렬처리 Slave Step
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Step parallelSlaveStep(int chunkSize) {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
-				.<Map, Map>chunk(chunkSize, txManagerCommon)
+				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
-				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.processor( itemProcessor())
+				.writer( itemWriter())
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
