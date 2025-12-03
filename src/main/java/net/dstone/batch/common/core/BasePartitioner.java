@@ -2,10 +2,8 @@ package net.dstone.batch.common.core;
 
 import java.util.Map;
 
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.FileUtil;
 

@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
@@ -65,27 +64,25 @@ import net.dstone.common.utils.StringUtil;
 @Component
 @StepScope
 public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
-	
-    /**************************************** 멤버 선언 시작 ****************************************
-	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
-	charset : 대상파일의 캐릭터셋. 생성자로 주입.
-	fromLine : From라인. Step Parameter 로 주입.
-	toLine : To라인. Step Parameter 로 주입.
-    **************************************** 멤버 선언 끝 ******************************************/
-	
+
+    /**************************************** 생성자-주입 멤버선언 시작 ****************************************/
+	// inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
+	// charset : 대상파일의 캐릭터셋. 생성자로 주입.
+	// colInfoMap : 컬럼정보(컬럼명, 컬럼바이트길이)맵.
+	// div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
     private final String inputFileFullPath;
     private final String charset;
+    private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+    private String div = "";
+    /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
+
+    /**************************************** StepParameter-주입 멤버선언 시작 ****************************************/
+	// fromLine : Partitioner 로부터 StepParameter로 전달된 읽기시작 라인
+	// toLine   : Partitioner 로부터 StepParameter로 전달된 읽기종료 라인
     private long fromLine;
     private long toLine;
-    /**
-     * 컬럼정보(컬럼명, 컬럼바이트길이)
-     */
-    private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
-    /**
-     * 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
-     */
-    private String div = "";
-
+    /**************************************** StepParameter-주입 멤버선언 끝 ****************************************/
+	
     private BufferedReader reader;
     private long lineCount = 0;
     
@@ -93,7 +90,7 @@ public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Ma
      * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
      * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
-     * @param colInfoMap(라인기준 데이터정보)
+     * @param colInfoMap(라인기준 컬럼정보)
      */
     public FileItemRangeReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap) {
     	this(inputFileFullPath, charset, colInfoMap, "");
@@ -103,8 +100,8 @@ public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Ma
      * 파일로부터 Range(From라인~To라인)데이터를 읽어오는 생성자
      * @param inputFileFullPath(읽어올 대상파일 전체경로)
      * @param charset(대상파일의 캐릭터셋)
-     * @param colInfoMap(라인기준 데이터정보)
-     * @param div(라인 기준 데이터경계구분자)
+     * @param colInfoMap(라인기준 컬럼정보)
+     * @param div(라인기준 컬럼정보구분자. 구분자가 없을 경우 고정길이.)
      */
     public FileItemRangeReader(String inputFileFullPath, String charset, LinkedHashMap<String,Integer> colInfoMap, String div) {
     	this.inputFileFullPath = inputFileFullPath;
@@ -112,14 +109,6 @@ public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Ma
     	this.colInfoMap = colInfoMap;
     	this.div = div;
     }
-
-	/**
-	 * Step 시작 전에 진행할 작업
-	 */
-	@Override
-	protected void doBeforeStep(StepExecution stepExecution) {
-		
-	}
 
     @Override
     public void open(ExecutionContext stepExecution) throws ItemStreamException {

@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
@@ -55,8 +54,12 @@ import net.dstone.batch.common.core.BaseItem;
 @StepScope
 public class TableItemReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
 
+    /**************************************** 생성자-주입 멤버선언 시작 ****************************************/
+	// sqlSessionFactory : SqlSessionFactory. 생성자로 주입.
+	// queryId : MyBatis 쿼리 ID. 생성자로 주입.
     private final SqlSessionFactory sqlSessionFactory;
     private final String queryId;
+    /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
 
     private SqlSession sqlSession;
     private Cursor<Map<String, Object>> cursor;
@@ -76,21 +79,11 @@ public class TableItemReader extends BaseItem implements ItemStreamReader<Map<St
     	}
     }
 
-	/**
-	 * Step 시작 전에 진행할 작업
-	 */
-	@Override
-	protected void doBeforeStep(StepExecution stepExecution) {
-		
-	}
-
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
         try {
-        	//this.setExecutionContext(executionContext);
         	Map<String,Object> paramMap = this.getStepParamMap();
-
             this.sqlSession = this.sqlSessionFactory.openSession();
             this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
             this.iterator = this.cursor.iterator();

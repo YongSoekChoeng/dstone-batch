@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemStreamWriter;
@@ -15,33 +14,36 @@ import net.dstone.batch.common.core.BaseItem;
 
 /**
  * DB핸들링을 위한 ItemWriter 구현체. 
+ * <pre>
+ * 멀티쓰레드에서 writer 는 메서드호출 방식이 아닌, 프록시주입(Lazy) 형식으로 해야 함.
+ * 예)
+ * new StepBuilder("parallelSlaveStep", jobRepository)
+ * ....
+ * .writer(itemWriter()) ==>> X
+ * .writer(itemWriter)   ==>> O
+ * </pre>
  */
 @Component
 @StepScope
 public class TableItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
 
+    /**************************************** 생성자-주입 멤버선언 시작 ****************************************/
+	// SqlSessionTemplate : SqlSessionTemplate. 생성자로 주입.
+	// queryId : MyBatis 쿼리 ID. 생성자로 주입.
     private final SqlSessionTemplate sqlSessionTemplate;
     private String queryId;
+    /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
 
     public TableItemWriter(SqlSessionTemplate sqlSessionTemplate, String queryId) {
     	this.sqlSessionTemplate = sqlSessionTemplate;
     	this.queryId = queryId;
     }
 
-	/**
-	 * Step 시작 전에 진행할 작업
-	 */
-	@Override
-	protected void doBeforeStep(StepExecution stepExecution) {
-		
-	}
-
 	@SuppressWarnings({ "rawtypes" })
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {
 		callLog(this, "write", "chunk[size:"+chunk.size()+"]");
-    	this.checkParam();
-    	
+    	//this.checkParam();
         int successCount = 0;
         int failCount = 0;
         try (SqlSession session = this.sqlSessionTemplate.getSqlSessionFactory().openSession(ExecutorType.BATCH)) {
