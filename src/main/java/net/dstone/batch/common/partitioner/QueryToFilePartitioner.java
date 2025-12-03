@@ -78,6 +78,11 @@ sysout( "params=====================>>>>" + params);
             		context.put("MIN_ID", row.get("MIN_ID"));
             		context.put("MAX_ID", row.get("MAX_ID"));
                     context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);
+                    
+                    context.putString("charset", this.getJobParam("charset", "UTF-8").toString());
+                    context.putString("append", this.getJobParam("append", "false").toString());
+                    context.putString("div", this.getJobParam("div", "").toString());
+                    
             		result.put("partition"+row.get("PARTITION_NO").toString(), context);
             	}
             }

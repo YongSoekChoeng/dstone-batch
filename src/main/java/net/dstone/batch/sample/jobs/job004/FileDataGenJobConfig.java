@@ -12,6 +12,8 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -182,7 +184,8 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
+    	//FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
+    	FileItemWriter writer = new FileItemWriter();
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

@@ -13,7 +13,7 @@ import net.dstone.common.utils.FileUtil;
  * Step에서 내부적으로 사용되는 Partitioner객체들의 부모 클래스.
  * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
  */
-public abstract class BasePartitioner extends BaseBatchObject implements Partitioner {
+public abstract class BasePartitioner extends BaseItem implements Partitioner {
 
 	public abstract Map<String, ExecutionContext> partition(int gridSize);
 	

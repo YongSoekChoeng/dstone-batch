@@ -12,7 +12,6 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -140,7 +139,8 @@ public class TableToFileJobConfig extends BaseJobConfig {
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) fileItemWriter)
+				/* 멀티쓰레드에서 writer 는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
+				.writer((ItemWriter<? super Map>) itemWriter)
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -213,19 +213,16 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	/* --------------------------------- Processor 설정 끝 ---------------------------- */ 
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
-    @Autowired
-    FileItemWriter fileItemWriter;
-//    /**
-//     * File 처리용 ItemWriter
-//     * @return
-//     */
-//    @Bean
-//    @StepScope
-//    public ItemWriter<Map<String, Object>> itemWriter( @Value("#{stepExecutionContext['outputFileFullPath']}") String outputFileFullPath) {
-//    	callLog(this, "itemWriter");
-//    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap); 	
-//    	return writer;
-//    }
+	@Autowired
+	FileItemWriter itemWriter;
+	
+    @Bean
+    @StepScope
+    public ItemWriter<Map<String, Object>> itemWriter() {
+    	callLog(this, "itemWriter");
+    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap); 
+    	return writer;
+    }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
 
 }
