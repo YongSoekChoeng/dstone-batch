@@ -8,15 +8,16 @@ import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.item.ExecutionContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.FileUtil;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
  */
-@Component
-@StepScope
 public abstract class BaseItem extends BaseBatchObject {
 
 	protected StepExecution stepExecution;
@@ -30,13 +31,15 @@ public abstract class BaseItem extends BaseBatchObject {
     		while(jobParamMapKey.hasNext()) {
     			String key = jobParamMapKey.next();
     			JobParameter val = jobParamMap.get(key);
-    			if( val != null ) {
+    			if( val != null && StringUtil.isEmpty(this.getStepParam(key)) ) {
     				this.setStepParam(key, val.getValue());
     			}
     		}
     	}
+    	//doBeforeStep(stepExecution);
     }
-    
+    //protected abstract void doBeforeStep(StepExecution stepExecution);
+
     /**
      * Job파라메터 전체를 Map형태로 얻어오는 메소드
      * @param key
@@ -91,7 +94,7 @@ public abstract class BaseItem extends BaseBatchObject {
      */
     public Map<String,Object> getStepParamMap() {
     	Map<String,Object> map = new HashMap<String,Object>();
-    	if( this.stepExecution != null && this.stepExecution.getExecutionContext() != null && this.stepExecution.getExecutionContext().toMap() != null ) {
+    	if( this.stepExecution != null && stepExecution.getExecutionContext().toMap() != null ) {
     		map = new HashMap<String,Object>(this.stepExecution.getExecutionContext().toMap());
     	}
     	return map;
@@ -134,11 +137,11 @@ public abstract class BaseItem extends BaseBatchObject {
      * @return
      */
     public void setStepParam(String key, Object val) {
-    	if( this.stepExecution != null && this.stepExecution.getExecutionContext() != null ) {
+    	if( this.stepExecution != null && stepExecution.getExecutionContext() != null ) {
     		this.stepExecution.getExecutionContext().put(key, val);
     	}
     }
-    
+
     protected void checkParam() {
     	StringBuffer buff = new StringBuffer();
     	if( !this.getJobParamMap().isEmpty() ) {

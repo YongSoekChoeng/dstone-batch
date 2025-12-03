@@ -9,7 +9,6 @@ import net.dstone.batch.common.consts.Constants;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
-@Component
 public class BaseBatchObject{
 	
 	private LogUtil myLogger = null;
@@ -64,8 +63,8 @@ public class BaseBatchObject{
 
 	protected void callLog(Object obj, String method, Object paramMsg) {
 		String logStr = obj.getClass().getName() + "."+method+"("+StringUtil.nullCheck(paramMsg, "")+") has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" ;
-    	this.info(logStr);
-    	//this.debug(logStr);
+    	//this.info(logStr);
+    	this.debug(logStr);
     }
 
 	protected void setBaseParam(String key, Object val) {

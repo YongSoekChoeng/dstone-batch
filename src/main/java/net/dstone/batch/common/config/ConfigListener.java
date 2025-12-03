@@ -17,7 +17,7 @@ import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.batch.common.core.BaseBatchObject;
 
 @Configuration
-public class ConfigListener extends BaseBatchObject{
+public class ConfigListener extends BaseBatchObject {
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean

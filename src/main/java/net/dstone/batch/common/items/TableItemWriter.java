@@ -5,9 +5,10 @@ import java.util.Map;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.ItemStreamWriter;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
@@ -17,7 +18,7 @@ import net.dstone.batch.common.core.BaseItem;
  */
 @Component
 @StepScope
-public class TableItemWriter extends BaseItem implements ItemWriter<Map<String, Object>> {
+public class TableItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
 
     private final SqlSessionTemplate sqlSessionTemplate;
     private String queryId;

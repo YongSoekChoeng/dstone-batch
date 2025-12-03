@@ -12,9 +12,8 @@ import java.util.Map;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
+import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
@@ -63,8 +62,8 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class FileItemRangeReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
-
+public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
+	
     /**************************************** 멤버 선언 시작 ****************************************
 	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
 	charset : 대상파일의 캐릭터셋. 생성자로 주입.
@@ -113,10 +112,9 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
     }
 
     @Override
-    public void open(ExecutionContext executionContext) throws ItemStreamException {
+    public void open(ExecutionContext stepExecution) throws ItemStreamException {
     	callLog(this, "open", inputFileFullPath);
         try {
-
         	Map<String,Object> paramMap = this.getStepParamMap();
         	fromLine = Long.parseLong(paramMap.get(Constants.Partition.FROM_LINE).toString());
         	toLine = Long.parseLong(paramMap.get(Constants.Partition.TO_LINE).toString());
@@ -177,12 +175,6 @@ public class FileItemRangeReader extends BaseItem implements ItemReader<Map<Stri
         	}
         }
         return item; // EOF → Step 종료
-    }
-
-    @Override
-    public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	//callLog(this, "update");
-        executionContext.put("fileItemReader.lineCount", lineCount);
     }
 
     @Override

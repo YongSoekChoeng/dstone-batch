@@ -1,6 +1,5 @@
 package net.dstone.batch.common.items;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -9,9 +8,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
+import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.core.BaseItem;
@@ -54,7 +52,7 @@ import net.dstone.batch.common.core.BaseItem;
  */
 @Component
 @StepScope
-public class TableItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
+public class TableItemReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
 
     private final SqlSessionFactory sqlSessionFactory;
     private final String queryId;
@@ -81,7 +79,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
         try {
-
+        	//this.setExecutionContext(executionContext);
         	Map<String,Object> paramMap = this.getStepParamMap();
 
             this.sqlSession = this.sqlSessionFactory.openSession();
@@ -96,13 +94,7 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     }
 
     @Override
-    public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	log(this.getClass().getName() + ".update() has been called !!! - 쓰레드명[" + Thread.currentThread().getName() + "]" );
-        // TO-DO : 향후 필요하면 구현
-    }
-
-    @Override
-    public Map<String, Object> read() {
+    public synchronized Map<String, Object> read() {
     	//callLog(this, "read");
         if (this.cursor == null) {
         	return null;
@@ -119,10 +111,6 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
     @Override
     public void close() throws ItemStreamException {
     	callLog(this, "close");
-    	this.closeQuietly();
-    }
-
-    private void closeQuietly() {
         try {
             if (this.cursor != null) {
                 try {
@@ -139,5 +127,4 @@ public class TableItemReader extends BaseItem implements ItemReader<Map<String, 
             this.iterator = null;
         } finally {}
     }
-    
 }

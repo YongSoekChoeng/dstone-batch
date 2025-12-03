@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,8 @@ import net.dstone.batch.common.core.BasePartitioner;
  * 범용 쿼리 기반 Partitioner
  */
 @Component
-public class QueryPartitioner extends BasePartitioner implements Partitioner {
+@StepScope
+public class QueryPartitioner extends BasePartitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;
     private final String queryId;
@@ -57,7 +59,7 @@ public class QueryPartitioner extends BasePartitioner implements Partitioner {
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
 
-    	callLog(this, "partition", String.valueOf(gridSize));
+    	callLog(this, "doPartition", String.valueOf(gridSize));
         
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
         this.params.put(Constants.Partition.GRID_SIZE, actualGridSize);

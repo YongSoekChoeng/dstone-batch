@@ -2,6 +2,7 @@ package net.dstone.batch.sample.jobs.job002.items;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -22,7 +23,7 @@ public class TableDeleteTasklet extends BaseItem implements Tasklet{
 	public TableDeleteTasklet(SqlSessionTemplate sqlSessionSample) {
 		this.sqlSessionSample = sqlSessionSample;
 	}
-	
+
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
     	log(this.getClass().getName() + "이(가) 실행됩니다." );

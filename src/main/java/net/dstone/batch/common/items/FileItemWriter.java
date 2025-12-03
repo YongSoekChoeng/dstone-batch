@@ -13,6 +13,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -38,13 +39,28 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
 	div : 구분자-한 라인을 파싱하여 맵에 담을때 파싱용 구분자. 구분자가 존재할 경우 컬럼정보.컬럼바이트길이를 무시하고 구분자로 분리. 반면 구분자가 빈 값일 경우 컬럼정보.컬럼바이트길이대로 고정길이로 파싱.
     **************************************** 멤버 선언 끝 ******************************************/
 	
-    private final String outputFileFullPath;
-    private final String charset;
-    private boolean append;
+    private String outputFileFullPath = "";
+    private String charset = "UTF-8";
+    private boolean append = false;
     private LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
     private String div = "";
+    
+    BufferedWriter writer;
 
-    private BufferedWriter writer;
+    /**
+     * 읽어온 데이터를 파일로 저장하는 생성자
+     * @param charset(대상파일의 캐릭터셋)
+     * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
+     * @param colInfoMap(라인 기준 데이터정보)
+     */
+    public FileItemWriter() {
+
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+	    
+    }
 
     /**
      * 읽어온 데이터를 파일로 저장하는 생성자
@@ -81,25 +97,41 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	this.append = append;
     	this.colInfoMap = colInfoMap;
     	this.div = div;
+    	
+        System.out.println("========== FileItemWriter Constructor ==========");
+        System.out.println("outputFileFullPath: " + this.outputFileFullPath);
+        System.out.println("Thread: " + Thread.currentThread().getName());
+        System.out.println("==============================================");
+        
     }
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open", executionContext);
-    	this.checkParam();
+    	//this.checkParam();
     	String outputFile = "";
         try {
+        	
+            System.out.println("========== FileItemWriter.open() ==========");
+            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
+            System.out.println("Thread: " + Thread.currentThread().getName());
+            System.out.println("==========================================");
+            
+        	//this.setExecutionContext(executionContext);
+        	
+        	String outputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH, "").toString();
+        	String inputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, "").toString();
         	// 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
         	if(!StringUtil.isEmpty(this.outputFileFullPath)) {
         		outputFile = this.outputFileFullPath;
         	// Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
-        	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH))) {
-        		outputFile = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH).toString();
+        	}if( !StringUtil.isEmpty(outputFileFullPathFromStepParam) ) {	
+        		outputFile = outputFileFullPathFromStepParam;
         	// 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
-        	}else if(!StringUtil.isEmpty(this.getStepParam(Constants.Partition.INPUT_FILE_PATH))) {
-        		outputFile = this.getDefaultOutputFileFullPath(this.getStepParam(Constants.Partition.INPUT_FILE_PATH).toString());
+        	}else if(!StringUtil.isEmpty(inputFileFullPathFromStepParam)) {
+        		outputFile = this.getDefaultOutputFileFullPath(inputFileFullPathFromStepParam);
         	}else {
-        		throw new ItemStreamException("Out파일 경로를 결정하는데 실패했습니다." + " outputFileFullPath["+outputFileFullPath+"]" + " this.getStepParam("+Constants.Partition.OUTPUT_FILE_PATH+")["+this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH)+"]"  + " this.getStepParam("+Constants.Partition.INPUT_FILE_PATH+")["+this.getStepParam(Constants.Partition.INPUT_FILE_PATH)+"]" );
+        		throw new ItemStreamException("Out파일 경로를 결정하는데 실패했습니다." + " outputFileFullPath["+outputFileFullPath+"]" + " outputFileFullPathFromStepParam["+outputFileFullPathFromStepParam+"] inputFileFullPathFromStepParam["+inputFileFullPathFromStepParam+"]" );
         	}
         	if( !FileUtil.isFileExist(outputFile) ) {
         		FileUtil.makeDir(FileUtil.getFilePath(outputFile));
@@ -107,17 +139,23 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
 			writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(outputFile, append), Charset.forName(charset))
 			);
+			this.outputFileFullPath = outputFile;
+sysout("open ::: writer==================================>>>" + writer);			
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + outputFile, e);
         }
     }
 
     @Override
-    public synchronized void write(Chunk<? extends Map<String, Object>> chunk) throws Exception {
-    	//callLog(this, "write", "chunk[size:"+chunk.size()+"]");
-        if (writer == null) {
+    public void write(Chunk<? extends Map<String, Object>> chunk) throws Exception {
+    	callLog(this, "write", "chunk[size:"+chunk.size()+"]");
+    	
+sysout(this.getClass().getName() + " [" +Thread.currentThread()+ "] ===>>>" + "chunk[size:"+chunk.size()+"]");    	
+        
+		if (writer == null) {
             throw new IllegalStateException("Writer is not opened.");
         }
+sysout( this + " ::: writer==================================>>>" + writer);
         for (Map<String, Object> item : chunk) {
         	
         	String line = "";
@@ -151,14 +189,16 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     }
 
     @Override
-    public void update(ExecutionContext executionContext) throws ItemStreamException {
-        // 필요 시 상태 저장 가능 (현재는 스킵 가능)
-    }
-
-    @Override
     public void close() throws ItemStreamException {
     	callLog(this, "close");
         try {
+        	
+            System.out.println("========== FileItemWriter.close() ==========");
+            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
+            System.out.println("Thread: " + Thread.currentThread().getName());
+            System.out.println("==========================================");
+            
+            
             if (writer != null) {
                 log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
                 writer.close();

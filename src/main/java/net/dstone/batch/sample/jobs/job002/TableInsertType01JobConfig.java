@@ -10,6 +10,7 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
 /**
  * <pre>
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job.
+ * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
  *   TEST_NAME VARCHAR(200), 

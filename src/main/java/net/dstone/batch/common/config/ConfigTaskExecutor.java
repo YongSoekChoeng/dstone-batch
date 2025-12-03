@@ -48,7 +48,7 @@ public class ConfigTaskExecutor extends BaseBatchObject{
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
         // 스레드 수 설정
-        executor.setCorePoolSize(2);          			// 기본 스레드 수
+        executor.setCorePoolSize(3);          			// 기본 스레드 수
         executor.setMaxPoolSize(5);           			// 최대 스레드 수
         executor.setQueueCapacity(0);    				// 큐 사용하지 않음 → 즉시 쓰레드 실행
 

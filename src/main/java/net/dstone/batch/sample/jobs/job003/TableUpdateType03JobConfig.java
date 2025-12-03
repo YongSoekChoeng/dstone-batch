@@ -22,6 +22,8 @@ import net.dstone.batch.common.core.BaseJobConfig;
 /**
  * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
+ * SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
+ * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
  *   TEST_NAME VARCHAR(200), 
@@ -30,7 +32,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
  *   PRIMARY KEY  (TEST_ID)
  * )
  * 
- * SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
  * 단일쓰레드처리. 
  * Reader/Processor/Writer 동일클래스 내에 구현.
  * </pre>

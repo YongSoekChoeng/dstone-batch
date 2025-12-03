@@ -3,6 +3,7 @@ package net.dstone.batch.common.core;
 import java.util.Map;
 
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
@@ -15,10 +16,8 @@ import net.dstone.common.utils.FileUtil;
  */
 @Component
 @StepScope
-public abstract class BasePartitioner extends BaseBatchObject implements Partitioner {
+public abstract class BasePartitioner extends BaseItem implements Partitioner {
 
-	protected StepExecution stepExecution;
-	
 	public abstract Map<String, ExecutionContext> partition(int gridSize);
 	
 	protected String getOutputFileFullPath(String inputFileFullPath) {

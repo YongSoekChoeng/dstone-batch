@@ -3,7 +3,7 @@ package net.dstone.batch.common.partitioner;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.batch.core.partition.support.Partitioner;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,8 @@ import net.dstone.common.utils.StringUtil;
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
  */
 @Component
-public class FilePartitioner extends BasePartitioner implements Partitioner {
+@StepScope
+public class FilePartitioner extends BasePartitioner {
 
     private final String inputFileFullPath;
     private String outputFileFullPath = "";

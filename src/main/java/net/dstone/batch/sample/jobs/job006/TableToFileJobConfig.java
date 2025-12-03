@@ -7,12 +7,16 @@ import java.util.Map;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -26,6 +30,7 @@ import net.dstone.common.utils.StringUtil;
 /**
  * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 파일로 저장하는 Job.
+ * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
  *   TEST_NAME VARCHAR(200), 
@@ -33,6 +38,7 @@ import net.dstone.common.utils.StringUtil;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
+ * 
  * 병렬쓰레드처리
  * </pre>
  */
@@ -44,7 +50,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
 	// chunkSize : 트랜젝션묶음 크기
-	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 경로 + outputFileFullPath 의 파일명을 참고하여 자동으로 생성된 파일명
+	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리 + outputFileFullPath 의 파일명을 참고하여 자동으로 파일생성. 
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	private int gridSize = 0;		// 쓰레드 갯수
@@ -55,6 +61,12 @@ public class TableToFileJobConfig extends BaseJobConfig {
     /**************************************** 00. Job Parameter 선언 끝 ******************************************/
 
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+    {
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+    }
 	
 	/**
 	 * Job 구성
@@ -69,18 +81,11 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
 	    
-	    colInfoMap.put("TEST_ID", 30);
-	    colInfoMap.put("TEST_NAME", 200);
-	    colInfoMap.put("FLAG_YN", 1);
-	    colInfoMap.put("INPUT_DT", 14);
-	    
-        gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
-        
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 파일로 저장(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
         실행파라메터 : spring.batch.job.names=tableToFileJob gridSize=3 chunkSize=20 outputFileFullPath=C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam
         *******************************************************************/
-		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
+		this.addStep(this.parallelMasterStep());
 	}
 	
 	/**
@@ -89,8 +94,16 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
+//	public TaskExecutor executor(@Qualifier("heavyTaskExecutor") TaskExecutor executor) {
+//	    return executor;
+//	}
+	public TaskExecutor partitionTaskExecutor() {
+	    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+	    executor.setCorePoolSize(5); // gridSize(3)보다 크게 설정
+	    executor.setMaxPoolSize(5);
+	    executor.setThreadNamePrefix("partition-thread-");
+	    executor.setWaitForTasksToCompleteOnShutdown(true);
+	    executor.initialize();
 	    return executor;
 	}
 
@@ -101,13 +114,14 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @param gridSize
 	 * @return
 	 */
-	private Step parallelMasterStep(int chunkSize, int gridSize) {
-		callLog(this, "parallelMasterStep", ""+chunkSize+", "+gridSize+"");
+	@Bean
+	private Step parallelMasterStep() {
+		callLog(this, "parallelMasterStep");
 		return new StepBuilder("parallelMasterStep", jobRepository)
 				.partitioner("parallelSlaveStep", queryToFilePartitioner(gridSize))
-				.step(parallelSlaveStep(chunkSize))
+				.step(parallelSlaveStep())
 				.gridSize(gridSize)
-				.taskExecutor(executor(null))
+				.taskExecutor(partitionTaskExecutor())
 				.build();
 	}
 	
@@ -116,13 +130,14 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Step parallelSlaveStep(int chunkSize) {
+	@Bean
+	public Step parallelSlaveStep() {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map, Map>chunk(chunkSize, txManagerCommon)
 				.reader(itemPartitionReader()) // Spring이 런타임에 주입
 				.processor((ItemProcessor<? super Map, ? extends Map>) itemProcessor())
-				.writer((ItemWriter<? super Map>) itemWriter())
+				.writer((ItemWriter<? super Map>) fileItemWriter)
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -144,6 +159,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
             gridSize,
             this.outputFileFullPath
         );
+    	// partition 메서드에 로그 추가
         return queryToFilePartitioner;
     }
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
@@ -177,8 +193,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
     	return new AbstractItemProcessor() {
 			@Override
 			public Object process(Object item) throws Exception {
-				callLog(this, "process", item);
-
+				//callLog(this, "process", item);
 				// Thread-safe하게 새로운 Map 객체 생성
 		        Map<String, Object> processedItem = (HashMap<String, Object>)item;
 				// 예: TEST_NAME, FLAG_YN 값을 변경 
@@ -192,17 +207,19 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	/* --------------------------------- Processor 설정 끝 ---------------------------- */ 
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
-    /**
-     * File 처리용 ItemWriter
-     * @return
-     */
-    @Bean
-    @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
-    	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap);
-    	return writer;
-    }
+    @Autowired
+    FileItemWriter fileItemWriter;
+//    /**
+//     * File 처리용 ItemWriter
+//     * @return
+//     */
+//    @Bean
+//    @StepScope
+//    public ItemWriter<Map<String, Object>> itemWriter( @Value("#{stepExecutionContext['outputFileFullPath']}") String outputFileFullPath) {
+//    	callLog(this, "itemWriter");
+//    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap); 	
+//    	return writer;
+//    }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
 
 }

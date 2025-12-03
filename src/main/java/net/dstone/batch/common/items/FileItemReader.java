@@ -10,14 +10,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemStream;
 import org.springframework.batch.item.ItemStreamException;
+import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.UnexpectedInputException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -64,7 +63,7 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class FileItemReader extends BaseItem implements ItemReader<Map<String, Object>>, ItemStream {
+public class FileItemReader extends BaseItem implements ItemStreamReader<Map<String, Object>>{
 
     /**************************************** 멤버 선언 시작 ****************************************
 	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
@@ -124,7 +123,7 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
     }
 
     @Override
-    public synchronized Map<String, Object> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    public Map<String, Object> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
     	//callLog(this, "read");
         if (reader == null) {
             throw new IllegalStateException("Reader is not opened.");
@@ -161,12 +160,6 @@ public class FileItemReader extends BaseItem implements ItemReader<Map<String, O
             return item;
         }
         return null; // EOF → Step 종료
-    }
-
-    @Override
-    public void update(ExecutionContext executionContext) throws ItemStreamException {
-    	//callLog(this, "update");
-        executionContext.put("fileItemReader.lineCount", lineCount);
     }
 
     @Override
