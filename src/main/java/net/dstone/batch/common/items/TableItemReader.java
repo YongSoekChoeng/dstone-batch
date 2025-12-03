@@ -1,5 +1,7 @@
 package net.dstone.batch.common.items;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -82,27 +84,32 @@ public class TableItemReader extends BaseItem implements ItemStreamReader<Map<St
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
+    }
+    
+    private Iterator<Map<String, Object>> initConnection() {
+    	Iterator<Map<String, Object>> iterator = null;
         try {
         	Map<String,Object> paramMap = this.getStepParamMap();
             this.sqlSession = this.sqlSessionFactory.openSession();
             this.cursor = this.sqlSession.selectCursor(queryId, paramMap);
-            this.iterator = this.cursor.iterator();
+            iterator = this.cursor.iterator();
             log(">>> Cursor 열기 성공");
         } catch (Exception e) {
         	log(">>> Cursor 열기 실패. 상세사항:" + e);
         	close();
             throw new ItemStreamException("Cursor 열기 실패: " + queryId, e);
         }
+        return iterator;
     }
 
     @Override
     public synchronized Map<String, Object> read() {
     	//callLog(this, "read");
         if (this.cursor == null) {
-        	return null;
+        	this.iterator = this.initConnection();
         }
-        if (this.iterator != null && this.iterator.hasNext()) {
-			Map<String, Object> item = this.iterator.next();
+        if (iterator != null && iterator.hasNext()) {
+			Map<String, Object> item = iterator.next();
 			readCnt++;
 			this.setStepParam("readCnt", readCnt);
         	return item;

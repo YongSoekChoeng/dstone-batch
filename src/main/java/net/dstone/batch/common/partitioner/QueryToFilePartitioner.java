@@ -41,7 +41,6 @@ public class QueryToFilePartitioner extends BasePartitioner {
             String outputFileFullPath,
             Map<String, Object> params
      ) {
-sysout( "params=====================>>>>" + params);
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.queryId = queryId;
         this.keyColumn = keyColumn;

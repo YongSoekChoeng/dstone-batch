@@ -177,7 +177,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
      * @param maxId
      * @return
      */
-    @Bean
+    @Bean(name = "itemPartitionReader")
     @StepScope
     public ItemReader<Map<String, Object>> itemPartitionReader() {
     	//callLog(this, "itemPartitionReader");
@@ -216,7 +216,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	@Autowired
 	FileItemWriter itemWriter;
 	
-    @Bean
+    @Bean(name = "itemWriter")
     @StepScope
     public ItemWriter<Map<String, Object>> itemWriter() {
     	callLog(this, "itemWriter");

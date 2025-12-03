@@ -54,6 +54,10 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     /**************************************** 생성자-주입 멤버선언 끝 ****************************************/
 
     BufferedWriter writer;
+    
+    public FileItemWriter() {
+    	
+    }
 
     /**
      * 읽어온 데이터를 파일로 저장하는 생성자
