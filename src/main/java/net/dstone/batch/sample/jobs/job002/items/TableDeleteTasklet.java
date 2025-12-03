@@ -2,21 +2,19 @@ package net.dstone.batch.sample.jobs.job002.items;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseItem;
+import net.dstone.batch.common.core.BaseTasklet;
 
 /**
  * 데이블 삭제 Tasklet
  */
 @Component
 @StepScope
-public class TableDeleteTasklet extends BaseItem implements Tasklet{
+public class TableDeleteTasklet extends BaseTasklet{
 
 	private final SqlSessionTemplate sqlSessionSample; 
 	

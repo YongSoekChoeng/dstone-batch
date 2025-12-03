@@ -16,11 +16,10 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseItem;
+import net.dstone.batch.common.core.BaseTasklet;
 import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.StringUtil;
 
@@ -29,13 +28,21 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class TableInsertTasklet extends BaseItem implements Tasklet{
+public class TableInsertTasklet extends BaseTasklet{
 
 	private final SqlSessionTemplate sqlSessionSample; 
 	private final int threadCount = 5;
 	
 	public TableInsertTasklet(SqlSessionTemplate sqlSessionSample) {
 		this.sqlSessionSample = sqlSessionSample;
+	}
+
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
 	}
 
     @Override

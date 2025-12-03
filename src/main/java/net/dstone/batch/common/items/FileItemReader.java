@@ -104,6 +104,14 @@ public class FileItemReader extends BaseItem implements ItemStreamReader<Map<Str
     	this.div = div;
     }
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");

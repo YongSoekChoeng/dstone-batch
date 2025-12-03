@@ -3,9 +3,7 @@ package net.dstone.batch.common.partitioner;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -14,9 +12,8 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
+ * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
  */
-@Component
-@StepScope
 public class FilePartitioner extends BasePartitioner {
 
     private final String inputFileFullPath;
@@ -40,7 +37,7 @@ public class FilePartitioner extends BasePartitioner {
     	this.outputFileDir = outputFileDir; 
         this.gridSize = gridSize;
     }
-    
+
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
     	callLog(this, "partition", String.valueOf(gridSize));

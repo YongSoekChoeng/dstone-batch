@@ -16,4 +16,12 @@ public abstract class AbstractItemProcessor<I, O> extends BaseItem implements It
 	@Override
 	public abstract O process(I item) throws Exception;
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
 }

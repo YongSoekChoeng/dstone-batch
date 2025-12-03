@@ -7,10 +7,6 @@ import java.util.Map;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ExecutionContext;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
@@ -23,8 +19,10 @@ public abstract class BaseItem extends BaseBatchObject {
 	protected StepExecution stepExecution;
 
     @BeforeStep
-    public void beforeStep(StepExecution stepExecution) {
+    private void beforeStep(StepExecution stepExecution) {
+    	// StepExecution 세팅.
     	this.stepExecution = stepExecution;
+    	// JobParameter 를 StepExecution Parameter 로 카피.
     	if( this.stepExecution != null && this.stepExecution.getJobParameters() != null ) {
     		Map<String, JobParameter<?>> jobParamMap = this.stepExecution.getJobParameters().getParameters();
     		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
@@ -36,9 +34,17 @@ public abstract class BaseItem extends BaseBatchObject {
     			}
     		}
     	}
-    	//doBeforeStep(stepExecution);
+    	// 상속 클래스들에서 진행할 개별적 작업 호출.
+    	doBeforeStep(stepExecution);
     }
-    //protected abstract void doBeforeStep(StepExecution stepExecution);
+    
+    /**
+     * Step 시작 전에 진행할 작업
+     * @param stepExecution
+     */
+    protected void doBeforeStep(StepExecution stepExecution) {
+    	
+    }
 
     /**
      * Job파라메터 전체를 Map형태로 얻어오는 메소드

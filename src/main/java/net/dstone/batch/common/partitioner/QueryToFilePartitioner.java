@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
@@ -15,9 +16,8 @@ import net.dstone.batch.common.core.BasePartitioner;
 
 /**
  * 범용 쿼리 기반 Partitioner
+ * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
  */
-@Component
-@StepScope
 public class QueryToFilePartitioner extends BasePartitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;
@@ -45,7 +45,7 @@ public class QueryToFilePartitioner extends BasePartitioner {
             String outputFileFullPath,
             Map<String, Object> params
      ) {
-    	
+sysout( "params=====================>>>>" + params);
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.queryId = queryId;
         this.keyColumn = keyColumn;

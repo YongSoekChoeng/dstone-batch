@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
@@ -97,13 +98,15 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	this.append = append;
     	this.colInfoMap = colInfoMap;
     	this.div = div;
-    	
-        System.out.println("========== FileItemWriter Constructor ==========");
-        System.out.println("outputFileFullPath: " + this.outputFileFullPath);
-        System.out.println("Thread: " + Thread.currentThread().getName());
-        System.out.println("==============================================");
-        
     }
+
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {

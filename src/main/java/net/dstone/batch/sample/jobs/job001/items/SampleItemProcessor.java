@@ -2,10 +2,10 @@ package net.dstone.batch.sample.jobs.job001.items;
 
 import org.springframework.batch.item.ItemProcessor;
 
-import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.batch.common.core.BaseItem;
 
 //첫 번째 제네릭은 입력 데이터 타입, 두 번째는 출력 데이터 타입입니다.
-public class SampleItemProcessor extends BaseBatchObject implements ItemProcessor<String, String> {
+public class SampleItemProcessor extends BaseItem implements ItemProcessor<String, String> {
 
 	@Override
 	public String process(String item) throws Exception {

@@ -13,4 +13,12 @@ public abstract class AbstractItemWriter<O> extends BaseItem implements ItemWrit
 	@Override
     public abstract void write(Chunk<? extends O> chunk);
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
 }

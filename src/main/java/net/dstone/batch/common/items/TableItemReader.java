@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
@@ -74,6 +75,14 @@ public class TableItemReader extends BaseItem implements ItemStreamReader<Map<St
     		this.getBaseParamMap().putAll(baseParams);
     	}
     }
+
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {

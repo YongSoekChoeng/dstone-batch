@@ -3,17 +3,16 @@ package net.dstone.batch.sample.jobs.job006;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -93,18 +92,24 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @param executor
 	 * @return
 	 */
-	@Bean
-//	public TaskExecutor executor(@Qualifier("heavyTaskExecutor") TaskExecutor executor) {
-//	    return executor;
-//	}
+    @Bean
 	public TaskExecutor partitionTaskExecutor() {
-	    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-	    executor.setCorePoolSize(5); // gridSize(3)보다 크게 설정
-	    executor.setMaxPoolSize(5);
-	    executor.setThreadNamePrefix("partition-thread-");
-	    executor.setWaitForTasksToCompleteOnShutdown(true);
-	    executor.initialize();
-	    return executor;
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 스레드 수 설정
+        executor.setCorePoolSize(gridSize);          	// 기본 스레드 수
+        executor.setMaxPoolSize(gridSize);           	// 최대 스레드 수
+        executor.setQueueCapacity(0);  					// 큐 사용하지 않음 → 즉시 쓰레드 실행
+        // 거부 정책 (큐가 가득 찼을 때)
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setThreadNamePrefix("batch-default-");
+        
+        // Shutdown 시 작업완료 대기시간 설정여부
+        executor.setWaitForTasksToCompleteOnShutdown(true); 
+        // Shutdown 시 작업완료 대기시간 설정. 1시간 대기 설정 (배치 작업 시간에 맞춰 충분히 길게 설정)
+        executor.setAwaitTerminationSeconds(60*60*1);
+        
+        executor.initialize();
+        return executor;
 	}
 
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
@@ -114,7 +119,6 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @param gridSize
 	 * @return
 	 */
-	@Bean
 	private Step parallelMasterStep() {
 		callLog(this, "parallelMasterStep");
 		return new StepBuilder("parallelMasterStep", jobRepository)
@@ -130,7 +134,6 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Bean
 	public Step parallelSlaveStep() {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
@@ -148,16 +151,19 @@ public class TableToFileJobConfig extends BaseJobConfig {
      * @return
      */
     @Bean
-    @Qualifier("queryToFilePartitioner")
     @StepScope
     public QueryToFilePartitioner queryToFilePartitioner(int gridSize) {
     	callLog(this, "queryPartitioner", gridSize);
+    	Map<String, Object> params = new HashMap<String, Object>();
+    	params.put("Name", "하하");
+    	
     	QueryToFilePartitioner queryToFilePartitioner = new QueryToFilePartitioner(
             sqlBatchSessionSample, 
             "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", 
             "TEST_ID", 
             gridSize,
             this.outputFileFullPath
+            ,params
         );
     	// partition 메서드에 로그 추가
         return queryToFilePartitioner;

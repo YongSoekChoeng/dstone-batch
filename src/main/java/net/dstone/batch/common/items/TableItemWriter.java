@@ -28,6 +28,14 @@ public class TableItemWriter extends BaseItem implements ItemStreamWriter<Map<St
     	this.queryId = queryId;
     }
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
 	@SuppressWarnings({ "rawtypes" })
 	@Override
     public void write(Chunk<? extends Map<String, Object>> chunk) {

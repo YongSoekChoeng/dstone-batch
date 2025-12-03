@@ -57,14 +57,6 @@ public abstract class BaseJobConfig extends BaseBatchObject{
     @Qualifier("jobRegisterListener")
     protected JobExecutionListener jobRegisterListener;
 
-    @Autowired 
-    @Qualifier("taskExecutor")
-    protected TaskExecutor taskExecutor;
-
-    @Autowired 
-    @Qualifier("heavyTaskExecutor")
-    protected TaskExecutor heavyTaskExecutor;
-    
 	private String name;
 	
 	private LinkedList<Object> flowList = new LinkedList<Object>();

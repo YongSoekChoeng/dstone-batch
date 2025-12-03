@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
@@ -26,6 +27,7 @@ import net.dstone.common.utils.StringUtil;
  * 파일 Range(From라인~To라인)핸들링을 위한 ItemReader 구현체. 
  * 통상 FilePartitioner 를 통해서 호출됨. 
  * FilePartitioner 에서 Step Parameter 로 주입된 fromLine, toLine 변수로 대상파일의 Range를 읽어온다.
+ * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
  * 
  * 아래와 같은 흐름을 갖는다.
  * Job 시작
@@ -110,6 +112,14 @@ public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Ma
     	this.colInfoMap = colInfoMap;
     	this.div = div;
     }
+
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
 
     @Override
     public void open(ExecutionContext stepExecution) throws ItemStreamException {

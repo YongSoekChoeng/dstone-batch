@@ -16,4 +16,12 @@ public abstract class AbstractItemReader<I> extends BaseItem implements ItemRead
     @Override
     public abstract I read();
 
+	/**
+	 * Step 시작 전에 진행할 작업
+	 */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		
+	}
+
 }
