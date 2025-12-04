@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.annotation.BeforeStep;
 
 import net.dstone.common.utils.FileUtil;
@@ -14,13 +16,13 @@ import net.dstone.common.utils.StringUtil;
 /**
  * ItemReader, ItemProcessor, ItemWriter, Tasklet 등 Step에서 내부적으로 사용되는 Item객체들의 부모 클래스
  */
-public abstract class BaseItem extends BaseBatchObject {
+public abstract class BaseItem extends BaseBatchObject implements StepExecutionListener {
 
 	protected StepExecution stepExecution;
 
     @SuppressWarnings("rawtypes")
 	@BeforeStep
-    private void beforeStep(StepExecution stepExecution) {
+    public void beforeStep(StepExecution stepExecution) {
     	// StepExecution 세팅.
     	this.stepExecution = stepExecution;
     	// JobParameter 를 StepExecution Parameter 로 카피.
@@ -38,14 +40,25 @@ public abstract class BaseItem extends BaseBatchObject {
     	// 상속 클래스들에서 진행할 개별적 작업 호출.
     	doBeforeStep(stepExecution);
     }
-    
+
     /**
      * Step 시작 전에 진행할 작업
      * @param stepExecution
      */
-    protected void doBeforeStep(StepExecution stepExecution) {
-    	
-    }
+    protected abstract void doBeforeStep(StepExecution stepExecution);
+
+	@Override
+	public ExitStatus afterStep(StepExecution stepExecution) {
+		ExitStatus exitStatus = StepExecutionListener.super.afterStep(stepExecution);
+		doAfterStep(stepExecution, exitStatus);
+		return exitStatus;
+	}
+
+    /**
+     * Step 종료 후에 진행할 작업
+     * @param stepExecution
+     */
+    protected abstract void doAfterStep(StepExecution stepExecution, ExitStatus exitStatus);
 
     /**
      * Job파라메터 전체를 Map형태로 얻어오는 메소드

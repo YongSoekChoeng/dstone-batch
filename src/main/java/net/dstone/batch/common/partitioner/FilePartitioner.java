@@ -88,4 +88,5 @@ public class FilePartitioner extends BasePartitioner {
         info("총 " + result.size() + "개의 파티션 생성. " + result);
         return result;
     }
+
 }

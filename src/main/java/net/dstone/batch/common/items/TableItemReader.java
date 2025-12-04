@@ -13,8 +13,6 @@ import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseItem;
-
 /**
  * DB핸들링을 위한 ItemReader 구현체. 
  * 
@@ -55,7 +53,7 @@ import net.dstone.batch.common.core.BaseItem;
  */
 @Component
 @StepScope
-public class TableItemReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
+public class TableItemReader extends AbstractItemReader<Map<String, Object>> implements ItemStreamReader<Map<String, Object>> {
 
     private final SqlSessionFactory sqlSessionFactory;
     private final String queryId;
@@ -83,7 +81,7 @@ public class TableItemReader extends BaseItem implements ItemStreamReader<Map<St
 	 */
 	@Override
 	protected void doBeforeStep(StepExecution stepExecution) {
-		
+sysout(this.getClass().getName() + " :: gridSize====================>>>" + this.getJobParam("gridSize") );	
 	}
 
     @Override

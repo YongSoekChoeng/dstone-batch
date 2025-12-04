@@ -11,14 +11,12 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemStreamWriter;
 import org.springframework.stereotype.Component;
 
-import net.dstone.batch.common.core.BaseItem;
-
 /**
  * DB핸들링을 위한 ItemWriter 구현체. 
  */
 @Component
 @StepScope
-public class TableItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
+public class TableItemWriter extends AbstractItemWriter<Map<String, Object>> implements ItemStreamWriter<Map<String, Object>> {
 
     private final SqlSessionTemplate sqlSessionTemplate;
     private String queryId;

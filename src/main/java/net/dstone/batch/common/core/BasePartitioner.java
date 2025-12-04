@@ -2,6 +2,8 @@ package net.dstone.batch.common.core;
 
 import java.util.Map;
 
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
 
@@ -67,5 +69,24 @@ public abstract class BasePartitioner extends BaseItem implements Partitioner {
 
     	return outputFileFullPath;
 	}
-	
+
+
+    /**
+     * Step 시작 전에 진행할 작업
+     * @param stepExecution
+     */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		// Partitioner 에서는 발생하지 않는 이벤트 임.
+    }
+
+    /**
+     * Step 종료 후에 진행할 작업
+     * @param stepExecution
+     */
+	@Override
+	protected void doAfterStep(StepExecution stepExecution, ExitStatus exitStatus) {
+		// Partitioner 에서는 발생하지 않는 이벤트 임.
+	}
+    
 }

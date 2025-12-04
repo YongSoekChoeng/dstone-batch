@@ -3,10 +3,10 @@ package net.dstone.batch.sample.jobs.job001.items;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 
-import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.batch.common.items.AbstractItemWriter;
 import net.dstone.common.utils.FileUtil;
 
-public class SampleItemWriter extends BaseBatchObject implements ItemWriter<String> {
+public class SampleItemWriter extends AbstractItemWriter<String> implements ItemWriter<String> {
 
     @Override
     public void write(Chunk<? extends String> items) throws Exception {

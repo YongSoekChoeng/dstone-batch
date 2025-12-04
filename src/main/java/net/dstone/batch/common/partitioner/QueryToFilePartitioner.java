@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.item.ExecutionContext;
 
 import net.dstone.batch.common.consts.Constants;
@@ -53,11 +55,13 @@ public class QueryToFilePartitioner extends BasePartitioner {
         this.params.put(Constants.Partition.KEY_COLUMN, this.keyColumn);
         this.params.put(Constants.Partition.GRID_SIZE, this.gridSize);
     }
-
+    
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
 
     	callLog(this, "doPartition", String.valueOf(gridSize));
+
+sysout(this.getClass().getName() + " :: gridSize====================>>>" + this.getJobParam("gridSize") );	
         
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
         this.params.put(Constants.Partition.GRID_SIZE, actualGridSize);

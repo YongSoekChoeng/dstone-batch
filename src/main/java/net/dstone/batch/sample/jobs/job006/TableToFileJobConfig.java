@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -81,7 +83,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
         *******************************************************************/
 		this.addStep(this.parallelMasterStep());
 	}
-	
+
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
 	/**
 	 * 병렬처리 Master Step

@@ -17,7 +17,6 @@ import org.springframework.batch.item.ItemStreamWriter;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
-import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
@@ -26,7 +25,7 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<String, Object>> {
+public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> implements ItemStreamWriter<Map<String, Object>> {
 
     /**************************************** 멤버 선언 시작 ****************************************
 	outputFileFullPath : 저장할 대상파일 전체경로. 생성자로 주입.

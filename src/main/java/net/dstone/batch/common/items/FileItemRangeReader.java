@@ -20,7 +20,6 @@ import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
-import net.dstone.batch.common.core.BaseItem;
 import net.dstone.common.utils.StringUtil;
 
 /**
@@ -65,7 +64,7 @@ import net.dstone.common.utils.StringUtil;
  */
 @Component
 @StepScope
-public class FileItemRangeReader extends BaseItem implements ItemStreamReader<Map<String, Object>> {
+public class FileItemRangeReader extends AbstractItemReader<Map<String, Object>> implements ItemStreamReader<Map<String, Object>> {
 	
     /**************************************** 멤버 선언 시작 ****************************************
 	inputFileFullPath : 읽어올 대상파일 전체경로. 생성자로 주입.
