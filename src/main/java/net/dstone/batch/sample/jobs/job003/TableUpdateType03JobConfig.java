@@ -20,8 +20,8 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseJobConfig;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
+ * <pre>
  * SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
  * 
  * CREATE TABLE SAMPLE_TEST (
@@ -40,9 +40,9 @@ import net.dstone.batch.common.core.BaseJobConfig;
 @AutoRegJob(name = "tableUpdateType03Job")
 public class TableUpdateType03JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성
@@ -51,24 +51,13 @@ public class TableUpdateType03JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-        int chunkSize = 30;
+        int chunkSize = 500;
         
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 수정(단일쓰레드처리). Reader/Processor/Writer 동일클래스 내에 구현.
         실행파라메터 : spring.batch.job.names=tableUpdateType03Job
         *******************************************************************/
 		this.addStep(this.singleInAllStep(chunkSize));
-	}
-	
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
-	    return executor;
 	}
 	
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 

@@ -1,5 +1,7 @@
 package net.dstone.batch.sample.jobs.job002;
 
+import java.util.LinkedHashMap;
+
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -8,8 +10,11 @@ import net.dstone.batch.sample.jobs.job002.items.TableDeleteTasklet;
 import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job.
+ * <pre>
+ * 두 개의 Tasklet 으로 구현.
+ * 01. 기존데이터 삭제 - Tasklet
+ * 02. 신규데이터 입력 - Tasklet
  * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
@@ -18,20 +23,16 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
- * 
- * 두 개의 Tasklet 으로 구현.
- * 01. 기존데이터 삭제 - Tasklet
- * 02. 신규데이터 입력 - Tasklet
  * </pre>
  */
 @Component
 @AutoRegJob(name = "tableInsertType01Job")
 public class TableInsertType01JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성

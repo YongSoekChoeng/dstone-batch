@@ -27,6 +27,7 @@ import net.dstone.common.utils.StringUtil;
 /**
  * 파일전체 핸들링을 위한 ItemReader 구현체. 
  * 
+ * <pre>
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작
@@ -59,7 +60,7 @@ import net.dstone.common.utils.StringUtil;
  *     │
  *     ▼
  * Step 종료
- * 
+ * </pre>
  */
 @Component
 @StepScope

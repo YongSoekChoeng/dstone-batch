@@ -45,7 +45,6 @@ public class QueryToFilePartitioner extends BasePartitioner {
             String outputFileFullPath,
             Map<String, Object> params
      ) {
-sysout( "params=====================>>>>" + params);
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.queryId = queryId;
         this.keyColumn = keyColumn;
@@ -89,8 +88,6 @@ sysout( "params=====================>>>>" + params);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create query-based partitions", e);
         } 
-    	info(this.getClass().getName() + ".partition() return ["+result+"]" );
-    	
         return result;
     }
     

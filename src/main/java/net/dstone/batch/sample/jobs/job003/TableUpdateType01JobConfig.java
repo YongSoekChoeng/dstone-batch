@@ -7,11 +7,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -21,8 +17,8 @@ import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
+ * <pre>
  * 전체데이터를 읽어와서 SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
  * 
  * CREATE TABLE SAMPLE_TEST (
@@ -41,9 +37,9 @@ import net.dstone.batch.common.items.TableItemWriter;
 @AutoRegJob(name = "tableUpdateType01Job")
 public class TableUpdateType01JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성
@@ -52,24 +48,13 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-        int chunkSize = 30;
+        int chunkSize = 500;
         
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 수정(단일쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
         실행파라메터 : spring.batch.job.names=tableUpdateType01Job
         *******************************************************************/
 		this.addStep(this.singleStep(chunkSize));
-	}
-	
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
-	    return executor;
 	}
 	
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
@@ -96,7 +81,7 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemReader() {
+    public TableItemReader itemReader() {
     	//callLog(this, "itemReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
         return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestAll", baseParams);
@@ -137,7 +122,7 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public TableItemWriter itemWriter() {
     	callLog(this, "itemWriter");
         return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
     }

@@ -10,10 +10,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -26,8 +23,8 @@ import net.dstone.common.utils.FileUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * <pre>
  * 테스트용 파일정보를 생성하는 Job.
+ * <pre>
  * 아래의 LAYOUT 구조와 동일한 파일 데이터를 생성하는 Job.
  * 
  * CREATE TABLE SAMPLE_TEST (
@@ -45,19 +42,24 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "fileDataGenJob")
 public class FileDataGenJobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
 	// inputFileFullPath : 생성될 Full파일 경로
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	private int dataCnt = 0;			// 생성데이터 갯수
-	String inputFileFullPath = "";		// 생성될 Full파일 경로
+	String outputFileFullPath = "";		// 생성될 Full파일 경로
     String charset = "";				// 파일 인코딩
     boolean append = false;				// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
-	
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+    {
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+    }
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성
@@ -65,23 +67,20 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
+		
+		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
 		dataCnt 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
-	    inputFileFullPath 	= "";
+		outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
 	    
-	    colInfoMap.put("TEST_ID", 30);
-	    colInfoMap.put("TEST_NAME", 200);
-	    colInfoMap.put("FLAG_YN", 1);
-	    colInfoMap.put("INPUT_DT", 14);
-	    
-	    int chunkSize = 50;
+	    int chunkSize 		= 500;
 
         /*******************************************************************
         테스트용 파일정보를 생성
-        실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
         *******************************************************************/
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
@@ -107,7 +106,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
     /**
-     * Table 읽어오는 ItemReader
+     * 데이터를 생성하는 ItemReader
      * @return
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -122,12 +121,11 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     			callLog(this, "fillQueue");
 
     			// 기존데이터 삭제
-    		    if( !append && FileUtil.isFileExist(inputFileFullPath) ) {
-    		    	FileUtil.deleteFile(inputFileFullPath);
+    		    if( !append && FileUtil.isFileExist(outputFileFullPath) ) {
+    		    	FileUtil.deleteFile(outputFileFullPath);
     		    }
 
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
-    			int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString()) ;
     			for(int i=0; i<dataCnt; i++) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );
@@ -154,7 +152,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Processor 설정 시작 ---------------------------- */ 
     /**
-     * Table 처리용 ItemProcessor
+     * 개별건 처리용 ItemProcessor
      * @return
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -176,15 +174,14 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
     /**
-     * Table 처리용 ItemWriter
+     * File 처리용 ItemWriter
      * @return
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public FileItemWriter itemWriter() {
     	callLog(this, "itemWriter");
-    	//FileItemWriter writer = new FileItemWriter(inputFileFullPath, charset, append, colInfoMap);
-    	FileItemWriter writer = new FileItemWriter();
+    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

@@ -18,7 +18,8 @@ public abstract class BaseItem extends BaseBatchObject {
 
 	protected StepExecution stepExecution;
 
-    @BeforeStep
+    @SuppressWarnings("rawtypes")
+	@BeforeStep
     private void beforeStep(StepExecution stepExecution) {
     	// StepExecution 세팅.
     	this.stepExecution = stepExecution;

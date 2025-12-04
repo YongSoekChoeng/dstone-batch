@@ -7,11 +7,9 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -23,8 +21,8 @@ import net.dstone.batch.common.partitioner.QueryPartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
+ * <pre>
  * 전체데이터를 읽어와서 SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
  * 
  * CREATE TABLE SAMPLE_TEST (
@@ -43,11 +41,11 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "tableUpdateType02Job")
 public class TableUpdateType02JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
-	private int gridSize = 2;	// 쓰레드 갯수
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+	private int gridSize = 0;	// 쓰레드 갯수
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성
@@ -56,25 +54,17 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-        int chunkSize = 30;
-        gridSize = Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
+		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
+        gridSize 		= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
+        /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
+
+        int chunkSize 	= 500;
         
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 수정(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
         실행파라메터 : spring.batch.job.names=tableUpdateType02Job gridSize=3
         *******************************************************************/
 		this.addStep(this.parallelMasterStep(chunkSize, gridSize));
-	}
-	
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
-	    return executor;
 	}
 	
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
@@ -90,7 +80,7 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 				.partitioner("parallelSlaveStep", queryPartitioner(gridSize))
 				.step(parallelSlaveStep(chunkSize))
 				.gridSize(gridSize)
-				.taskExecutor(executor(null))
+				.taskExecutor(baseTaskExecutor())
 				.build();
 	}
 	
@@ -102,9 +92,9 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
-				.reader(itemPartitionReader()) // Spring이 런타임에 주입
+				.reader(tableUpdateType02JobTableItemReader) 	/* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.processor( itemProcessor())
-				.writer( itemWriter())
+				.writer(tableUpdateType02JobTableItemWriter)	/* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -130,7 +120,8 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
-    
+	@Autowired
+	TableItemReader tableUpdateType02JobTableItemReader;
     /**
      * Table 읽어오는 ItemReader. Partitioner 와 함께 사용.
      * @param minId
@@ -139,10 +130,11 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemPartitionReader() {
+    public TableItemReader tableUpdateType02JobTableItemReader() {
     	//callLog(this, "itemPartitionReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
-        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
+    	TableItemReader tableItemReader = new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
+        return tableItemReader;
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 
@@ -174,15 +166,18 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	/* --------------------------------- Processor 설정 끝 ---------------------------- */ 
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
+	@Autowired
+	TableItemWriter tableUpdateType02JobTableItemWriter;
     /**
      * Table 처리용 ItemWriter
      * @return
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public TableItemWriter tableUpdateType02JobTableItemWriter() {
     	callLog(this, "itemWriter");
-        return new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
+    	TableItemWriter tableItemWriter = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.updateSampleTest");
+        return tableItemWriter;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
     

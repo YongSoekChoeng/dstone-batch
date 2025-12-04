@@ -25,6 +25,7 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일 Range(From라인~To라인)핸들링을 위한 ItemReader 구현체. 
+ * <pre>
  * 통상 FilePartitioner 를 통해서 호출됨. 
  * FilePartitioner 에서 Step Parameter 로 주입된 fromLine, toLine 변수로 대상파일의 Range를 읽어온다.
  * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
@@ -60,7 +61,7 @@ import net.dstone.common.utils.StringUtil;
  *     │
  *     ▼
  * Step 종료
- * 
+ * </pre>
  */
 @Component
 @StepScope

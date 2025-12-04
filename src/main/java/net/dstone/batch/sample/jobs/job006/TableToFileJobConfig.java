@@ -12,6 +12,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -26,8 +27,8 @@ import net.dstone.batch.common.partitioner.QueryToFilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 의 데이터를 파일로 저장하는 Job.
+ * <pre>
  * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
@@ -44,28 +45,27 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "tableToFileJob")
 public class TableToFileJobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
 	// chunkSize : 트랜젝션묶음 크기
-	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리 + outputFileFullPath 의 파일명을 참고하여 자동으로 파일생성. 
+	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
-	private int gridSize = 0;		// 쓰레드 갯수
-	private int chunkSize = 0;		// 청크 사이즈
+	private int gridSize = 0;			// 쓰레드 갯수
+	private int chunkSize = 0;			// 청크 사이즈
 	String outputFileFullPath = "";
-    String charset = "";			// 파일 인코딩
-    boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
-
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
+    String charset = "";				// 파일 인코딩
+    boolean append = false;				// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
     {
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
 	    colInfoMap.put("FLAG_YN", 1);
 	    colInfoMap.put("INPUT_DT", 14);
     }
-	
+	/*********************************** 멤버변수 선언 끝 ***********************************/ 
+    
 	/**
 	 * Job 구성
 	 */
@@ -73,11 +73,13 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
+		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
 		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
 	    chunkSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("chunkSize"), "20"));
 		outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+		/*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
 	    
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 파일로 저장(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
@@ -86,31 +88,6 @@ public class TableToFileJobConfig extends BaseJobConfig {
 		this.addStep(this.parallelMasterStep());
 	}
 	
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-    @Bean
-	public TaskExecutor partitionTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        // 스레드 수 설정
-        executor.setCorePoolSize(gridSize);          	// 기본 스레드 수
-        executor.setMaxPoolSize(gridSize);           	// 최대 스레드 수
-        executor.setQueueCapacity(0);  					// 큐 사용하지 않음 → 즉시 쓰레드 실행
-        // 거부 정책 (큐가 가득 찼을 때)
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setThreadNamePrefix("batch-default-");
-        
-        // Shutdown 시 작업완료 대기시간 설정여부
-        executor.setWaitForTasksToCompleteOnShutdown(true); 
-        // Shutdown 시 작업완료 대기시간 설정. 1시간 대기 설정 (배치 작업 시간에 맞춰 충분히 길게 설정)
-        executor.setAwaitTerminationSeconds(60*60*1);
-        
-        executor.initialize();
-        return executor;
-	}
-
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
 	/**
 	 * 병렬처리 Master Step
@@ -124,7 +101,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
 				.partitioner("parallelSlaveStep", queryToFilePartitioner(gridSize))
 				.step(parallelSlaveStep())
 				.gridSize(gridSize)
-				.taskExecutor(partitionTaskExecutor())
+				.taskExecutor(baseTaskExecutor())
 				.build();
 	}
 	
@@ -136,10 +113,9 @@ public class TableToFileJobConfig extends BaseJobConfig {
 		callLog(this, "parallelSlaveStep");
 		return new StepBuilder("parallelSlaveStep", jobRepository)
 				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
-				.reader(itemPartitionReader()) // Spring이 런타임에 주입
+				.reader(tableToFileJobTableItemReader)  /* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.processor(itemProcessor())
-				/* 멀티쓰레드에서 writer 는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
-				.writer(itemWriter)
+				.writer(tableToFileJobFileItemWriter)   /* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -164,12 +140,13 @@ public class TableToFileJobConfig extends BaseJobConfig {
             this.outputFileFullPath
             ,params
         );
-    	// partition 메서드에 로그 추가
         return queryToFilePartitioner;
     }
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
+	@Autowired
+	TableItemReader tableToFileJobTableItemReader;
     /**
      * Table 읽어오는 ItemReader. Partitioner 와 함께 사용.
      * @param minId
@@ -178,10 +155,11 @@ public class TableToFileJobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemPartitionReader() {
+    public TableItemReader tableToFileJobTableItemReader() {
     	//callLog(this, "itemPartitionReader");
     	Map<String, Object> baseParams = new HashMap<String, Object>();
-        return new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
+    	TableItemReader reader = new TableItemReader(this.sqlSessionFactorySample, "net.dstone.batch.sample.SampleTestDao.selectListSampleTestBetween", baseParams);
+    	return reader;
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 	
@@ -213,11 +191,10 @@ public class TableToFileJobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
 	@Autowired
-	FileItemWriter itemWriter;
-	
+	FileItemWriter tableToFileJobFileItemWriter;
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public FileItemWriter tableToFileJobFileItemWriter() {
     	callLog(this, "itemWriter");
     	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap); 
     	return writer;

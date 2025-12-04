@@ -8,11 +8,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -34,7 +30,7 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "fileCopyType01Job")
 public class FileCopyType01JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// inputFileFullPath : 복사될 Full파일 경로
 	// outputFileFullPath : 복사생성될 Full파일 경로.
@@ -46,36 +42,37 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
 	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
     String charset = "";			// 파일 인코딩
     boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
-	
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
-	
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+    {
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+    }
+	/*********************************** 멤버변수 선언 끝 ***********************************/ 
+    
 	/** 
 	 * Job 구성
 	 */
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		
-	    inputFileFullPath 	= "";
-	    outputFileFullPath 	= "";
-	    outputFileDir 		= "";
+
+		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
+	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
+	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
+	    outputFileDir 		= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
 	    
-	    colInfoMap.put("TEST_ID", 30);
-	    colInfoMap.put("TEST_NAME", 200);
-	    colInfoMap.put("FLAG_YN", 1);
-	    colInfoMap.put("INPUT_DT", 14);
-	    
-	    int chunkSize = 5;
+	    int chunkSize 		= 5;
 
         /*******************************************************************
         1:1복사(단일쓰레드처리).
         실행파라메터 : spring.batch.job.names=fileCopyType01Job inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam
         *******************************************************************/
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
+
 	    this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
@@ -104,7 +101,7 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemReader() {
+    public FileItemReader itemReader() {
     	callLog(this, "itemReader");
     	return new FileItemReader(inputFileFullPath, charset, colInfoMap);
     }
@@ -143,37 +140,13 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public FileItemWriter itemWriter() {
     	callLog(this, "itemWriter");
-    	//FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
-    	FileItemWriter writer = new FileItemWriter();
-    	return writer;
-    }
-    /**
-     * File 처리용 ItemWriter
-     * @return
-     */
-    @Bean
-    @StepScope
-    public ItemWriter<Map<String, Object>> itemLinesRangeWriter() {
-    	callLog(this, "itemWriter");
-    	//FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap);
-    	FileItemWriter writer = new FileItemWriter();
+    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
 
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
-	    return executor;
-	}
-	
     /*************************************************************************************************************************/
     
 }

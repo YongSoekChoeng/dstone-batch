@@ -17,6 +17,8 @@ import net.dstone.batch.common.core.BaseItem;
 
 /**
  * DB핸들링을 위한 ItemReader 구현체. 
+ * 
+ * <pre>
  * 아래와 같은 흐름을 갖는다.
  * 
  * Job 시작
@@ -49,7 +51,7 @@ import net.dstone.batch.common.core.BaseItem;
  *     │
  *     ▼
  * Step 종료
- * 
+ * </pre>
  */
 @Component
 @StepScope

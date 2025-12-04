@@ -10,6 +10,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
@@ -20,6 +21,7 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemWriter;
+import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.partitioner.FilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
@@ -36,7 +38,7 @@ import net.dstone.common.utils.StringUtil;
 @AutoRegJob(name = "fileCopyType02Job")
 public class FileCopyType02JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
 	// inputFileFullPath : 복사될 Full파일 경로
@@ -50,38 +52,37 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
     String charset = "";			// 파일 인코딩
     boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
-	
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>();
-	
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+    {
+	    colInfoMap.put("TEST_ID", 30);
+	    colInfoMap.put("TEST_NAME", 200);
+	    colInfoMap.put("FLAG_YN", 1);
+	    colInfoMap.put("INPUT_DT", 14);
+    }
+	/*********************************** 멤버변수 선언 끝 ***********************************/ 
+    
 	/** 
 	 * Job 구성
 	 */
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		
+
+		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
 		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
-	    inputFileFullPath 	= "";
-	    outputFileFullPath 	= "";
-	    outputFileDir 		= "";
+	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
+	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
+	    outputFileDir 		= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
 	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
 	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
+	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
 	    
-	    colInfoMap.put("TEST_ID", 30);
-	    colInfoMap.put("TEST_NAME", 200);
-	    colInfoMap.put("FLAG_YN", 1);
-	    colInfoMap.put("INPUT_DT", 14);
-	    
-	    int chunkSize = 5;
+	    int chunkSize 		= 5;
 
         /*******************************************************************
         1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
         실행파라메터 : spring.batch.job.names=fileCopyType02Job gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileDir=C:/Temp/SAMPLE_DATA/split
         *******************************************************************/
-	    
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    outputFileDir 		= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
 		this.addStep(this.parallelLinesRangeMasterStep(chunkSize, gridSize));
 		
 	}
@@ -99,7 +100,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 				.partitioner("parallelSlaveStep", filePartitioner(gridSize))
 				.step(parallelLinesRangeSlaveStep(chunkSize))
 				.gridSize(gridSize)
-				.taskExecutor(executor(null))
+				.taskExecutor(baseTaskExecutor())
 				.build();
 	}
 	
@@ -111,9 +112,9 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 		callLog(this, "parallelLinesRangeSlaveStep");
 		return new StepBuilder("parallelLinesRangeSlaveStep", jobRepository)
 				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
-				.reader(itemLinesRangeReader()) // Spring이 런타임에 주입
+				.reader(fileCopyType02JobFileItemRangeReader) 	/* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.processor( itemProcessor())
-				.writer( itemWriter())
+				.writer(fileCopyType02JobFileItemWriter) 		/* 멀티쓰레드에서는 메서드호출 방식이 아닌, 프록시주입 형식으로 해야 함. */
 				.build();
 	}
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
@@ -134,18 +135,18 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
+	@Autowired
+	FileItemRangeReader fileCopyType02JobFileItemRangeReader;
     /**
      * File 읽어오는 ItemReader. Partitioner 와 함께 사용.
-     * @param minId
-     * @param maxId
      * @return
      */
     @Bean
     @StepScope
-    public ItemReader<Map<String, Object>> itemLinesRangeReader() {
-    	callLog(this, "itemLinesRangeReader");
-    	Map<String, Object> baseParams = new HashMap<String, Object>();
-        return new FileItemRangeReader(inputFileFullPath, charset, colInfoMap);
+    public FileItemRangeReader fileCopyType02JobFileItemRangeReader() {
+    	callLog(this, "fileCopyType02JobFileItemRangeReader");
+    	FileItemRangeReader fileItemRangeReader = new FileItemRangeReader(inputFileFullPath, charset, colInfoMap);
+        return fileItemRangeReader;
     }
 	/* --------------------------------- Reader 설정 끝 -------------------------------- */ 
 
@@ -154,7 +155,8 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
      * File 처리용 ItemProcessor
      * @return
      */
-    @Bean
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	@Bean
     @StepScope
     public ItemProcessor<Map<String, Object>, Map<String, Object>> itemProcessor() {
     	callLog(this, "itemProcessor");
@@ -175,31 +177,27 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	/* --------------------------------- Processor 설정 끝 ---------------------------- */ 
 
 	/* --------------------------------- Writer 설정 시작 ------------------------------ */
+	@Autowired
+	FileItemWriter fileCopyType02JobFileItemWriter;
+    /**
+     * File 읽어오는 ItemReader. Partitioner 와 함께 사용.
+     * @param minId
+     * @param maxId
+     * @return
+     */
     /**
      * File 처리용 ItemWriter
      * @return
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public FileItemWriter fileCopyType02JobFileItemWriter() {
     	callLog(this, "itemWriter");
-    	//FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap);
     	FileItemWriter writer = new FileItemWriter();
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
 
-	/**
-	 * Step 스코프에 해당하는 TaskExecutor
-	 * @param executor
-	 * @return
-	 */
-	@Bean
-	@StepScope
-	public TaskExecutor executor(@Qualifier("taskExecutor") TaskExecutor executor) {
-	    return executor;
-	}
-	
     /*************************************************************************************************************************/
     
 }

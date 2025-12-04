@@ -2,12 +2,14 @@ package net.dstone.batch.common.core;
 
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -17,11 +19,14 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import net.dstone.batch.common.consts.ConstMaps;
+import net.dstone.batch.common.items.FileItemWriter;
 
 /**
  * JobConfig들의 부모 클래스
@@ -29,6 +34,7 @@ import net.dstone.batch.common.consts.ConstMaps;
 @Configuration
 public abstract class BaseJobConfig extends BaseBatchObject{
 
+	/******************************** 공통관련 멤버 선언 시작 ********************************/
 	@Autowired
 	protected JobRepository jobRepository;
 
@@ -56,7 +62,51 @@ public abstract class BaseJobConfig extends BaseBatchObject{
     @Autowired 
     @Qualifier("jobRegisterListener")
     protected JobExecutionListener jobRegisterListener;
+	/******************************** 공통관련 멤버 선언 끝 ********************************/
 
+	/****************************** Executor 멤버 선언 시작 ******************************/
+	/**
+	 * 일반적으로 사용하는 TaskExecutor
+	 */
+    @Bean
+    protected TaskExecutor baseTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 스레드 수 설정
+        executor.setCorePoolSize(3);          	// 기본 스레드 수
+        executor.setMaxPoolSize(5);           	// 최대 스레드 수
+        executor.setQueueCapacity(0);  			// 큐 사용하지 않음 → 즉시 쓰레드 실행
+        // 거부 정책 (큐가 가득 찼을 때)
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setThreadNamePrefix("batch-default-");
+        // Shutdown 시 작업완료 대기시간 설정여부
+        executor.setWaitForTasksToCompleteOnShutdown(true); 
+        // Shutdown 시 작업완료 대기시간 설정. 1시간 대기 설정 (배치 작업 시간에 맞춰 충분히 길게 설정)
+        executor.setAwaitTerminationSeconds(60*60*1);
+        executor.initialize();
+        return executor;
+	}
+	/**
+	 * 무거운(Heavy)업무에서 사용하는 TaskExecutor
+	 */
+    @Bean
+    protected TaskExecutor heavyTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 스레드 수 설정
+        executor.setCorePoolSize(5);          	// 기본 스레드 수
+        executor.setMaxPoolSize(10);           	// 최대 스레드 수
+        executor.setQueueCapacity(0);  			// 큐 사용하지 않음 → 즉시 쓰레드 실행
+        // 거부 정책 (큐가 가득 찼을 때)
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setThreadNamePrefix("batch-default-");
+        // Shutdown 시 작업완료 대기시간 설정여부
+        executor.setWaitForTasksToCompleteOnShutdown(true); 
+        // Shutdown 시 작업완료 대기시간 설정. 1시간 대기 설정 (배치 작업 시간에 맞춰 충분히 길게 설정)
+        executor.setAwaitTerminationSeconds(60*60*1);
+        executor.initialize();
+        return executor;
+	}
+	/****************************** Executor 멤버 선언 끝 ******************************/
+    
 	private String name;
 	
 	private LinkedList<Object> flowList = new LinkedList<Object>();

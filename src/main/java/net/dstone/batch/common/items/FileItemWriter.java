@@ -14,7 +14,6 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -115,13 +114,6 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
     	String outputFile = "";
         try {
         	
-            System.out.println("========== FileItemWriter.open() ==========");
-            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
-            System.out.println("Thread: " + Thread.currentThread().getName());
-            System.out.println("==========================================");
-            
-        	//this.setExecutionContext(executionContext);
-        	
         	String outputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH, "").toString();
         	String inputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, "").toString();
         	// 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
@@ -142,8 +134,7 @@ public class FileItemWriter extends BaseItem implements ItemStreamWriter<Map<Str
 			writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(outputFile, append), Charset.forName(charset))
 			);
-			this.outputFileFullPath = outputFile;
-sysout("open ::: writer==================================>>>" + writer);			
+			this.outputFileFullPath = outputFile;	
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + outputFile, e);
         }
@@ -152,13 +143,9 @@ sysout("open ::: writer==================================>>>" + writer);
     @Override
     public void write(Chunk<? extends Map<String, Object>> chunk) throws Exception {
     	callLog(this, "write", "chunk[size:"+chunk.size()+"]");
-    	
-sysout(this.getClass().getName() + " [" +Thread.currentThread()+ "] ===>>>" + "chunk[size:"+chunk.size()+"]");    	
-        
 		if (writer == null) {
             throw new IllegalStateException("Writer is not opened.");
         }
-sysout( this + " ::: writer==================================>>>" + writer);
         for (Map<String, Object> item : chunk) {
         	
         	String line = "";
@@ -195,13 +182,6 @@ sysout( this + " ::: writer==================================>>>" + writer);
     public void close() throws ItemStreamException {
     	callLog(this, "close");
         try {
-        	
-            System.out.println("========== FileItemWriter.close() ==========");
-            System.out.println("outputFileFullPath: " + this.outputFileFullPath);
-            System.out.println("Thread: " + Thread.currentThread().getName());
-            System.out.println("==========================================");
-            
-            
             if (writer != null) {
                 log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
                 writer.close();

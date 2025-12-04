@@ -23,8 +23,11 @@ import net.dstone.common.utils.DateUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
- * <pre>
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job.
+ * <pre>
+ * 삭제는 Tasklet으로 진행하고 입력은 Reader/Processor/Writer으로 된 Step 으로 구현.
+ * 01. 기존데이터 삭제 - Tasklet
+ * 02. 신규데이터 입력 - Step
  * 
  * CREATE TABLE SAMPLE_TEST (
  *   TEST_ID VARCHAR(30) NOT NULL, 
@@ -33,20 +36,16 @@ import net.dstone.common.utils.StringUtil;
  *   INPUT_DT DATE NOT NULL,  
  *   PRIMARY KEY  (TEST_ID)
  * )
- * 
- * 삭제는 Tasklet으로 진행하고 입력은 Reader/Processor/Writer으로 된 Step 으로 구현.
- * 01. 기존데이터 삭제 - Tasklet
- * 02. 신규데이터 입력 - Step
  * </pre>
  */
 @Component
 @AutoRegJob(name = "tableInsertType02Job")
 public class TableInsertType02JobConfig extends BaseJobConfig {
 
-    /**************************************** 00. Job Parameter 선언 시작 ****************************************/
+	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
-    /**************************************** 00. Job Parameter 선언 끝 ******************************************/
+    /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성
@@ -76,7 +75,6 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
 	 */
 	private Step workerStep(String stepName, int chunkSize) {
 		callLog(this, "workerStep", ""+stepName+", "+chunkSize+"");
-		
 		return new StepBuilder(stepName, jobRepository)
 				.<Map<String, Object>, Map<String, Object>>chunk(chunkSize, txManagerCommon)
 				.reader( itemReader() )
@@ -88,7 +86,7 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
 
 	/* --------------------------------- Reader 설정 시작 ------------------------------- */ 
     /**
-     * Table 읽어오는 ItemReader
+     * 데이터를 생성하는 ItemReader
      * @return
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
