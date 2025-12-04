@@ -38,8 +38,8 @@ import net.dstone.common.utils.StringUtil;
  * </pre>
  */
 @Component
-@AutoRegJob(name = "tableInsertType02Job")
-public class TableInsertType02JobConfig extends BaseJobConfig {
+@AutoRegJob(name = "tableDataGenType02Job")
+public class TableDataGenType02JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
@@ -55,7 +55,7 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
 		
         /*******************************************************************
         1. 테이블 SAMPLE_TEST 에 테스트데이터를 입력
-        	실행파라메터 : spring.batch.job.names=tableInsertType02Job dataCnt=80
+        	실행파라메터 : spring.batch.job.names=tableDataGenType02Job dataCnt=80
         *******************************************************************/
 		int chunkSize = 20;
 		// 01. 기존데이터 삭제

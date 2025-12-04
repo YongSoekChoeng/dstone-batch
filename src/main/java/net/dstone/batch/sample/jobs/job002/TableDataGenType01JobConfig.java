@@ -24,8 +24,8 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
  * </pre>
  */
 @Component
-@AutoRegJob(name = "tableInsertType01Job")
-public class TableInsertType01JobConfig extends BaseJobConfig {
+@AutoRegJob(name = "tableDataGenType01Job")
+public class TableDataGenType01JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
@@ -41,7 +41,7 @@ public class TableInsertType01JobConfig extends BaseJobConfig {
 		
         /*******************************************************************
         1. 테이블 SAMPLE_TEST 에 테스트데이터를 입력
-        	실행파라메터 : spring.batch.job.names=tableInsertType01Job dataCnt=80
+        	실행파라메터 : spring.batch.job.names=tableDataGenType01Job dataCnt=80
         *******************************************************************/
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));
