@@ -49,8 +49,4 @@ public class TableInsertType01JobConfig extends BaseJobConfig {
 		this.addTasklet(new TableInsertTasklet(this.sqlBatchSessionSample));
 	}
 	
-    /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-
-    /*************************************************************************************************************************/
-    
 }

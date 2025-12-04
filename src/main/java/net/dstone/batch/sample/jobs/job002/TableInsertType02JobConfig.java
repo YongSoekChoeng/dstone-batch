@@ -64,8 +64,6 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
-    /**************************************** 01.Reader/Processor/Writer 별도클래스로 생성 ****************************************/
-
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 
 	/**
 	 * 단일처리 Step
@@ -160,7 +158,5 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */
-    
-    /*************************************************************************************************************************/
     
 }
