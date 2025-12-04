@@ -1,7 +1,6 @@
 package net.dstone.batch.common.core;
 
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -9,7 +8,6 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -26,7 +24,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import net.dstone.batch.common.consts.ConstMaps;
-import net.dstone.batch.common.items.FileItemWriter;
 
 /**
  * JobConfig들의 부모 클래스

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.batch.core.JobParameter;
-import org.springframework.stereotype.Component;
 
 import net.dstone.common.utils.StringUtil;
 

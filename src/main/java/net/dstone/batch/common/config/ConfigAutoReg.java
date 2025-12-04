@@ -15,8 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
 import net.dstone.batch.common.annotation.AutoRegJob;
-import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.batch.common.core.BaseJobConfig;
 
 @Configuration
 public class ConfigAutoReg extends BaseBatchObject {

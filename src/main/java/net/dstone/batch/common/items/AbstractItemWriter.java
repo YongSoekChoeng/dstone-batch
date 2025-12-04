@@ -1,7 +1,5 @@
 package net.dstone.batch.common.items;
 
-import java.util.Map;
-
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;

@@ -8,12 +8,8 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
@@ -21,7 +17,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.partitioner.FilePartitioner;
 import net.dstone.common.utils.StringUtil;
 
@@ -97,7 +92,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	private Step parallelLinesRangeMasterStep(int chunkSize, int gridSize) {
 		callLog(this, "parallelLinesRangeMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelLinesRangeMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", filePartitioner(gridSize))
+				.partitioner("parallelSlaveStep", fileCopyType02JobFilePartitioner(gridSize))
 				.step(parallelLinesRangeSlaveStep(chunkSize))
 				.gridSize(gridSize)
 				.taskExecutor(baseTaskExecutor())
@@ -125,9 +120,8 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
      * @return
      */
     @Bean
-    @Qualifier("filePartitioner")
     @StepScope
-	public FilePartitioner filePartitioner(int gridSize) {
+	public FilePartitioner fileCopyType02JobFilePartitioner(int gridSize) {
 		callLog(this, "filePartitioner", gridSize);
 		FilePartitioner filePartitioner = new FilePartitioner(inputFileFullPath, gridSize, outputFileDir);
 		return filePartitioner;

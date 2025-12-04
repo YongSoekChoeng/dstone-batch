@@ -9,7 +9,6 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -155,7 +154,7 @@ public class TableInsertType02JobConfig extends BaseJobConfig {
      */
     @Bean
     @StepScope
-    public ItemWriter<Map<String, Object>> itemWriter() {
+    public TableItemWriter itemWriter() {
     	callLog(this, "itemWriter");
     	TableItemWriter writer = new TableItemWriter(this.sqlBatchSessionSample, "net.dstone.batch.sample.SampleTestDao.insertSampleTest");
     	return writer;

@@ -1,7 +1,5 @@
 package net.dstone.batch.sample.jobs.job002;
 
-import java.util.LinkedHashMap;
-
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.annotation.AutoRegJob;
