@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -16,6 +17,8 @@ import net.dstone.batch.common.core.BasePartitioner;
  * 범용 쿼리 기반 Partitioner
  * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
  */
+@Component
+@JobScope
 public class QueryToFilePartitioner extends BasePartitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;
@@ -61,7 +64,7 @@ public class QueryToFilePartitioner extends BasePartitioner {
 
     	callLog(this, "doPartition", String.valueOf(gridSize));
 
-sysout(this.getClass().getName() + " :: gridSize====================>>>" + this.getJobParam("gridSize") );	
+sysout(this.getClass().getName() + " --:: gridSize====================>>>" + this.getJobParam("gridSize") );	
         
     	int actualGridSize = this.gridSize > 0 ? this.gridSize : gridSize;
         this.params.put(Constants.Partition.GRID_SIZE, actualGridSize);
