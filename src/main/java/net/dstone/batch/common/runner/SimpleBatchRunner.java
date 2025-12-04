@@ -108,10 +108,12 @@ public class SimpleBatchRunner extends BaseBatchObject {
         		}
                 JobLauncher jobLauncher = context.getBean(JobLauncher.class);
                 JobRegistry jobRegistry = context.getBean(JobRegistry.class);
+                
                 Job job = jobRegistry.getJob(jobName);
-
-                // Job 실행
+                
+				// Job 실행
                 execution = jobLauncher.run(job, jobParameters);
+                
                 if (execution.getStatus().isUnsuccessful()) {
                 	exitCode = -1;
                 }
