@@ -104,7 +104,6 @@ public class QueryToFilePartitioner extends BasePartitioner {
             		Map<String, Object> row = partitionList.get(i);
             		ExecutionContext context = new ExecutionContext();
             		String outputFile = this.getOutputFileFullPath(this.outputFileFullPath, i);
-sysout("outputFile==================================>>>" + outputFile);            		
             		context.put("MIN_ID", row.get("MIN_ID"));
             		context.put("MAX_ID", row.get("MAX_ID"));
                     context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);
