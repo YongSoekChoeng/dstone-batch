@@ -24,17 +24,13 @@ import net.dstone.common.utils.StringUtil;
 /**
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job.
  * <pre>
+ * < 구성 >
  * 삭제는 Tasklet으로 진행하고 입력은 Reader/Processor/Writer으로 된 Step 으로 구현.
  * 01. 기존데이터 삭제 - Tasklet
  * 02. 신규데이터 입력 - Step
  * 
- * CREATE TABLE SAMPLE_TEST (
- *   TEST_ID VARCHAR(30) NOT NULL, 
- *   TEST_NAME VARCHAR(200), 
- *   FLAG_YN VARCHAR(1), 
- *   INPUT_DT DATE NOT NULL,  
- *   PRIMARY KEY  (TEST_ID)
- * )
+ * < JobParameter >
+ * 1. dataCnt : 생성데이터 갯수. 필수.
  * </pre>
  */
 @Component

@@ -22,18 +22,10 @@ import net.dstone.batch.common.partitioner.QueryPartitioner;
 /**
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
  * <pre>
- * 전체데이터를 읽어와서 SAMPLE_TEST.FLAG_YN 를 'N' => 'Y'로 수정.
+ * SAMPLE_TEST 전체데이터를 읽어와서 FLAG_YN 를 'N' => 'Y'로 수정.
  * 
- * CREATE TABLE SAMPLE_TEST (
- *   TEST_ID VARCHAR(30) NOT NULL, 
- *   TEST_NAME VARCHAR(200), 
- *   FLAG_YN VARCHAR(1), 
- *   INPUT_DT DATE NOT NULL,  
- *   PRIMARY KEY  (TEST_ID)
- * )
- * 
- * 병렬쓰레드처리. 
- * Reader/Processor/Writer 별도클래스로 구현.
+ * 병렬쓰레드처리.
+ * Reader/Processor/Writer 별도클래스로 생성.
  * </pre>
  */
 @Component

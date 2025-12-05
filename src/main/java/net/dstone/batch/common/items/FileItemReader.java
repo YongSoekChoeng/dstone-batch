@@ -25,10 +25,11 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일전체 핸들링을 위한 ItemReader 구현체. 
- * 
  * <pre>
- * 아래와 같은 흐름을 갖는다.
+ * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
  * 
+ * <Flow>
+ * 아래와 같은 흐름을 갖는다.
  * Job 시작
  *     │
  *     ▼

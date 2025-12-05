@@ -18,6 +18,10 @@ public class TableDeleteTasklet extends BaseTasklet{
 
 	private final SqlSessionTemplate sqlSessionSample; 
 	
+	/**
+	 * 데이블 삭제 Tasklet 생성자.
+	 * @param sqlSessionSample
+	 */
 	public TableDeleteTasklet(SqlSessionTemplate sqlSessionSample) {
 		this.sqlSessionSample = sqlSessionSample;
 	}

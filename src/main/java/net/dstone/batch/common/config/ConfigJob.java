@@ -4,12 +4,15 @@ import javax.sql.DataSource;
 
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.explore.support.JobExplorerFactoryBean;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import net.dstone.batch.common.core.BaseBatchObject;
@@ -40,4 +43,17 @@ public class ConfigJob extends BaseBatchObject {
         return factoryBean.getObject();
     }
 
+
+    @Bean
+    public JobLauncher asyncJobLauncher(JobRepository jobRepository) throws Exception {
+        TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        
+        // 비동기 실행을 위한 TaskExecutor 설정
+        SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+        jobLauncher.setTaskExecutor(taskExecutor);
+        
+        jobLauncher.afterPropertiesSet();
+        return jobLauncher;
+    }
 }

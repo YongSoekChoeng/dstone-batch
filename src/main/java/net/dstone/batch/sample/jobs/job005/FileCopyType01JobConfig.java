@@ -16,7 +16,6 @@ import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemReader;
 import net.dstone.batch.common.items.FileItemWriter;
-import net.dstone.common.utils.StringUtil;
 
 /**
  * <pre>

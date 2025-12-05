@@ -18,7 +18,6 @@ import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.partitioner.QueryToFilePartitioner;
-import net.dstone.common.utils.StringUtil;
 
 /**
  * 테이블 SAMPLE_TEST 의 데이터를 파일로 저장하는 Job.

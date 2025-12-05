@@ -22,6 +22,10 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 파일핸들링을 위한 ItemWriter 구현체. 
+ * <pre>
+ * 통상 FilePartitioner 를 통해서 호출됨. 
+ * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
+ * </pre>
  */
 @Component
 @StepScope

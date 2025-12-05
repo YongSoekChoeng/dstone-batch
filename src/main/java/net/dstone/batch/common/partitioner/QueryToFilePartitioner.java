@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
@@ -15,7 +13,12 @@ import net.dstone.batch.common.core.BasePartitioner;
 
 /**
  * 범용 쿼리 기반 Partitioner
- * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
+ * <pre>
+ * < JobParameter >
+ * 1. charset : 생성할 파일의 캐릭터셋. 옵션(기본값-UTF-8).
+ * 2. append : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성. 옵션(기본값-false).
+ * 3. div : 컬럼정보 구분자. 특정하지 않았을 경우 고정길이로 핸들링. 옵션(기본값-"").
+ * </pre>
  */
 @Component
 public class QueryToFilePartitioner extends BasePartitioner {
@@ -27,6 +30,20 @@ public class QueryToFilePartitioner extends BasePartitioner {
     private final String outputFileFullPath;
     private final Map<String, Object> params = new HashMap<String, Object>();
 
+    /**
+	 * 범용 쿼리 기반 Partitioner 셍성자
+	 * <pre>
+	 * < JobParameter >
+	 * 1. charset : 생성할 파일의 캐릭터셋. 옵션(기본값-UTF-8).
+	 * 2. append : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성. 옵션(기본값-false).
+	 * 3. div : 컬럼정보 구분자. 특정하지 않았을 경우 고정길이로 핸들링. 옵션(기본값-"").
+	 * </pre>
+     * @param sqlSessionTemplate
+     * @param queryId
+     * @param keyColumn
+     * @param gridSize
+     * @param outputFileFullPath
+     */
     public QueryToFilePartitioner(
     		SqlSessionTemplate sqlSessionTemplate,
             String queryId,
@@ -37,6 +54,21 @@ public class QueryToFilePartitioner extends BasePartitioner {
         this(sqlSessionTemplate, queryId, keyColumn, gridSize, outputFileFullPath, new HashMap<>());
     }
 
+    /**
+	 * 범용 쿼리 기반 Partitioner 셍성자
+	 * <pre>
+	 * < JobParameter >
+	 * 1. charset : 생성할 파일의 캐릭터셋. 옵션(기본값-UTF-8).
+	 * 2. append : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성. 옵션(기본값-false).
+	 * 3. div : 컬럼정보 구분자. 특정하지 않았을 경우 고정길이로 핸들링. 옵션(기본값-"").
+	 * </pre>
+     * @param sqlSessionTemplate
+     * @param queryId
+     * @param keyColumn
+     * @param gridSize
+     * @param outputFileFullPath
+     * @param params
+     */
     public QueryToFilePartitioner(
     		SqlSessionTemplate sqlSessionTemplate,
             String queryId,

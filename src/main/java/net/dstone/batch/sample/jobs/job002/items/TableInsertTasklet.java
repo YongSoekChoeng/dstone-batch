@@ -25,14 +25,26 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 데이블 입력 Tasklet
+ * <pre>
+ * - JobParameter
+ * 1. dataCnt : 생성데이터 갯수. 필수.
+ * 2. gridSize : 병렬처리할 쓰레드 갯수. 옵션(기본값 1).
+ * </pre>
  */
 @Component
 @StepScope
 public class TableInsertTasklet extends BaseTasklet{
 
 	private final SqlSessionTemplate sqlSessionSample; 
-	private final int threadCount = 5;
-	
+	/**
+	 * 데이블 입력 Tasklet 생성자.
+	 * <pre>
+	 * < JobParameter >
+	 * 1. dataCnt : 생성데이터 갯수. 필수.
+	 * 2. gridSize : 병렬처리할 쓰레드 갯수. 옵션(기본값 1).
+	 * </pre>
+	 * @param sqlSessionSample
+	 */
 	public TableInsertTasklet(SqlSessionTemplate sqlSessionSample) {
 		this.sqlSessionSample = sqlSessionSample;
 	}
@@ -52,16 +64,17 @@ public class TableInsertTasklet extends BaseTasklet{
     	
 		// SAMPLE_TEST 테이블 입력
 		int dataCnt = Integer.parseInt(this.getJobParam("dataCnt").toString());
+		int gridSize = Integer.parseInt(this.getJobParam("gridSize", "1").toString());
 		final String insertQueryId = "net.dstone.batch.sample.SampleTestDao.insertSampleTest";
 
-        int chunkPerThread = dataCnt / threadCount;
+        int chunkPerThread = dataCnt / gridSize;
 
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        ExecutorService executor = Executors.newFixedThreadPool(gridSize);
         List<Future<?>> futures = new ArrayList<>();
 
-        for (int t = 0; t < threadCount; t++) {
+        for (int t = 0; t < gridSize; t++) {
             int startIdx = t * chunkPerThread;
-            int endIdx = (t == threadCount - 1) ? dataCnt : (t + 1) * chunkPerThread;
+            int endIdx = (t == gridSize - 1) ? dataCnt : (t + 1) * chunkPerThread;
             
             futures.add(executor.submit(() -> {
                 // ✅ try 블록 안에서 모든 작업 수행

@@ -9,16 +9,17 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
 @RestController
@@ -26,35 +27,19 @@ import net.dstone.common.utils.StringUtil;
 public class RestApiRunner {
 
 	@Autowired
-	private JobLauncher jobLauncher;
+	private JobLauncher asyncJobLauncher;
 
 	@Autowired
 	private JobRegistry jobRegistry;
 
+	@Autowired
+	protected JobExplorer jobExplorer;
+
 	@RequestMapping("/restapi/{jobName}")
-    public String runJob(@PathVariable String jobName, @RequestParam Map<String, String> params, HttpServletRequest request) throws Exception {
-		String status = "";
+    public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, String> params, HttpServletRequest request) throws Exception {
 		JobExecution execution = null;
 		try {
-            execution = launchJob(jobName, params, request);
-            status = execution.getStatus().name();
-		} catch (Exception e) {
-			status = BatchStatus.FAILED.name();
-			e.printStackTrace();
-		}
-		return status;
-    }
-	
-    private JobExecution launchJob(String jobName, Map<String, String> params, HttpServletRequest request) throws Exception {
-    	LogUtil.sysout( RestApiRunner.class.getName() + ".launchJob("+params+") has been called !!!");
-    	
-    	HttpSession session = request.getSession();
-        JobExecution execution = null;
-
-    	try {
-
             if( !StringUtil.isEmpty(jobName) ) {
-
         		// Job파라메터 등록
     			JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
     			jobParametersBuilder.addString("timestamp", String.valueOf(System.currentTimeMillis()));
@@ -69,18 +54,47 @@ public class RestApiRunner {
                 	}
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-
                 // Job 등록
                 Job job = jobRegistry.getJob(jobName);
-                
 				// Job 실행
-                execution = jobLauncher.run(job, jobParameters);
-                
+                execution = asyncJobLauncher.run(job, jobParameters);
+            }else {
+            	throw new Exception("jobName["+jobName+"]은 필수값입니다.");
             }
-            
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			e.printStackTrace();
+	        return ResponseEntity.ok(Map.of(
+	        	"jobInstanceId", execution.getJobId(),
+	        	"jobExecutionId", execution.getId(),
+	        	"status", BatchStatus.FAILED
+	        ));
 		}
-    	return execution;
+        return ResponseEntity.ok(Map.of(
+	        "jobInstanceId", execution.getJobId(),
+	        "jobExecutionId", execution.getId(),
+             "status", BatchStatus.STARTED
+        ));
+    }
+	
+    @GetMapping("/status/{jobExecutionId}")
+    public ResponseEntity<?> status(@PathVariable Long jobExecutionId) {
+        JobExecution execution = jobExplorer.getJobExecution(jobExecutionId);
+        if (execution == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if( execution.isRunning() ) {
+            return ResponseEntity.ok(Map.of(
+                    "status", execution.getStatus(),
+                    "startTime", execution.getStartTime()
+            ));
+        }else {
+            return ResponseEntity.ok(Map.of(
+                    "status", execution.getStatus(),
+                    "exitStatus", execution.getExitStatus(),
+                    "startTime", execution.getStartTime(),
+                    "endTime", execution.getEndTime()
+                    //,"stepExecutions", execution.getStepExecutions()
+            ));
+        }
     }
 }

@@ -10,28 +10,26 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
 /**
  * 테이블 SAMPLE_TEST 에 테스트데이터를 입력하는 Job.
  * <pre>
+ * < 구성 >
  * 두 개의 Tasklet 으로 구현.
  * 01. 기존데이터 삭제 - Tasklet
  * 02. 신규데이터 입력 - Tasklet
  * 
- * CREATE TABLE SAMPLE_TEST (
- *   TEST_ID VARCHAR(30) NOT NULL, 
- *   TEST_NAME VARCHAR(200), 
- *   FLAG_YN VARCHAR(1), 
- *   INPUT_DT DATE NOT NULL,  
- *   PRIMARY KEY  (TEST_ID)
- * )
+ * < JobParameter >
+ * 1. dataCnt : 생성데이터 갯수. 필수.
+ * 2. gridSize : 병렬처리할 쓰레드 갯수. 옵션(기본값 1).
  * </pre>
  */
 @Component
 @AutoRegJob(name = "tableDataGenType01Job")
 public class TableDataGenType01JobConfig extends BaseJobConfig {
 
-	/*********************************** 멤버변수 선언 시작 ***********************************/ 
-	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
-	// dataCnt : 생성할 데이터 건수
-	private int dataCnt 		= 10000;		// 생성할 데이터 건수
-    /*********************************** 멤버변수 선언 끝 ***********************************/ 
+	/*********************************** 멤버변수 선언 시작 ***********************************
+	 spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	 < JobParameter >
+	 1. dataCnt : 생성데이터 갯수. 필수.
+	 2. gridSize : 병렬처리할 쓰레드 갯수. 옵션(기본값 1).
+   *********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
 	 * Job 구성

@@ -15,10 +15,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * DB핸들링을 위한 ItemReader 구현체. 
- * 
  * <pre>
- * 아래와 같은 흐름을 갖는다.
+ * 통상 FilePartitioner 를 통해서 호출됨. 
+ * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
  * 
+ * <Flow>
+ * 아래와 같은 흐름을 갖는다.
  * Job 시작
  *     │
  *     ▼
@@ -63,16 +65,27 @@ public class TableItemReader extends AbstractItemReader<Map<String, Object>> imp
     private Iterator<Map<String, Object>> iterator;
     int readCnt = 0;
     
+    /**
+     * DB핸들링을 위한 ItemReader 구현체. 
+     * @param sqlSessionFactory
+     * @param queryId
+     */
     public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
     }
 
+    /**
+     * DB핸들링을 위한 ItemReader 구현체. 
+     * @param sqlSessionFactory
+     * @param queryId
+     * @param baseParams SQL파라메터
+     */
     public TableItemReader(SqlSessionFactory sqlSessionFactory, String queryId, Map<String, Object> baseParams) {
     	this.sqlSessionFactory = sqlSessionFactory;
     	this.queryId = queryId;
     	if(baseParams != null && baseParams.size() > 0) {
-    		this.getBaseParamMap().putAll(baseParams);
+    		this.getStepParamMap().putAll(baseParams);
     	}
     }
 
