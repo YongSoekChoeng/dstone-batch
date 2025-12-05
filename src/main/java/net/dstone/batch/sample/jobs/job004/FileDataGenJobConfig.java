@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -73,7 +74,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 		
         /*******************************************************************
         테스트용 파일정보를 생성
-        실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam
+        실행파라메터 : spring.batch.job.names=fileDataGenJob
         *******************************************************************/
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
@@ -108,7 +109,12 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     	callLog(this, "itemReader");
     	return new AbstractItemReader() {
     		private ConcurrentLinkedQueue<Map<String, Object>> queue = null;
-
+    		
+    		@Override
+    		protected void doBeforeStep(StepExecution stepExecution) {
+    			queue = null;
+    		}
+    		
     		private void fillQueue() {
     			callLog(this, "fillQueue");
 
@@ -116,8 +122,7 @@ public class FileDataGenJobConfig extends BaseJobConfig {
     		    if( !append && FileUtil.isFileExist(outputFileFullPath) ) {
     		    	FileUtil.deleteFile(outputFileFullPath);
     		    }
-
-    			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
+    		    queue = new ConcurrentLinkedQueue<Map<String, Object>>();
     			for(int i=0; i<dataCnt; i++) {
                     Map<String, Object> row = new HashMap<>();
                     row.put("TEST_ID", StringUtil.filler(String.valueOf(i), 8, "0") );

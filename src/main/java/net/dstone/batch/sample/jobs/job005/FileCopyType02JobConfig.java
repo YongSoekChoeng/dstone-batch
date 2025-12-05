@@ -175,7 +175,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
     @StepScope
     public FileItemWriter fileCopyType02JobFileItemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter();
+    	FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap);
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

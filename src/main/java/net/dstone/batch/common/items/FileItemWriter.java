@@ -25,6 +25,14 @@ import net.dstone.common.utils.StringUtil;
  * <pre>
  * 통상 FilePartitioner 를 통해서 호출됨. 
  * 멀티쓰레드 용으로 사용 시 반드시 @Autowired 선언형식으로 사용.
+ * < Step Context Parameter >
+ * 1. outputFileFullPath : Partitioner로 부터 넘겨받은 아웃풋 파일Full경로.
+ * 2. inputFileFullPath : Partitioner로 부터 넘겨받은 인풋 파일Full경로.
+ * 
+ * <저장파일 결정로직>
+ *   - 생성자 파라메터로 Output파일명이 들어올 경우 최우선.
+ *   - Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
+ *   - 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
  * </pre>
  */
 @Component
@@ -49,21 +57,8 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
     private String div = "";
     
     BufferedWriter writer;
-
-    /**
-     * 읽어온 데이터를 파일로 저장하는 생성자
-     * @param charset(대상파일의 캐릭터셋)
-     * @param append(파일이 존재할 경우 데이터를 추가할지 여부)
-     * @param colInfoMap(라인 기준 데이터정보)
-     */
-    public FileItemWriter() {
-
-	    colInfoMap.put("TEST_ID", 30);
-	    colInfoMap.put("TEST_NAME", 200);
-	    colInfoMap.put("FLAG_YN", 1);
-	    colInfoMap.put("INPUT_DT", 14);
-	    
-    }
+    OutputStreamWriter os;
+    FileOutputStream fo;
 
     /**
      * 읽어온 데이터를 파일로 저장하는 생성자
@@ -123,7 +118,7 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
         	if(!StringUtil.isEmpty(this.outputFileFullPath)) {
         		outputFile = this.outputFileFullPath;
         	// Step 파라메터로 Output파일명이 들어올 경우(Partitioner를 통해서 들어올 경우) Step 파라메터의 Output파일명 이 차우선.
-        	}if( !StringUtil.isEmpty(outputFileFullPathFromStepParam) ) {	
+        	}else if( !StringUtil.isEmpty(outputFileFullPathFromStepParam) ) {	
         		outputFile = outputFileFullPathFromStepParam;
         	// 생성자 파라메터로도 Step 파라메터로도 Output파일명이 들어오지 않았을 경우 Step 파라메터의 Intput파일명으로 Output파일명을 만든다.
         	}else if(!StringUtil.isEmpty(inputFileFullPathFromStepParam)) {
@@ -134,9 +129,14 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
         	if( !FileUtil.isFileExist(outputFile) ) {
         		FileUtil.makeDir(FileUtil.getFilePath(outputFile));
         	}
-			writer = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(outputFile, append), Charset.forName(charset))
-			);
+        	
+//            BufferedWriter writer;
+//            OutputStreamWriter os;
+//            FileOutputStream fo;
+            
+        	fo = new FileOutputStream(outputFile, append);
+        	os = new OutputStreamWriter(fo, Charset.forName(charset));
+			writer = new BufferedWriter(os);
 			this.outputFileFullPath = outputFile;	
         } catch (Exception e) {
             throw new ItemStreamException("파일 오픈 실패: " + outputFile, e);
@@ -185,8 +185,17 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
     public void close() throws ItemStreamException {
     	callLog(this, "close");
         try {
+            log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
             if (writer != null) {
-                log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
+            	writer.flush();
+            }
+        	if (fo != null) {
+        		fo.close();
+        	}
+        	if (os != null) {
+        		os.close();
+        	}
+            if (writer != null) {
                 writer.close();
             }
         } catch (Exception e) {

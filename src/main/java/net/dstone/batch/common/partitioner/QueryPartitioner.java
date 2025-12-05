@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -14,7 +13,6 @@ import net.dstone.batch.common.core.BasePartitioner;
 /**
  * 범용 쿼리 기반 Partitioner
  */
-@Component
 public class QueryPartitioner extends BasePartitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;

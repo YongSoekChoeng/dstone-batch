@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -20,7 +19,6 @@ import net.dstone.batch.common.core.BasePartitioner;
  * 3. div : 컬럼정보 구분자. 특정하지 않았을 경우 고정길이로 핸들링. 옵션(기본값-"").
  * </pre>
  */
-@Component
 public class QueryToFilePartitioner extends BasePartitioner {
 	
     private final SqlSessionTemplate sqlSessionTemplate;
@@ -106,6 +104,7 @@ public class QueryToFilePartitioner extends BasePartitioner {
             		Map<String, Object> row = partitionList.get(i);
             		ExecutionContext context = new ExecutionContext();
             		String outputFile = this.getOutputFileFullPath(this.outputFileFullPath, i);
+sysout("outputFile==================================>>>" + outputFile);            		
             		context.put("MIN_ID", row.get("MIN_ID"));
             		context.put("MAX_ID", row.get("MAX_ID"));
                     context.putString(Constants.Partition.OUTPUT_FILE_PATH, outputFile);

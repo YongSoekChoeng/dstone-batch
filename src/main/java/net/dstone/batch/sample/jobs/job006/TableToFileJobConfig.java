@@ -177,7 +177,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
     @StepScope
     public FileItemWriter tableToFileJobFileItemWriter() {
     	callLog(this, "itemWriter");
-    	FileItemWriter writer = new FileItemWriter(outputFileFullPath, charset, append, colInfoMap); 
+    	FileItemWriter writer = new FileItemWriter(charset, append, colInfoMap); 
     	return writer;
     }
 	/* --------------------------------- Writer 설정 끝 -------------------------------- */

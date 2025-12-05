@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -14,7 +13,6 @@ import net.dstone.common.utils.StringUtil;
 /**
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
  */
-@Component
 public class FilePartitioner extends BasePartitioner {
 
     private final String inputFileFullPath;
