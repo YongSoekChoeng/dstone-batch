@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -39,10 +40,7 @@ public class TableDataGenType02JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
-	// dataCnt : 생성할 데이터 건수
-	// chunkSize : 트랜젝션묶음 크기
-	private int dataCnt 		= 10000;		// 생성할 데이터 건수
-	private int chunkSize 		= 100;			// 청크 사이즈
+	private int chunkSize 		= 1000;			// 청크 사이즈
     /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
@@ -91,7 +89,10 @@ public class TableDataGenType02JobConfig extends BaseJobConfig {
     	//callLog(this, "itemReader");
     	return new AbstractItemReader() {
     		private ConcurrentLinkedQueue<Map<String, Object>> queue = null;
-
+    		@Override
+    		protected void doBeforeStep(StepExecution stepExecution) {
+    			queue = null;
+    		}
     		private void fillQueue() {
     			callLog(this, "fillQueue");
     			queue = new ConcurrentLinkedQueue<Map<String, Object>>();
