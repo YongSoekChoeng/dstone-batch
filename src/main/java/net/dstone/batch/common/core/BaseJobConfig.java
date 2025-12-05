@@ -23,8 +23,6 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import net.dstone.batch.common.consts.ConstMaps;
-
 /**
  * JobConfig들의 부모 클래스
  */
@@ -230,7 +228,4 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	
 	protected abstract void configJob() throws Exception;
 	
-	protected String getInitJobParam(String key) {
-		return ConstMaps.JobParamRegistry.getInitJobParamByThreadId(Thread.currentThread().threadId(), key);
-	}
 }

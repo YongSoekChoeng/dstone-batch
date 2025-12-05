@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.batch.common.core.BaseBatchObject;
 
 @Configuration
@@ -26,18 +25,10 @@ public class ConfigListener extends BaseBatchObject {
 			@Override
             public void beforeJob(JobExecution jobExecution) {
             	this.executeLog(jobExecution);
-            	// Job Thread 등록.
-                ConstMaps.JobThreadRegistry.register(jobExecution.getId(), Thread.currentThread());
-                // Job Parameter 등록.
-                ConstMaps.JobParamRegistry.registerByExecution(jobExecution.getId(), jobExecution.getJobParameters().getParameters());
             }
             @Override
             public void afterJob(JobExecution jobExecution) {
             	this.executeLog(jobExecution);
-            	// Job Thread 등록해제.
-                ConstMaps.JobThreadRegistry.unregister(jobExecution.getId());
-                // Job Parameter 등록해제.
-                ConstMaps.JobParamRegistry.unregisterByExecution(jobExecution.getId());
             }
             private void executeLog(JobExecution jobExecution) {
             	String jobName = jobExecution.getJobInstance().getJobName();

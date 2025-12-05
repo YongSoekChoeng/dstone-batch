@@ -17,7 +17,6 @@ import net.dstone.batch.common.core.BasePartitioner;
  * 멀티쓰레드 용으로 사용 시 반드시 @StepScope + @Bean + 생성자주입 방식 으로 사용.
  */
 @Component
-@StepScope
 public class QueryPartitioner extends BasePartitioner {
 
     private final SqlSessionTemplate sqlSessionTemplate;

@@ -18,7 +18,6 @@ import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.FileItemRangeReader;
 import net.dstone.batch.common.items.FileItemWriter;
 import net.dstone.batch.common.partitioner.FilePartitioner;
-import net.dstone.common.utils.StringUtil;
 
 /**
  * <pre>
@@ -36,18 +35,19 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
+	// chunkSize : 트랜젝션묶음 크기
 	// inputFileFullPath : 복사될 Full파일 경로
-	// outputFileFullPath : 복사생성될 Full파일 경로.
-	// outputFileDir : 복사생성될 파일의 디렉토리. outputFileFullPath가 존재할 경우 무시. outputFileFullPath가 존재하지 않을 경우 이 디렉토리에 생성하되 파일명은 inputFileFullPath의 파일명을 참고하여 자동으로 결정.
+	// outputFileDir : 복사생성될 디렉토리 경로.
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
-	private int gridSize = 0;		// 쓰레드 갯수
-	String inputFileFullPath = "";	// 원본 Full파일 경로
-	String outputFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
-	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
-    String charset = "";			// 파일 인코딩
-    boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+	// colInfoMap : 데이터의 Layout 정의
+	private int gridSize 		= 3;			// 쓰레드 갯수
+	private int chunkSize 		= 100;			// 청크 사이즈
+	String inputFileFullPath 	= "C:/Temp/SAMPLE_DATA/SAMPLE01.sam";
+	String outputFileDir 		= "C:/Temp/SAMPLE_DATA/split";
+    String charset 				= "UTF-8";		// 파일 인코딩
+    boolean append 				= false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); 
     {
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
@@ -63,23 +63,11 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 
-		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
-		gridSize 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "2")); // 쓰레드 갯수
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
-	    outputFileDir 		= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
-	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
-	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
-	    
-	    int chunkSize 		= 5;
-
         /*******************************************************************
         1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
         실행파라메터 : spring.batch.job.names=fileCopyType02Job gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileDir=C:/Temp/SAMPLE_DATA/split
         *******************************************************************/
 		this.addStep(this.parallelLinesRangeMasterStep(chunkSize, gridSize));
-		
 	}
 	
 	/* --------------------------------- Step 설정 시작 --------------------------------- */ 

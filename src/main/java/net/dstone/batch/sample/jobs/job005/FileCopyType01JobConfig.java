@@ -32,17 +32,21 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// gridSize : 병렬처리할 쓰레드 갯수
+	// chunkSize : 트랜젝션묶음 크기
 	// inputFileFullPath : 복사될 Full파일 경로
-	// outputFileFullPath : 복사생성될 Full파일 경로.
-	// outputFileDir : 복사생성될 파일의 디렉토리. outputFileFullPath가 존재할 경우 무시. outputFileFullPath가 존재하지 않을 경우 이 디렉토리에 생성하되 파일명은 inputFileFullPath의 파일명을 참고하여 자동으로 결정.
+	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
+	// outputFileDir : 복사생성될 디렉토리 경로.
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
-	String inputFileFullPath = "";	// 원본 Full파일 경로
-	String outputFileFullPath = "";	// 1:1 복사에서 생성될 Full파일 경로 
-	String outputFileDir = "";		// 1:N 복사에서 복사파일들이 생성될 디렉토리
-    String charset = "";			// 파일 인코딩
-    boolean append = false;			// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+	// colInfoMap : 데이터의 Layout 정의
+	private int gridSize 		= 3;			// 쓰레드 갯수
+	private int chunkSize 		= 100;			// 청크 사이즈
+	String inputFileFullPath 	= "C:/Temp/SAMPLE_DATA/SAMPLE01.sam";
+	String outputFileFullPath 	= "C:/Temp/SAMPLE_DATA/SAMPLE01-copy.sam";
+    String charset 				= "UTF-8";		// 파일 인코딩
+    boolean append 				= false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); 
     {
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
@@ -57,16 +61,6 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-
-		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
-	    inputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("inputFileFullPath"), "");
-	    outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
-	    outputFileDir 		= StringUtil.nullCheck(this.getInitJobParam("outputFileDir"), "");
-	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
-	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
-	    
-	    int chunkSize 		= 5;
 
         /*******************************************************************
         1:1복사(단일쓰레드처리).

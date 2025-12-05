@@ -3,6 +3,11 @@ package net.dstone.batch.common.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
@@ -75,5 +80,4 @@ public class BaseBatchObject{
 	protected Map<String,Object> getBaseParamMap() {
 		return this.baseParam;
 	}
-	
 }

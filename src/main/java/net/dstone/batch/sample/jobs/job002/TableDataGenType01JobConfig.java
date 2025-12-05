@@ -30,6 +30,7 @@ public class TableDataGenType01JobConfig extends BaseJobConfig {
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
+	private int dataCnt 		= 10000;		// 생성할 데이터 건수
     /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
@@ -41,7 +42,7 @@ public class TableDataGenType01JobConfig extends BaseJobConfig {
 		
         /*******************************************************************
         1. 테이블 SAMPLE_TEST 에 테스트데이터를 입력
-        	실행파라메터 : spring.batch.job.names=tableDataGenType01Job dataCnt=80
+        	실행파라메터 : spring.batch.job.names=tableDataGenType01Job dataCnt=10000
         *******************************************************************/
 		// 01. 기존데이터 삭제
 		this.addTasklet(new TableDeleteTasklet(this.sqlBatchSessionSample));

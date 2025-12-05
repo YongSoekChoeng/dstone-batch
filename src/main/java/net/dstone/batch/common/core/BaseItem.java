@@ -162,8 +162,12 @@ public abstract class BaseItem extends BaseBatchObject implements StepExecutionL
     	}
     }
 
+    /**
+     * job Parameter, step Parameter 확인 메소드.
+     */
     protected void checkParam() {
     	StringBuffer buff = new StringBuffer();
+    	buff.append(this.getClass().getName()+" - ");
     	if( !this.getJobParamMap().isEmpty() ) {
     		buff.append("jobParams:"+this.getJobParamMap()+"");
     	}

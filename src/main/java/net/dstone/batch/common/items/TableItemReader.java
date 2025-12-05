@@ -81,14 +81,13 @@ public class TableItemReader extends AbstractItemReader<Map<String, Object>> imp
 	 */
 	@Override
 	protected void doBeforeStep(StepExecution stepExecution) {
-sysout(this.getClass().getName() + " :: gridSize====================>>>" + this.getJobParam("gridSize") );	
+		this.checkParam();
 	}
 
     @Override
     public void open(ExecutionContext executionContext) throws ItemStreamException {
     	callLog(this, "open");
         try {
-        	//this.setExecutionContext(executionContext);
         	Map<String,Object> paramMap = this.getStepParamMap();
 
             this.sqlSession = this.sqlSessionFactory.openSession();

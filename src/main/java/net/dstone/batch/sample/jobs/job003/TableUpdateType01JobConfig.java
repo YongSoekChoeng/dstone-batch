@@ -39,6 +39,8 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
+	// chunkSize : 트랜젝션묶음 크기
+	private int chunkSize 		= 100;			// 청크 사이즈
     /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
@@ -48,8 +50,6 @@ public class TableUpdateType01JobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-        int chunkSize = 500;
-        
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 수정(단일쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
         실행파라메터 : spring.batch.job.names=tableUpdateType01Job

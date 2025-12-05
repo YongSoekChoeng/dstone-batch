@@ -45,22 +45,25 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
-	// inputFileFullPath : 생성될 Full파일 경로
+	// chunkSize : 트랜젝션묶음 크기
+	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
-	private int dataCnt = 0;			// 생성데이터 갯수
-	String outputFileFullPath = "";		// 생성될 Full파일 경로
-    String charset = "";				// 파일 인코딩
-    boolean append = false;				// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
-    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); // 데이터의 Layout 정의
+	// colInfoMap : 데이터의 Layout 정의
+	private int dataCnt 		= 10000;		// 생성할 데이터 건수
+	private int chunkSize 		= 100;			// 청크 사이즈
+	String outputFileFullPath 	= "C:/Temp/SAMPLE_DATA/SAMPLE01.sam";
+    String charset 				= "UTF-8";		// 파일 인코딩
+    boolean append 				= false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
+    LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); 
     {
 	    colInfoMap.put("TEST_ID", 30);
 	    colInfoMap.put("TEST_NAME", 200);
 	    colInfoMap.put("FLAG_YN", 1);
 	    colInfoMap.put("INPUT_DT", 14);
     }
-    /*********************************** 멤버변수 선언 끝 ***********************************/ 
-	
+	/*********************************** 멤버변수 선언 끝 ***********************************/ 
+    
 	/**
 	 * Job 구성
 	 */
@@ -68,15 +71,6 @@ public class FileDataGenJobConfig extends BaseJobConfig {
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
 		
-		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
-		dataCnt 			= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("dataCnt"), "100")); 
-		outputFileFullPath 	= StringUtil.nullCheck(this.getInitJobParam("outputFileFullPath"), "");
-	    charset 			= StringUtil.nullCheck(this.getInitJobParam("charset"), "UTF-8");
-	    append 				= Boolean.valueOf(StringUtil.nullCheck(this.getInitJobParam("append"), "false"));
-	    /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
-	    
-	    int chunkSize 		= 500;
-
         /*******************************************************************
         테스트용 파일정보를 생성
         실행파라메터 : spring.batch.job.names=fileDataGenJob dataCnt=10000 append=false outputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam

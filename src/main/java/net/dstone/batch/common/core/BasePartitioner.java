@@ -70,7 +70,6 @@ public abstract class BasePartitioner extends BaseItem implements Partitioner {
     	return outputFileFullPath;
 	}
 
-
     /**
      * Step 시작 전에 진행할 작업
      * @param stepExecution

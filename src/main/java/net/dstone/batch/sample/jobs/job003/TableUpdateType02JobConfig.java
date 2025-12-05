@@ -18,7 +18,6 @@ import net.dstone.batch.common.items.AbstractItemProcessor;
 import net.dstone.batch.common.items.TableItemReader;
 import net.dstone.batch.common.items.TableItemWriter;
 import net.dstone.batch.common.partitioner.QueryPartitioner;
-import net.dstone.common.utils.StringUtil;
 
 /**
  * 테이블 SAMPLE_TEST 의 데이터를 수정하는 Job.
@@ -44,7 +43,9 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
 	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
-	private int gridSize = 0;	// 쓰레드 갯수
+	// chunkSize : 트랜젝션묶음 크기
+	private int gridSize 		= 1;	// 쓰레드 갯수
+	private int chunkSize 		= 100;			// 청크 사이즈
     /*********************************** 멤버변수 선언 끝 ***********************************/ 
 	
 	/**
@@ -53,12 +54,6 @@ public class TableUpdateType02JobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-		
-		/*** Job Parameter 로부터 멤버변수 세팅 시작 ***/
-        gridSize 		= Integer.parseInt(StringUtil.nullCheck(this.getInitJobParam("gridSize"), "1")); // 파티션 개수 (병렬 처리할 스레드 수)
-        /*** Job Parameter 로부터 멤버변수 세팅 끝 ***/
-
-        int chunkSize 	= 500;
         
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 수정(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
