@@ -45,7 +45,8 @@ public class ConfigAutoReg extends BaseBatchObject {
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					abstractJob.setName(jobName);
 					Job job = abstractJob.buildAutoRegJob();
-					jobRegistry.register(new ReferenceJobFactory(job));
+					ReferenceJobFactory factory = new ReferenceJobFactory(job);
+					jobRegistry.register(factory);
 				}
 			}
 			
