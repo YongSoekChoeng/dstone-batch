@@ -78,10 +78,6 @@ public class ConfigAutoReg extends BaseBatchObject {
 	public void registerJob(String transactionId, String jobName) throws Exception {
 		this.info(this.getClass().getName() + ".registerJob("+transactionId+", "+jobName+") has been called !!!");
 		try {
-			boolean exists = jobRegistry.getJobNames().contains(jobName);
-			if( exists ) {
-				//jobRegistry.unregister(jobName);
-			}
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
 			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
 			for(Object jobObj : jobs.values()) {
@@ -89,13 +85,18 @@ public class ConfigAutoReg extends BaseBatchObject {
 					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
 					String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					if( autoRegJobName.equals(jobName) ) {
-
+						
+						boolean exists = jobRegistry.getJobNames().contains(jobName);
+						if( exists ) {
+							jobRegistry.unregister(jobName);
+						}
+						
 						abstractJob.setName(jobName);
 						abstractJob.setTransactionId(transactionId);
 						Job job = abstractJob.buildAutoRegJob();
 						ReferenceJobFactory factory = new ReferenceJobFactory(job);
 						try {
-							//jobRegistry.register(factory);
+							jobRegistry.register(factory);
 						} catch (Exception e) {
 						}
 					}
