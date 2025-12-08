@@ -5,6 +5,7 @@ spring:
         allow-bean-definition-overriding: true
     application:
         name: dstone-batch
+        auto-register-jobs: false 	# true 일 경우 AutoRegJob 어노테이션의 모든 Job들을 Job Registry에 자동등록.
     datasource:
         common: 
             hikari: 

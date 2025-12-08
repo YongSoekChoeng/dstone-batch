@@ -13,6 +13,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
+import net.dstone.batch.common.config.ConfigAutoReg;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
@@ -102,24 +103,28 @@ public class SimpleBatchRunner extends BaseBatchObject {
                             .web(WebApplicationType.NONE)
                             .run(jobParams);
         		}
-                JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-                JobRegistry jobRegistry = context.getBean(JobRegistry.class);
-                
-                Job job = jobRegistry.getJob(jobName);
-                
-				// Job 실행
-                execution = jobLauncher.run(job, jobParameters);
-                
-                if (execution.getStatus().isUnsuccessful()) {
-                	exitCode = -1;
-                }
+        		ConfigAutoReg configAutoReg = (ConfigAutoReg)context.getBean("configAutoReg");
+                JobLauncher jobLauncher = (JobLauncher)context.getBean("jobLauncher");
+                JobRegistry jobRegistry = (JobRegistry)context.getBean("jobRegistry");
+                Job job = null;
+				try {
+					configAutoReg.registerJob(jobName);
+					job = jobRegistry.getJob(jobName);
+				}catch(Exception e) {
+					throw new Exception("Job name ["+jobName+"]must be registered first. which is not at the moment.");
+				}
+				if(job != null) {
+					// Job 실행
+	                execution = jobLauncher.run(job, jobParameters);
+	                if (execution.getStatus().isUnsuccessful()) {
+	                	exitCode = -1;
+	                }
+				}
             }
-            
 		} catch (Throwable e) {
 			exitCode = -1;
 			e.printStackTrace();
 		}
-
     	return context;
     }
 }

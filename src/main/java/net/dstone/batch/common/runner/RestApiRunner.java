@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.dstone.batch.common.config.ConfigAutoReg;
 import net.dstone.common.utils.StringUtil;
 
 @RestController
@@ -27,6 +29,7 @@ import net.dstone.common.utils.StringUtil;
 public class RestApiRunner {
 
 	@Autowired
+	@Qualifier("asyncJobLauncher")
 	private JobLauncher asyncJobLauncher;
 
 	@Autowired
@@ -34,6 +37,9 @@ public class RestApiRunner {
 
 	@Autowired
 	protected JobExplorer jobExplorer;
+
+	@Autowired
+	private ConfigAutoReg configAutoReg;
 
 	@RequestMapping("/restapi/{jobName}")
     public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, String> params, HttpServletRequest request) throws Exception {
@@ -55,6 +61,8 @@ public class RestApiRunner {
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
                 // Job 등록
+                configAutoReg.registerJob(jobName);
+                // Job 조회
                 Job job = jobRegistry.getJob(jobName);
 				// Job 실행
                 execution = asyncJobLauncher.run(job, jobParameters);
