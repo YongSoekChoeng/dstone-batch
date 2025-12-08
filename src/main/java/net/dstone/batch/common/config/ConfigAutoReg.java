@@ -1,6 +1,7 @@
 package net.dstone.batch.common.config;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.batch.core.Job;
@@ -49,22 +50,19 @@ public class ConfigAutoReg extends BaseBatchObject {
 		try {
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
 			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
+			List<String> jobNameList = new ArrayList<String>(jobRegistry.getJobNames());
 			for(Object jobObj : jobs.values()) {
 				if (jobObj instanceof BaseJobConfig) {
 					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
-					boolean exists = jobRegistry.getJobNames().contains(jobName);
-					if(!exists) {
-						abstractJob.setName(jobName);
-						Job job = abstractJob.buildAutoRegJob();
-						ReferenceJobFactory factory = new ReferenceJobFactory(job);
-						jobRegistry.register(factory);
-						if( "true".equals(configProperty.getProperty("spring.cloud.dataflow.job-auto-register")) ) {
-							if( !this.isNotExistsInDataflow(jobName) ) {
-								this.registerJobToDataflow(jobName);
-							}
-						}
+					boolean exists = jobNameList.contains(jobName);	
+					if( exists ) {
+						jobRegistry.unregister(jobName);
 					}
+					abstractJob.setName(jobName);
+					Job job = abstractJob.buildAutoRegJob();
+					ReferenceJobFactory factory = new ReferenceJobFactory(job);
+					jobRegistry.register(factory);
 				}
 			}
 		} catch (Exception e) {
@@ -81,32 +79,28 @@ public class ConfigAutoReg extends BaseBatchObject {
 		this.info(this.getClass().getName() + ".registerJob("+transactionId+", "+jobName+") has been called !!!");
 		try {
 			boolean exists = jobRegistry.getJobNames().contains(jobName);
-			if( !exists ) {
-				// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
-				Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
-				for(Object jobObj : jobs.values()) {
-					if (jobObj instanceof BaseJobConfig) {
-						BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
-						String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
-						if( autoRegJobName.equals(jobName) ) {
-							abstractJob.setName(jobName);
-							abstractJob.setTransactionId(transactionId);
-							Job job = abstractJob.buildAutoRegJob();
-							ReferenceJobFactory factory = new ReferenceJobFactory(job);
-							try {
-								jobRegistry.register(factory);
-							} catch (Exception e) {
-							}
-							if( "true".equals(configProperty.getProperty("spring.cloud.dataflow.job-auto-register")) ) {
-								if( !this.isNotExistsInDataflow(jobName) ) {
-									this.registerJobToDataflow(jobName);
-								}
-							}
+			if( exists ) {
+				//jobRegistry.unregister(jobName);
+			}
+			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
+			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
+			for(Object jobObj : jobs.values()) {
+				if (jobObj instanceof BaseJobConfig) {
+					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
+					String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
+					if( autoRegJobName.equals(jobName) ) {
+
+						abstractJob.setName(jobName);
+						abstractJob.setTransactionId(transactionId);
+						Job job = abstractJob.buildAutoRegJob();
+						ReferenceJobFactory factory = new ReferenceJobFactory(job);
+						try {
+							//jobRegistry.register(factory);
+						} catch (Exception e) {
 						}
 					}
 				}
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -115,23 +109,32 @@ public class ConfigAutoReg extends BaseBatchObject {
 	/**
 	 * SCDF에 Job 의 Task를 등록하는 메소드
 	 */
-	private void registerJobToDataflow(String jobName) {
+	public void registerAllJobToDataflow() {
 		RestTemplate restTemplate = null;
 		try {
 			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
-            // SCDF에 Task 정의 생성
-            String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
-            
-            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("name", jobName);
-            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
-            
-            try {
-                restTemplate.postForEntity(taskDefUrl, params, String.class);
-                this.info("Registered job: " + jobName);
-            } catch (Exception e) {
-            	this.error("Failed to register job: " + jobName);
-            }
+			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
+			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
+			for(Object jobObj : jobs.values()) {
+				if (jobObj instanceof BaseJobConfig) {
+					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
+					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
+					if( isNotExistsInDataflow(jobName) ) {
+			            // SCDF에 Task 정의 생성
+			            String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
+			            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+			            params.add("name", jobName);
+			            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
+			            try {
+			                restTemplate.postForEntity(taskDefUrl, params, String.class);
+			                this.info("Registered job: " + jobName);
+			            } catch (Exception e) {
+			            	this.error("Failed to register job: " + jobName);
+			            }
+					}
+
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

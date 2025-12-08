@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.dstone.batch.common.config.ConfigProperty;
 import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.common.utils.StringUtil;
 
@@ -29,6 +30,9 @@ public class RestApiRunner extends AbstractRunner {
 	@Autowired
 	ConfigurableApplicationContext context;
 
+	@Autowired 
+	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
+	
 	@RequestMapping("/restapi/{jobName}")
     public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, Object> params, HttpServletRequest request) throws Exception {
         JobExecution execution = null;
@@ -43,7 +47,7 @@ public class RestApiRunner extends AbstractRunner {
     		// 3. 파라메터레지스트리 등록
     		jobConfigRegister(transactionId, jobParameters);
     		// 4. Job 등록.
-    		job = jobRegister(context, transactionId, jobName, true, jobParameters);
+    		job = jobRegister(context, transactionId, jobName, jobParameters);
     		// 5. Job 실행
     		execution = jobLaunch(context, transactionId, job, jobParameters);
 		} catch (Exception e) {

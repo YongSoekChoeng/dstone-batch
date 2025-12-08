@@ -28,7 +28,7 @@ public class SimpleBatchRunner extends AbstractRunner {
     	
     	try {
     		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-    		context = launchJob(context, exitCode, true, args);
+    		context = launchJob(context, exitCode, args);
 		} catch (Exception e) {
 			exitCode = -1;
 			e.printStackTrace();
@@ -40,7 +40,7 @@ public class SimpleBatchRunner extends AbstractRunner {
  		}
     }
     
-    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, boolean forceRegister, String[] args) throws Exception {
+    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, String[] args) throws Exception {
     	LogUtil.sysout( SimpleBatchRunner.class.getName() + ".launchJob("+Arrays.toString(args)+") has been called !!!");
     	exitCode = 0;
         String jobName = "";
@@ -62,7 +62,7 @@ public class SimpleBatchRunner extends AbstractRunner {
     		// 5. 파라메터레지스트리 등록
     		jobConfigRegister(transactionId, jobParameters);
     		// 6. Job 등록.
-    		job = jobRegister(context, transactionId, jobName, forceRegister, jobParameters);
+    		job = jobRegister(context, transactionId, jobName, jobParameters);
     		// 7. Job 실행
     		execution = jobLaunch(context, transactionId, job, jobParameters);
 		} catch (Throwable e) {
