@@ -33,7 +33,6 @@ import net.dstone.batch.common.partitioner.FilePartitioner;
 public class FileCopyType02JobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
-	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// gridSize : 병렬처리할 쓰레드 갯수
 	// chunkSize : 트랜젝션묶음 크기
 	// inputFileFullPath : 복사될 Full파일 경로
@@ -41,11 +40,11 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	// colInfoMap : 데이터의 Layout 정의
-	private int gridSize 		= 3;			// 쓰레드 갯수
-	private int chunkSize 		= 100;			// 청크 사이즈
-	String inputFileFullPath 	= "C:/Temp/SAMPLE_DATA/SAMPLE01.sam";
-	String outputFileDir 		= "C:/Temp/SAMPLE_DATA/split";
-    String charset 				= "UTF-8";		// 파일 인코딩
+	private int gridSize 		= 0;			// 쓰레드 갯수
+	private int chunkSize 		= 0;			// 청크 사이즈
+	String inputFileFullPath 	= "";
+	String outputFileDir 		= "";
+    String charset 				= "";			// 파일 인코딩
     boolean append 				= false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); 
     {
@@ -67,6 +66,18 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
         1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
         실행파라메터 : spring.batch.job.names=fileCopyType02Job gridSize=4 inputFileFullPath=C:/Temp/SAMPLE_DATA/SAMPLE01.sam outputFileDir=C:/Temp/SAMPLE_DATA/split
         *******************************************************************/
+
+		/*******************************************************************
+		Job Parameter 를 JobConfig에서 사용하려면 configJob() 메소드에서 
+		getInitJobParam(Key)로 얻어와서 아래와 같이 사용할 수 있음.
+		*******************************************************************/
+		gridSize 			= Integer.parseInt( this.getInitJobParam("gridSize", "3") );
+		chunkSize 			= Integer.parseInt( this.getInitJobParam("chunkSize", "1000") );
+		inputFileFullPath 	= this.getInitJobParam("inputFileFullPath", "C:/Temp/SAMPLE_DATA/SAMPLE01.sam");
+		outputFileDir 		= this.getInitJobParam("outputFileDir", "C:/Temp/SAMPLE_DATA/split");
+		charset 			= this.getInitJobParam("charset", "UTF-8");
+		append 				= Boolean.valueOf( this.getInitJobParam("append", "false") );
+		
 		this.addStep(this.parallelLinesRangeMasterStep(chunkSize, gridSize));
 	}
 	

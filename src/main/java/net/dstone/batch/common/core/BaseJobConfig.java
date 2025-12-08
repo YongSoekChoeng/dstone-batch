@@ -237,6 +237,14 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 		return job;
 	}
 
+	protected String getInitJobParam(String key, String defaultVal) {
+		String val = getInitJobParam(key);
+		if( StringUtil.isEmpty(val) ) {
+			val = defaultVal;
+		}
+		return val;
+	}
+	
 	protected String getInitJobParam(String key) {
 		String val = "";
 		if( !StringUtil.isEmpty(this.getTransactionId()) ) {

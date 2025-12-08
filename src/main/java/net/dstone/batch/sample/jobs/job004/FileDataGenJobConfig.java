@@ -44,7 +44,6 @@ import net.dstone.common.utils.StringUtil;
 public class FileDataGenJobConfig extends BaseJobConfig {
 
 	/*********************************** 멤버변수 선언 시작 ***********************************/ 
-	// spring.batch.job.names : @AutoRegJob 어노테이션에 등록된 name
 	// dataCnt : 생성할 데이터 건수
 	// chunkSize : 트랜젝션묶음 크기
 	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
@@ -76,6 +75,17 @@ public class FileDataGenJobConfig extends BaseJobConfig {
         테스트용 파일정보를 생성
         실행파라메터 : spring.batch.job.names=fileDataGenJob
         *******************************************************************/
+
+		/*******************************************************************
+		Job Parameter 를 JobConfig에서 사용하려면 configJob() 메소드에서 
+		getInitJobParam(Key)로 얻어와서 아래와 같이 사용할 수 있음.
+		*******************************************************************/
+		dataCnt 			= Integer.parseInt( this.getInitJobParam("dataCnt", "10000") );
+		chunkSize 			= Integer.parseInt( this.getInitJobParam("chunkSize", "1000") );
+		outputFileFullPath 	= this.getInitJobParam("outputFileFullPath", "C:/Temp/SAMPLE_DATA/SAMPLE01.sam");
+		charset 			= this.getInitJobParam("charset", "UTF-8");
+		append 				= Boolean.valueOf( this.getInitJobParam("append", "false") );
+		
 		this.addStep(this.workerStep("workerStep", chunkSize));
 	}
 	
