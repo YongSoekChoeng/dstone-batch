@@ -68,10 +68,11 @@ public class ConfigAutoReg extends BaseBatchObject {
 
 	/**
 	 * JobName을 파라메터로 받아서 AutoRegJob 어노테이션으로 등록되어 있을 경우 그 Job을 Job Registry에 등록하는 메소드.
+	 * @param transactionId TODO
 	 * @throws Exception
 	 */
-	public void registerJob(String jobName) throws Exception {
-		this.info(this.getClass().getName() + ".registerJob("+jobName+") has been called !!!");
+	public void registerJob(String transactionId, String jobName) throws Exception {
+		this.info(this.getClass().getName() + ".registerJob("+transactionId+", "+jobName+") has been called !!!");
 		try {
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
 			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
@@ -81,6 +82,7 @@ public class ConfigAutoReg extends BaseBatchObject {
 					String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					if( autoRegJobName.equals(jobName) ) {
 						abstractJob.setName(jobName);
+						abstractJob.setTransactionId(transactionId);
 						Job job = abstractJob.buildAutoRegJob();
 						ReferenceJobFactory factory = new ReferenceJobFactory(job);
 						jobRegistry.register(factory);

@@ -48,7 +48,8 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	// colInfoMap : 데이터의 Layout 정의
 	private int gridSize 		= 3;			// 쓰레드 갯수
 	private int chunkSize 		= 100;			// 청크 사이즈
-	String outputFileFullPath 	= "C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam";
+	//String outputFileFullPath 	= "C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam";
+	String outputFileFullPath 	= "";
     String charset 				= "UTF-8";		// 파일 인코딩
     boolean append 				= false;		// 기존파일이 존재 할 경우 기존데이터에 추가할지 여부
     LinkedHashMap<String,Integer> colInfoMap = new LinkedHashMap<String,Integer>(); 
@@ -66,7 +67,7 @@ public class TableToFileJobConfig extends BaseJobConfig {
 	@Override
 	public void configJob() throws Exception {
 		callLog(this, "configJob");
-
+		outputFileFullPath 	= this.getInitJobParam("outputFileFullPath");
         /*******************************************************************
         테이블 SAMPLE_TEST에 데이터를 파일로 저장(병렬쓰레드처리). Reader/Processor/Writer 별도클래스로 구현.
         실행파라메터 : spring.batch.job.names=tableToFileJob gridSize=3 chunkSize=20 outputFileFullPath=C:/Temp/SAMPLE_DATA/table/SAMPLE_TEST.sam

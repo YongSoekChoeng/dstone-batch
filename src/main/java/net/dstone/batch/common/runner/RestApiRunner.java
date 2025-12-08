@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import net.dstone.batch.common.config.ConfigAutoReg;
+import net.dstone.batch.common.consts.ConstMaps;
+import net.dstone.common.utils.GuidUtil;
 import net.dstone.common.utils.StringUtil;
 
 @RestController
@@ -44,6 +46,8 @@ public class RestApiRunner {
 	@RequestMapping("/restapi/{jobName}")
     public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, String> params, HttpServletRequest request) throws Exception {
 		JobExecution execution = null;
+		GuidUtil guidUtil = new GuidUtil();
+		String transactionId = guidUtil.getNewGuid();
 		try {
             if( !StringUtil.isEmpty(jobName) ) {
         		// Job파라메터 등록
@@ -60,8 +64,11 @@ public class RestApiRunner {
                 	}
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
+                if( jobParameters != null && jobParameters.getParameters() != null ) {
+                	ConstMaps.JobParamRegistry.registerByThread(transactionId, jobParameters.getParameters());
+                }
                 // Job 등록
-                configAutoReg.registerJob(jobName);
+                configAutoReg.registerJob(transactionId, jobName);
                 // Job 조회
                 Job job = jobRegistry.getJob(jobName);
 				// Job 실행
@@ -76,6 +83,8 @@ public class RestApiRunner {
 	        	"jobExecutionId", execution.getId(),
 	        	"status", BatchStatus.FAILED
 	        ));
+		} finally {
+			ConstMaps.JobParamRegistry.unregisterByThread(transactionId);
 		}
         return ResponseEntity.ok(Map.of(
 	        "jobInstanceId", execution.getJobId(),

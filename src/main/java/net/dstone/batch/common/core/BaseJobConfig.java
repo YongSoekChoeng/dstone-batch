@@ -23,6 +23,9 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import net.dstone.batch.common.consts.ConstMaps;
+import net.dstone.common.utils.StringUtil;
+
 /**
  * JobConfig들의 부모 클래스
  */
@@ -103,6 +106,7 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	/****************************** Executor 멤버 선언 끝 ******************************/
     
 	private String name;
+	private String transactionId;
 	
 	private LinkedList<Object> flowList = new LinkedList<Object>();
 	
@@ -112,6 +116,13 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
 	}
 	
 	private boolean checkItemType(Object item) {
@@ -225,7 +236,14 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 		}
 		return job;
 	}
+
+	protected String getInitJobParam(String key) {
+		String val = "";
+		if( !StringUtil.isEmpty(this.getTransactionId()) ) {
+			val = ConstMaps.JobParamRegistry.getInitJobParamByThreadId(this.getTransactionId(), key);
+		}
+		return val;
+	}
 	
 	protected abstract void configJob() throws Exception;
-	
 }

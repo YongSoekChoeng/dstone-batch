@@ -23,7 +23,6 @@ public class CloudTaskRunner extends BaseBatchObject implements ApplicationRunne
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		String jobName = configProperty.getProperty("spring.batch.job.names");
-		//this.info("jobName=========================["+jobName+"]");
         if( !StringUtil.isEmpty(jobName) ) {
         	ArrayList<String> listArgs = new ArrayList<String>();
     		listArgs.add( "spring.batch.job.names=" + jobName);

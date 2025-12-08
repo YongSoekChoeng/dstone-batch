@@ -14,7 +14,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
 import net.dstone.batch.common.config.ConfigAutoReg;
+import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.batch.common.core.BaseBatchObject;
+import net.dstone.common.utils.GuidUtil;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
@@ -50,6 +52,8 @@ public class SimpleBatchRunner extends BaseBatchObject {
         String[] jobParams = new String[0];
         JobExecution execution = null;
 
+		GuidUtil guidUtil = new GuidUtil();
+		String transactionId = guidUtil.getNewGuid();
     	try {
             if (args == null || args.length < 1) {
                 throw new Exception("Job name must be provided as the first argument.");
@@ -96,6 +100,9 @@ public class SimpleBatchRunner extends BaseBatchObject {
                     }
                 }
                 JobParameters jobParameters = jobParametersBuilder.toJobParameters();
+                if( jobParameters != null && jobParameters.getParameters() != null ) {
+                	ConstMaps.JobParamRegistry.registerByThread(transactionId, jobParameters.getParameters());
+                }
                 
                 // Job 등록
         		if(context == null) {
@@ -108,7 +115,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
                 JobRegistry jobRegistry = (JobRegistry)context.getBean("jobRegistry");
                 Job job = null;
 				try {
-					configAutoReg.registerJob(jobName);
+					configAutoReg.registerJob(transactionId, jobName);
 					job = jobRegistry.getJob(jobName);
 				}catch(Exception e) {
 					throw new Exception("Job name ["+jobName+"]must be registered first. which is not at the moment.");
@@ -124,6 +131,8 @@ public class SimpleBatchRunner extends BaseBatchObject {
 		} catch (Throwable e) {
 			exitCode = -1;
 			e.printStackTrace();
+		} finally {
+			ConstMaps.JobParamRegistry.unregisterByThread(transactionId);
 		}
     	return context;
     }
