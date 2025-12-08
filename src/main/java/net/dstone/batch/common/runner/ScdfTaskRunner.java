@@ -36,7 +36,7 @@ public class ScdfTaskRunner extends BaseBatchObject implements ApplicationRunner
         	listArgs.toArray(strArgs);
         	listArgs.clear();
         	listArgs = null;
-        	SimpleBatchRunner.launchJob(null, 0, strArgs);
+        	SimpleBatchRunner.launchJob(null, 0, false, strArgs);
         }
 	}
 

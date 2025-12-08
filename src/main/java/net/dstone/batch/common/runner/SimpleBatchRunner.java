@@ -1,13 +1,14 @@
 package net.dstone.batch.common.runner;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -15,12 +16,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import net.dstone.batch.common.DstoneBatchApplication;
 import net.dstone.batch.common.config.ConfigAutoReg;
 import net.dstone.batch.common.consts.ConstMaps;
-import net.dstone.batch.common.core.BaseBatchObject;
-import net.dstone.common.utils.GuidUtil;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
-public class SimpleBatchRunner extends BaseBatchObject {
+public class SimpleBatchRunner extends AbstractRunner {
 	
     public static void main(String[] args) throws Exception {
     	
@@ -29,9 +28,7 @@ public class SimpleBatchRunner extends BaseBatchObject {
     	
     	try {
     		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-
-    		context = launchJob(null, exitCode, args);
-
+    		context = launchJob(context, exitCode, true, args);
 		} catch (Exception e) {
 			exitCode = -1;
 			e.printStackTrace();
@@ -43,22 +40,47 @@ public class SimpleBatchRunner extends BaseBatchObject {
  		}
     }
     
-    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, String[] args) throws Exception {
+    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, boolean forceRegister, String[] args) throws Exception {
     	LogUtil.sysout( SimpleBatchRunner.class.getName() + ".launchJob("+Arrays.toString(args)+") has been called !!!");
-    	
     	exitCode = 0;
-
         String jobName = "";
         String[] jobParams = new String[0];
         JobExecution execution = null;
+        Job job = null;
 
-		GuidUtil guidUtil = new GuidUtil();
-		String transactionId = guidUtil.getNewGuid();
+        // 1. 트렌젝션ID 생성.
+		String transactionId = newTransactionId();
+    	try {
+            // 2.ApplicationContext 생성.
+    		if(context == null) {
+                context = new SpringApplicationBuilder(DstoneBatchApplication.class).web(WebApplicationType.NONE).run(jobParams);
+    		}
+    		// 3. Job Name 추출
+    		jobName = parseJobName(args);
+    		// 4. Job Parameter 추출
+    		JobParameters jobParameters = getJobParams( parseParameterToMap(args) );
+    		// 5. 파라메터레지스트리 등록
+    		jobConfigRegister(transactionId, jobParameters);
+    		// 6. Job 등록.
+    		job = jobRegister(context, transactionId, jobName, forceRegister, jobParameters);
+    		// 7. Job 실행
+    		execution = jobLaunch(context, transactionId, job, jobParameters);
+		} catch (Throwable e) {
+			exitCode = -1;
+			e.printStackTrace();
+		} finally {
+			// 8. 파라메터레지스트리 삭제
+			jobConfigUnRegister(transactionId);
+		}
+    	return context;
+    }
+    
+    private static String parseJobName(String[] args) throws Exception{
+    	String jobName = "";
     	try {
             if (args == null || args.length < 1) {
                 throw new Exception("Job name must be provided as the first argument.");
             }
-            
             String firstArg = args[0];
             if( firstArg.indexOf("spring.batch.job.name=") > -1 ||  firstArg.indexOf("spring.batch.job.names=") > -1 ) {
             	String[] words = StringUtil.toStrArray(firstArg, "=");
@@ -66,74 +88,39 @@ public class SimpleBatchRunner extends BaseBatchObject {
             		jobName = words[1];
             	}
             }
-            if( !StringUtil.isEmpty(jobName) ) {
-                if(args.length > 1) {
-                	jobParams = new String[args.length-1];
-                	for(int i=1; i<args.length; i++) {
-                		jobParams[i-1] = args[i];
-                	}
-                }
-
-        		if(StringUtil.isEmpty(jobName)) {
-        			throw new Exception("Job name must be provided as the first argument.");
-        		}
-
-        		// Job파라메터 등록
-                JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
-                jobParametersBuilder.addLong("timestamp", System.currentTimeMillis());
-                if (jobParams.length > 0) {
-                    for (int i = 0; i < jobParams.length; i++) {
-                        String arg = jobParams[i];
-                        if (arg.indexOf("=") == -1) {
-                            throw new Exception("Parameters must be in KEY=VALUE format.");
-                        }
-                        String[] batchParams = StringUtil.toStrArray(arg, "=", true);
-                        if (batchParams.length == 0) {
-                            throw new Exception("Parameters must be in KEY=VALUE format.");
-                        }
-                        String key = batchParams[0];
-                        String val = "";
-                        if (batchParams.length > 1) {
-                            val = batchParams[1];
-                        }
-                        jobParametersBuilder.addString(key, val);
-                    }
-                }
-                JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-                if( jobParameters != null && jobParameters.getParameters() != null ) {
-                	ConstMaps.JobParamRegistry.registerByThread(transactionId, jobParameters.getParameters());
-                }
-                
-                // Job 등록
-        		if(context == null) {
-                    context = new SpringApplicationBuilder(DstoneBatchApplication.class)
-                            .web(WebApplicationType.NONE)
-                            .run(jobParams);
-        		}
-        		ConfigAutoReg configAutoReg = (ConfigAutoReg)context.getBean("configAutoReg");
-                JobLauncher jobLauncher = (JobLauncher)context.getBean("jobLauncher");
-                JobRegistry jobRegistry = (JobRegistry)context.getBean("jobRegistry");
-                Job job = null;
-				try {
-					configAutoReg.registerJob(transactionId, jobName);
-					job = jobRegistry.getJob(jobName);
-				}catch(Exception e) {
-					throw new Exception("Job name ["+jobName+"]must be registered first. which is not at the moment.");
-				}
-				if(job != null) {
-					// Job 실행
-	                execution = jobLauncher.run(job, jobParameters);
-	                if (execution.getStatus().isUnsuccessful()) {
-	                	exitCode = -1;
-	                }
-				}
+            if( StringUtil.isEmpty(jobName) ) {
+            	throw new Exception("Job name must be provided as the first argument.");
             }
-		} catch (Throwable e) {
-			exitCode = -1;
-			e.printStackTrace();
-		} finally {
-			ConstMaps.JobParamRegistry.unregisterByThread(transactionId);
+    	}catch(Exception e) {
+			throw e;
 		}
-    	return context;
+    	return jobName;
+    }
+    
+    private static Map<String,Object> parseParameterToMap(String[] args) {
+    	Map<String,Object> paramMap = new HashMap<String,Object>();
+    	try {
+            if ( args != null && args.length > 0) {
+                for (int i = 0; i < args.length; i++) {
+                    String arg = args[i];
+                    if (arg.indexOf("=") == -1) {
+                        throw new Exception("Parameters must be in KEY=VALUE format.");
+                    }
+                    String[] batchParams = StringUtil.toStrArray(arg, "=", true);
+                    if (batchParams.length == 0) {
+                        throw new Exception("Parameters must be in KEY=VALUE format.");
+                    }
+                    String key = batchParams[0];
+                    String val = "";
+                    if (batchParams.length > 1) {
+                        val = batchParams[1];
+                    }
+                    paramMap.put(key, val);
+                }
+            }
+    	}catch(Exception e) {
+			e.printStackTrace();
+		}
+    	return paramMap;
     }
 }

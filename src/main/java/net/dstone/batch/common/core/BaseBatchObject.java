@@ -50,8 +50,8 @@ public class BaseBatchObject{
 	}
 
 	protected void log(Object msg) {
-    	//this.info(msg);
-    	this.debug(msg);
+    	this.info( msg);
+    	//this.debug(msg);
     }
 
 	protected void callLog(Object obj, String method) {

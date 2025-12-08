@@ -59,6 +59,7 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
     BufferedWriter writer;
     OutputStreamWriter os;
     FileOutputStream fo;
+    private boolean closed = false;
 
     /**
      * 읽어온 데이터를 파일로 저장하는 생성자
@@ -111,6 +112,7 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
     	//this.checkParam();
     	String outputFile = "";
         try {
+        	this.closed = false;
         	
         	String outputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.OUTPUT_FILE_PATH, "").toString();
         	String inputFileFullPathFromStepParam = this.getStepParam(Constants.Partition.INPUT_FILE_PATH, "").toString();
@@ -130,10 +132,6 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
         		FileUtil.makeDir(FileUtil.getFilePath(outputFile));
         	}
         	
-//            BufferedWriter writer;
-//            OutputStreamWriter os;
-//            FileOutputStream fo;
-            
         	fo = new FileOutputStream(outputFile, append);
         	os = new OutputStreamWriter(fo, Charset.forName(charset));
 			writer = new BufferedWriter(os);
@@ -183,9 +181,12 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
 
     @Override
     public void close() throws ItemStreamException {
+    	if( this.closed ) {
+    		return;
+    	}
     	callLog(this, "close");
         try {
-            log("[FileItemWriter] CLOSE : {"+outputFileFullPath+"}");
+            log("[FileItemWriter-"+writer+"] CLOSE : {"+outputFileFullPath+"}");
             if (writer != null) {
             	writer.flush();
             }
@@ -198,6 +199,7 @@ public class FileItemWriter extends AbstractItemWriter<Map<String, Object>> impl
             if (writer != null) {
                 writer.close();
             }
+            this.closed = true;
         } catch (Exception e) {
             throw new ItemStreamException("파일 닫기 실패: " + outputFileFullPath, e);
         }

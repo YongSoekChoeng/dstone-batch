@@ -1,5 +1,6 @@
 package net.dstone.batch.common.runner;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -8,11 +9,8 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,61 +19,33 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
-import net.dstone.batch.common.config.ConfigAutoReg;
 import net.dstone.batch.common.consts.ConstMaps;
-import net.dstone.common.utils.GuidUtil;
 import net.dstone.common.utils.StringUtil;
 
 @RestController
 @RequestMapping("/batch")
-public class RestApiRunner {
-
+public class RestApiRunner extends AbstractRunner {
+	
 	@Autowired
-	@Qualifier("asyncJobLauncher")
-	private JobLauncher asyncJobLauncher;
-
-	@Autowired
-	private JobRegistry jobRegistry;
-
-	@Autowired
-	protected JobExplorer jobExplorer;
-
-	@Autowired
-	private ConfigAutoReg configAutoReg;
+	ConfigurableApplicationContext context;
 
 	@RequestMapping("/restapi/{jobName}")
-    public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, String> params, HttpServletRequest request) throws Exception {
-		JobExecution execution = null;
-		GuidUtil guidUtil = new GuidUtil();
-		String transactionId = guidUtil.getNewGuid();
+    public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, Object> params, HttpServletRequest request) throws Exception {
+        JobExecution execution = null;
+        Job job = null;
+		
+        // 1. 트렌젝션ID 생성.
+		String transactionId = newTransactionId();
+		
 		try {
-            if( !StringUtil.isEmpty(jobName) ) {
-        		// Job파라메터 등록
-    			JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
-    			jobParametersBuilder.addString("timestamp", String.valueOf(System.currentTimeMillis()));
-                if( params != null ) {
-                	Iterator<String> paramKeys = params.keySet().iterator();
-                	while( paramKeys.hasNext() ) {
-                		String paramKey = paramKeys.next();
-                		Object paramVal = params.get(paramKey);
-                		if(paramVal != null) {
-                			jobParametersBuilder.addString(paramKey, paramVal.toString());
-                		}
-                	}
-                }
-                JobParameters jobParameters = jobParametersBuilder.toJobParameters();
-                if( jobParameters != null && jobParameters.getParameters() != null ) {
-                	ConstMaps.JobParamRegistry.registerByThread(transactionId, jobParameters.getParameters());
-                }
-                // Job 등록
-                configAutoReg.registerJob(transactionId, jobName);
-                // Job 조회
-                Job job = jobRegistry.getJob(jobName);
-				// Job 실행
-                execution = asyncJobLauncher.run(job, jobParameters);
-            }else {
-            	throw new Exception("jobName["+jobName+"]은 필수값입니다.");
-            }
+    		// 2. Job Parameter 추출
+			JobParameters jobParameters = getJobParams(this.parseParameterToMap(params));
+    		// 3. 파라메터레지스트리 등록
+    		jobConfigRegister(transactionId, jobParameters);
+    		// 4. Job 등록.
+    		job = jobRegister(context, transactionId, jobName, true, jobParameters);
+    		// 5. Job 실행
+    		execution = jobLaunch(context, transactionId, job, jobParameters);
 		} catch (Exception e) {
 			e.printStackTrace();
 	        return ResponseEntity.ok(Map.of(
@@ -84,7 +54,8 @@ public class RestApiRunner {
 	        	"status", BatchStatus.FAILED
 	        ));
 		} finally {
-			ConstMaps.JobParamRegistry.unregisterByThread(transactionId);
+			// 6. 파라메터레지스트리 삭제
+			jobConfigUnRegister(transactionId);
 		}
         return ResponseEntity.ok(Map.of(
 	        "jobInstanceId", execution.getJobId(),
@@ -113,5 +84,26 @@ public class RestApiRunner {
                     //,"stepExecutions", execution.getStepExecutions()
             ));
         }
+    }
+    
+    private Map<String,Object> parseParameterToMap(Map<String,Object> params) {
+    	try {
+    		// Job파라메터 등록
+			JobParametersBuilder jobParametersBuilder = new JobParametersBuilder();
+			jobParametersBuilder.addString("timestamp", String.valueOf(System.currentTimeMillis()));
+            if( params != null ) {
+            	Iterator<String> paramKeys = params.keySet().iterator();
+            	while( paramKeys.hasNext() ) {
+            		String paramKey = paramKeys.next();
+            		Object paramVal = params.get(paramKey);
+            		if(paramVal != null) {
+            			jobParametersBuilder.addString(paramKey, paramVal.toString());
+            		}
+            	}
+            }
+    	}catch(Exception e) {
+			e.printStackTrace();
+		}
+    	return params;
     }
 }

@@ -71,6 +71,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 		Job Parameter 를 JobConfig에서 사용하려면 configJob() 메소드에서 
 		getInitJobParam(Key)로 얻어와서 아래와 같이 사용할 수 있음.
 		*******************************************************************/
+sysout("getInitJobParam(outputFileDir)===========================================>>>>" + this.getInitJobParam("outputFileDir"));		
 		gridSize 			= Integer.parseInt( this.getInitJobParam("gridSize", "3") );
 		chunkSize 			= Integer.parseInt( this.getInitJobParam("chunkSize", "1000") );
 		inputFileFullPath 	= this.getInitJobParam("inputFileFullPath", "C:/Temp/SAMPLE_DATA/SAMPLE01.sam");

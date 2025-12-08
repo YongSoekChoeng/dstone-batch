@@ -35,9 +35,15 @@ public class ConfigListener extends BaseBatchObject {
             	String jobStatus = jobExecution.getStatus().toString();
             	StringBuffer buff = new StringBuffer();
             	buff.setLength(0);
+            	if( "STARTED".equals(jobStatus) ) {
+            		buff.append("\n");
+            	}
             	buff.append("\n");
             	buff.append("||======================================= Job["+jobName+"] "+ jobStatus +" =======================================||");
-            	buff.append("\n");
+            	if( !"STARTED".equals(jobStatus) ) {
+            		buff.append("\n");
+            	}
+            	
             	info(buff.toString());
             }
     	};
