@@ -15,7 +15,7 @@ import net.dstone.common.utils.StringUtil;
  * Spring Cloud Data Flow 에서 호출하는 경우에 대한 조치.
  */
 @Component
-public class CloudTaskRunner extends BaseBatchObject implements ApplicationRunner {
+public class ScdfTaskRunner extends BaseBatchObject implements ApplicationRunner {
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
