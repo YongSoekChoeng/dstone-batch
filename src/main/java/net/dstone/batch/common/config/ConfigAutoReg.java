@@ -154,12 +154,14 @@ public class ConfigAutoReg extends BaseBatchObject {
             	if (statusCode == 404) {
             		isNotExists = true;
             	}
-                this.info("Registered job: " + jobName);
+                this.info("JobName["+jobName+"] notExists ?: " + isNotExists);
             } catch (Exception e) {
-            	e.printStackTrace();
+            	isNotExists = false;
+            	//e.printStackTrace();
             }
 		} catch (Exception e) {
-			e.printStackTrace();
+			isNotExists = false;
+			//e.printStackTrace();
 		}
 		return isNotExists;
 	}
