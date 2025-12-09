@@ -88,6 +88,7 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 
 	public static void main(String[] args) {
 		try {
+			net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
 			registerJosToScdf();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,7 +124,6 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions/" + jobName;
 					if( !isExistsInDataflow(jobName, taskDefUrl) ) {
-System.out.println("jobName==============>>>" + jobName);	
 						restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
 			            // SCDF에 Task 정의 생성
 						String taskRegUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
@@ -132,7 +132,6 @@ System.out.println("jobName==============>>>" + jobName);
 			            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
 			            ResponseEntity<String> response = null;
 			            try {
-System.out.println("jobName==============>>>" + jobName + ", taskRegUrl:" + taskRegUrl);			
 			            	response = restTemplate.postForEntity(taskRegUrl, params, String.class);
 			                LogUtil.sysout("Registered job: " + jobName + ", StatusCode:" + response.getStatusCode());
 			            } catch (Exception e) {
