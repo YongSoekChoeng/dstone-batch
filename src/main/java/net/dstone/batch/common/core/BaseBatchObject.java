@@ -14,7 +14,8 @@ import net.dstone.common.utils.StringUtil;
 @Component
 public class BaseBatchObject implements ApplicationContextAware{
 	
-	private static ApplicationContext context;
+	protected ApplicationContext context;
+	
 	private LogUtil myLogger = null;
 	private Map<String,Object> baseParam = new HashMap<String,Object>();
 	
@@ -97,10 +98,10 @@ public class BaseBatchObject implements ApplicationContextAware{
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		context = applicationContext;
 	}
-	public static <T> T getBean(Class<T> requiredType) {
+	protected <T> T getBean(Class<T> requiredType) {
 		return context.getBean(requiredType);
 	}
-	public static Object getBean(String beanName) {
+	protected Object getBean(String beanName) {
 		return context.getBean(beanName);
 	}
 	
