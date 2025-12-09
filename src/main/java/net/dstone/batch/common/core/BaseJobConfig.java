@@ -106,25 +106,16 @@ public abstract class BaseJobConfig extends BaseBatchObject{
 	/****************************** Executor 멤버 선언 끝 ******************************/
     
 	private String name;
-	private String transactionId;
 	
 	private LinkedList<Object> flowList = new LinkedList<Object>();
 	
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	public String getTransactionId() {
-		return transactionId;
-	}
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
-	
 	private boolean checkItemType(Object item) {
 		boolean isValid = false;
 		if(item != null) {

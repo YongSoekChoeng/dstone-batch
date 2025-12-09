@@ -9,6 +9,7 @@ import org.springframework.batch.item.ExecutionContext;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
+import net.dstone.common.utils.StringUtil;
 
 /**
  * 범용 쿼리 기반 Partitioner
@@ -39,8 +40,8 @@ public class QueryToFilePartitioner extends BasePartitioner {
      * @param sqlSessionTemplate
      * @param queryId
      * @param keyColumn
-     * @param gridSize
-     * @param outputFileFullPath
+     * @param gridSize. 생성자 파라메터로 최우선. jobParameters['gridSize']값이 차우선.
+     * @param outputFileFullPath. 생성자 파라메터로 최우선. jobParameters['outputFileFullPath']값이 차우선.
      */
     public QueryToFilePartitioner(
     		SqlSessionTemplate sqlSessionTemplate,
@@ -63,8 +64,8 @@ public class QueryToFilePartitioner extends BasePartitioner {
      * @param sqlSessionTemplate
      * @param queryId
      * @param keyColumn
-     * @param gridSize
-     * @param outputFileFullPath
+     * @param gridSize. 생성자 파라메터로 최우선. jobParameters['gridSize']값이 차우선.
+     * @param outputFileFullPath. 생성자 파라메터로 최우선. jobParameters['outputFileFullPath']값이 차우선.
      * @param params
      */
     public QueryToFilePartitioner(
@@ -78,8 +79,8 @@ public class QueryToFilePartitioner extends BasePartitioner {
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.queryId = queryId;
         this.keyColumn = keyColumn;
-        this.gridSize = gridSize;
-        this.outputFileFullPath = outputFileFullPath;
+        this.gridSize = (gridSize>0?gridSize:Integer.parseInt(this.getJobParam("gridSize", "1").toString()));
+        this.outputFileFullPath = StringUtil.nullCheck(outputFileFullPath, this.getJobParam("outputFileFullPath", "").toString());
         if( params!= null && params.size()>0) {
         	this.params.putAll(params);
         }

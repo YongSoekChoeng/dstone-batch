@@ -1,6 +1,5 @@
 package net.dstone.batch.common.runner;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import net.dstone.batch.common.config.ConfigProperty;
-import net.dstone.batch.common.consts.ConstMaps;
-import net.dstone.common.utils.StringUtil;
 
 @RestController
 @RequestMapping("/batch")
@@ -46,9 +43,11 @@ public class RestApiRunner extends AbstractRunner {
 			JobParameters jobParameters = getJobParams(this.parseParameterToMap(params));
     		// 3. 파라메터레지스트리 등록
     		jobConfigRegister(transactionId, jobParameters);
-    		// 4. Job 등록.
-    		job = jobRegister(context, transactionId, jobName, jobParameters);
-    		// 5. Job 실행
+    		// 4. jobRegistry에 저장
+    		jobRegister(context, transactionId, jobName, jobParameters);
+    		// 5. Job 조회
+    		job = getJob(context, jobName, jobParameters);
+    		// 6. Job 실행
     		execution = jobLaunch(context, transactionId, job, jobParameters);
 		} catch (Exception e) {
 			e.printStackTrace();

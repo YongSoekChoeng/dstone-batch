@@ -3,7 +3,12 @@ package net.dstone.batch.common.partitioner;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.scope.context.JobSynchronizationManager;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.stereotype.Component;
 
 import net.dstone.batch.common.consts.Constants;
 import net.dstone.batch.common.core.BasePartitioner;
@@ -12,7 +17,15 @@ import net.dstone.common.utils.StringUtil;
 
 /**
  * 대용량 파일을 라인별로 Partition 을 생성하는 Partitioner
+ * <pre>
+ * 생성자파라메터 inputFileFullPath. 생성자 파라메터가 최우선. jobParameters['inputFileFullPath']값이 차우선.
+ * 생성자파라메터 outputFileFullPath. 생성자 파라메터가 최우선. jobParameters['outputFileFullPath']값이 차우선.
+ * 생성자파라메터 gridSize. 생성자 파라메터가 최우선. jobParameters['gridSize']값이 차우선.
+ * 생성자파라메터 outputFileDir. 생성자 파라메터가 최우선. jobParameters['outputFileDir']값이 차우선.
+ * </pre>
  */
+@Component
+@StepScope
 public class FilePartitioner extends BasePartitioner {
 
     private final String inputFileFullPath;
@@ -20,27 +33,44 @@ public class FilePartitioner extends BasePartitioner {
     private String outputFileDir = "";
     private int gridSize = 0; 
 
+    /**
+     * FilePartitioner 생성자.
+     * @param inputFileFullPath. 생성자 파라메터가 최우선. jobParameters['inputFileFullPath']값이 차우선.
+     * @param gridSize. 생성자 파라메터가 최우선. jobParameters['gridSize']값이 차우선.
+     */
     public FilePartitioner(String inputFileFullPath, int gridSize) {
-    	this.inputFileFullPath = inputFileFullPath;
-        this.gridSize = gridSize;
+        this.inputFileFullPath 	= StringUtil.nullCheck(inputFileFullPath, this.getJobParam("inputFileFullPath", "").toString());
+        this.gridSize 			= (gridSize>0?gridSize:Integer.parseInt(this.getJobParam("gridSize", "1").toString()));
     }
 
+    /**
+     * FilePartitioner 생성자.
+     * @param inputFileFullPath. 생성자 파라메터가 최우선. jobParameters['inputFileFullPath']값이 차우선.
+     * @param outputFileFullPath. 생성자 파라메터가 최우선. jobParameters['outputFileFullPath']값이 차우선.
+     * @param gridSize. 생성자 파라메터가 최우선. jobParameters['gridSize']값이 차우선.
+     */
     public FilePartitioner(String inputFileFullPath, String outputFileFullPath, int gridSize) {
-    	this.inputFileFullPath = inputFileFullPath;
-    	this.outputFileFullPath = outputFileFullPath;
-        this.gridSize = gridSize;
+        this.inputFileFullPath 	= StringUtil.nullCheck(inputFileFullPath, this.getJobParam("inputFileFullPath", "").toString());
+        this.outputFileFullPath = StringUtil.nullCheck(outputFileFullPath, this.getJobParam("outputFileFullPath", "").toString());
+        this.gridSize 			= (gridSize>0?gridSize:Integer.parseInt(this.getJobParam("gridSize", "1").toString()));
     }
 
+    /**
+     * FilePartitioner 생성자.
+     * @param inputFileFullPath. 생성자 파라메터가 최우선. jobParameters['inputFileFullPath']값이 차우선.
+     * @param gridSize. 생성자 파라메터가 최우선. jobParameters['gridSize']값이 차우선.
+     * @param outputFileDir. 생성자 파라메터가 최우선. jobParameters['outputFileDir']값이 차우선.
+     */
     public FilePartitioner(String inputFileFullPath, int gridSize, String outputFileDir) {
-    	this.inputFileFullPath = inputFileFullPath;
-    	this.outputFileDir = outputFileDir; 
-        this.gridSize = gridSize;
+        this.inputFileFullPath 	= StringUtil.nullCheck(inputFileFullPath, this.getJobParam("inputFileFullPath", "").toString());
+        this.gridSize 			= (gridSize>0?gridSize:Integer.parseInt(this.getJobParam("gridSize", "1").toString()));
+        this.outputFileDir	 	= StringUtil.nullCheck(outputFileDir, this.getJobParam("outputFileDir", "").toString());
     }
 
     @Override
     public Map<String, ExecutionContext> partition(int gridSize) {
     	callLog(this, "partition", String.valueOf(gridSize));
-
+    	
     	if( FileUtil.isDirectory(inputFileFullPath) || !FileUtil.isFileExist(inputFileFullPath) ) {
     		throw new IllegalStateException("파일["+inputFileFullPath+"]이 존재하지 않습니다.");
     	}
@@ -87,5 +117,12 @@ public class FilePartitioner extends BasePartitioner {
         info("총 " + result.size() + "개의 파티션 생성. " + result);
         return result;
     }
-
+    /**
+     * Step 시작 전에 진행할 작업
+     * @param stepExecution
+     */
+	@Override
+	protected void doBeforeStep(StepExecution stepExecution) {
+		sysout("doBeforeStep ===================================>>> line 101");
+    }
 }

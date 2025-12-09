@@ -9,6 +9,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -71,7 +72,6 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
 		Job Parameter 를 JobConfig에서 사용하려면 configJob() 메소드에서 
 		getInitJobParam(Key)로 얻어와서 아래와 같이 사용할 수 있음.
 		*******************************************************************/
-sysout("getInitJobParam(outputFileDir)===========================================>>>>" + this.getInitJobParam("outputFileDir"));		
 		gridSize 			= Integer.parseInt( this.getInitJobParam("gridSize", "3") );
 		chunkSize 			= Integer.parseInt( this.getInitJobParam("chunkSize", "1000") );
 		inputFileFullPath 	= this.getInitJobParam("inputFileFullPath", "C:/Temp/SAMPLE_DATA/SAMPLE01.sam");
@@ -92,7 +92,7 @@ sysout("getInitJobParam(outputFileDir)==========================================
 	private Step parallelLinesRangeMasterStep(int chunkSize, int gridSize) {
 		callLog(this, "parallelLinesRangeMasterStep", ""+chunkSize+", "+gridSize+"");
 		return new StepBuilder("parallelLinesRangeMasterStep", jobRepository)
-				.partitioner("parallelSlaveStep", fileCopyType02JobFilePartitioner(gridSize))
+				.partitioner("parallelSlaveStep", fileCopyType02JobFilePartitioner)
 				.step(parallelLinesRangeSlaveStep(chunkSize))
 				.gridSize(gridSize)
 				.taskExecutor(baseTaskExecutor())
@@ -115,15 +115,17 @@ sysout("getInitJobParam(outputFileDir)==========================================
 	/* --------------------------------- Step 설정 끝 ---------------------------------- */ 
 
 	/* --------------------------------- Partitioner 설정 시작 -------------------------- */
+	@Autowired
+	FilePartitioner fileCopyType02JobFilePartitioner;
     /**
      * File 처리용 Partitioner(대용량 파일을 라인별로 Partition 을 생성하는 Partitioner)
      * @return
      */
     @Bean
     @StepScope
-	public FilePartitioner fileCopyType02JobFilePartitioner(int gridSize) {
+	public FilePartitioner fileCopyType02JobFilePartitioner() {
 		callLog(this, "filePartitioner", gridSize);
-		FilePartitioner filePartitioner = new FilePartitioner(inputFileFullPath, gridSize, outputFileDir);
+		FilePartitioner filePartitioner = new FilePartitioner(inputFileFullPath, gridSize, null);
 		return filePartitioner;
 	}
 	/* --------------------------------- Partitioner 설정 끝 --------------------------- */

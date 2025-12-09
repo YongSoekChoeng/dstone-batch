@@ -61,9 +61,11 @@ public class SimpleBatchRunner extends AbstractRunner {
     		JobParameters jobParameters = getJobParams( parseParameterToMap(args) );
     		// 5. 파라메터레지스트리 등록
     		jobConfigRegister(transactionId, jobParameters);
-    		// 6. Job 등록.
-    		job = jobRegister(context, transactionId, jobName, jobParameters);
-    		// 7. Job 실행
+    		// 6. jobRegistry에 저장
+    		jobRegister(context, transactionId, jobName, jobParameters);
+    		// 7. Job 조회
+    		job = getJob(context, jobName, jobParameters);
+    		// 8. Job 실행
     		execution = jobLaunch(context, transactionId, job, jobParameters);
 		} catch (Throwable e) {
 			exitCode = -1;

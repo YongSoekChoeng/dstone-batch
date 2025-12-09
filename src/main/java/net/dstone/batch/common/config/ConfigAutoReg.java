@@ -19,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.batch.common.core.BaseJobConfig;
+import net.dstone.batch.common.runner.AbstractRunner;
 import net.dstone.common.utils.StringUtil;
 
 @Configuration
@@ -35,7 +36,7 @@ public class ConfigAutoReg extends BaseBatchObject {
 	
 	@PostConstruct
 	public void autoRegJob() throws Exception {
-        boolean autoRegisterJobs = Boolean.valueOf(StringUtil.ifEmpty(configProperty.getProperty("spring.application.auto-register-jobs"), "true"));
+        boolean autoRegisterJobs = Boolean.valueOf(StringUtil.ifEmpty(configProperty.getProperty("spring.application.auto-register-jobs"), "false"));
         if(autoRegisterJobs) {
         	registerAllJobs();
         }
@@ -50,16 +51,12 @@ public class ConfigAutoReg extends BaseBatchObject {
 		try {
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
 			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
-			List<String> jobNameList = new ArrayList<String>(jobRegistry.getJobNames());
 			for(Object jobObj : jobs.values()) {
 				if (jobObj instanceof BaseJobConfig) {
 					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
-					boolean exists = jobNameList.contains(jobName);	
-					if( exists ) {
-						jobRegistry.unregister(jobName);
-					}
 					abstractJob.setName(jobName);
+					abstractJob.setTransactionId(AbstractRunner.newTransactionId());
 					Job job = abstractJob.buildAutoRegJob();
 					ReferenceJobFactory factory = new ReferenceJobFactory(job);
 					jobRegistry.register(factory);
@@ -78,30 +75,29 @@ public class ConfigAutoReg extends BaseBatchObject {
 	public void registerJob(String transactionId, String jobName) throws Exception {
 		this.info(this.getClass().getName() + ".registerJob("+transactionId+", "+jobName+") has been called !!!");
 		try {
-			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
-			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
-			for(Object jobObj : jobs.values()) {
-				if (jobObj instanceof BaseJobConfig) {
-					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
-					String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
-					if( autoRegJobName.equals(jobName) ) {
-						
-						boolean exists = jobRegistry.getJobNames().contains(jobName);
-						if( exists ) {
-							jobRegistry.unregister(jobName);
-						}
-						
-						abstractJob.setName(jobName);
-						abstractJob.setTransactionId(transactionId);
-						Job job = abstractJob.buildAutoRegJob();
-						ReferenceJobFactory factory = new ReferenceJobFactory(job);
-						try {
+			boolean autoRegisterJobs = Boolean.valueOf(StringUtil.ifEmpty(configProperty.getProperty("spring.application.auto-register-jobs"), "false"));
+	        boolean isJobRegisted = jobRegistry.getJobNames().contains(jobName);
+			if( autoRegisterJobs && isJobRegisted ) {
+	        	throw new Exception("이미 등록된 JobName["+jobName+"]에 대해 재등록을 시도하셨습니다. 설정값[spring.application.auto-register-jobs]이 true일 경우 프레임웍 구동 시 모든 Job들이 자동등록되므로 실시간 Job구성 등록이 불가합니다. 해당 설정값을 false로 수정 후 재기동이 필요합니다.");
+	        }
+			if( !isJobRegisted ) {
+				// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
+				Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
+				for(Object jobObj : jobs.values()) {
+					if (jobObj instanceof BaseJobConfig) {
+						BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
+						String autoRegJobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
+						if( autoRegJobName.equals(jobName) ) {
+							abstractJob.setName(jobName);
+							abstractJob.setTransactionId(transactionId);
+							Job job = abstractJob.buildAutoRegJob();
+							ReferenceJobFactory factory = new ReferenceJobFactory(job);
 							jobRegistry.register(factory);
-						} catch (Exception e) {
 						}
 					}
 				}
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

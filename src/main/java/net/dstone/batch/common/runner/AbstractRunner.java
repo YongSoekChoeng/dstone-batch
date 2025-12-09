@@ -51,7 +51,7 @@ public abstract class AbstractRunner extends BaseBatchObject {
 	/**
 	 * @return
 	 */
-	protected static String newTransactionId() {
+	public static String newTransactionId() {
 		return guidUtil.getNewGuid();
 	}
 	
@@ -86,37 +86,47 @@ public abstract class AbstractRunner extends BaseBatchObject {
 	
 
 	/**
-	 * TransactionId 로 Job 구성을 jobRegistry, 파라메터레지스트리 에 저장.
+	 * TransactionId 로 Job 구성을 jobRegistry에 저장.
 	 * @param context
 	 * @param jobName
 	 * @param jobParams
 	 * @param forceRegister
 	 * @throws Exception
 	 */
-	protected static Job jobRegister(ConfigurableApplicationContext context, String transactionId, String jobName, JobParameters jobParameters) throws Exception {
+	protected static void jobRegister(ConfigurableApplicationContext context, String transactionId, String jobName, JobParameters jobParameters) throws Exception {
+		try {
+			// 1. jobName 체크
+			if( StringUtil.isEmpty(jobName) ) {
+				throw new Exception("JobName["+jobName+"] is not supposed to be empty!");
+			}
+    		ConfigAutoReg configAutoReg = (ConfigAutoReg)context.getBean("configAutoReg");
+			// 2. jobRegistry 등록.
+            configAutoReg.registerJob(transactionId, jobName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("JobName["+jobName+"] 등록 실패.");
+		}
+	}
+	
+	/**
+	 * jobRegistry에 저장 된 Job 반환.
+	 * @param context
+	 * @param jobName
+	 * @param jobParams
+	 * @throws Exception
+	 */
+	protected static Job getJob(ConfigurableApplicationContext context, String jobName, JobParameters jobParameters) throws Exception {
 		Job job = null;
 		try {
 			// 1. jobName 체크
 			if( StringUtil.isEmpty(jobName) ) {
 				throw new Exception("JobName["+jobName+"] is not supposed to be empty!");
 			}
-			// 2. jobRegistry 등록.
     		JobRegistry jobRegistry = (JobRegistry)context.getBean("jobRegistry");
-    		ConfigAutoReg configAutoReg = (ConfigAutoReg)context.getBean("configAutoReg");
-    		ConfigProperty configProperty = (ConfigProperty)context.getBean("configProperty");
-    		/*** Job 자동등록 모드 일 경우 이미 등록되어 있를 경우이므로 굳이 등록할 필요 없음. ***/
-    		if( !"true".equals(configProperty.getProperty("spring.application.auto-register-jobs")) ) {
-    			configAutoReg.registerJob(transactionId, jobName);
-    		}
-			// 3. 파라메터레지스트리 등록
-            if( jobParameters != null && jobParameters.getParameters() != null ) {
-            	ConstMaps.JobParamRegistry.registerByThread(transactionId, jobParameters.getParameters());
-            }
-            // 4. jobRegistry에 등록된 Job 조회
             job = jobRegistry.getJob(jobName);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new Exception("JobName["+jobName+"] 등록 실패.");
+			throw new Exception("JobName["+jobName+"] 조회 실패.");
 		}
 		return job;
 	}
@@ -162,7 +172,7 @@ public abstract class AbstractRunner extends BaseBatchObject {
 	}
 
 	/**
-	 * TransactionId 로 Job 구성을 파라메터레지스트리에서 등록.
+	 * TransactionId 로 Job 구성을 파라메터레지스트리에 등록.
 	 * @param transactionId
 	 */
 	protected static void jobConfigRegister(String transactionId, JobParameters jobParameters) {
