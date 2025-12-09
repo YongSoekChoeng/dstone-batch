@@ -1,7 +1,6 @@
 package net.dstone.batch.common.runner;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.batch.core.Job;
@@ -10,7 +9,6 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -23,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import net.dstone.batch.common.DstoneBatchApplication;
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.config.ConfigProperty;
-import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.batch.common.core.BaseJobConfig;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;

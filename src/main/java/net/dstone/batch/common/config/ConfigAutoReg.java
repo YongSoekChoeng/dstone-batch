@@ -8,10 +8,6 @@ import org.springframework.batch.core.configuration.support.ReferenceJobFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
 import net.dstone.batch.common.annotation.AutoRegJob;

@@ -1,6 +1,5 @@
 package net.dstone.batch.common.runner;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -11,13 +10,10 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
-import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import net.dstone.batch.common.config.ConfigAutoReg;
 import net.dstone.batch.common.consts.ConstMaps;

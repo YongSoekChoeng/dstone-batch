@@ -29,8 +29,6 @@ import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
-import net.dstone.batch.common.runner.SimpleBatchRunner;
-
 @EnableTask
 @EnableBatchProcessing
 @SpringBootApplication(exclude = {
