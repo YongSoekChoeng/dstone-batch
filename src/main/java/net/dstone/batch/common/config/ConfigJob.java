@@ -43,8 +43,7 @@ public class ConfigJob extends BaseBatchObject {
         return factoryBean.getObject();
     }
 
-
-    @Bean
+    @Bean("asyncJobLauncher")
     public JobLauncher asyncJobLauncher(JobRepository jobRepository) throws Exception {
         TaskExecutorJobLauncher jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(jobRepository);

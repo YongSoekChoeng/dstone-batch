@@ -95,73 +95,9 @@ public class ConfigAutoReg extends BaseBatchObject {
 					}
 				}
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * SCDF에 Job 의 Task를 등록하는 메소드
-	 */
-	public void registerAllJobToDataflow() {
-		RestTemplate restTemplate = null;
-		try {
-			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
-			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
-			Map<String, Object> jobs = applicationContext.getBeansWithAnnotation(AutoRegJob.class);
-			for(Object jobObj : jobs.values()) {
-				if (jobObj instanceof BaseJobConfig) {
-					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
-					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
-					if( isNotExistsInDataflow(jobName) ) {
-			            // SCDF에 Task 정의 생성
-			            String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
-			            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-			            params.add("name", jobName);
-			            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
-			            try {
-			                restTemplate.postForEntity(taskDefUrl, params, String.class);
-			                this.info("Registered job: " + jobName);
-			            } catch (Exception e) {
-			            	this.error("Failed to register job: " + jobName);
-			            }
-					}
-
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * SCDF에 Job 의 Task가 존재하는지 확인하는 메소드
-	 */
-	private boolean isNotExistsInDataflow(String jobName) {
-		boolean isNotExists = false;
-		RestTemplate restTemplate = null;
-		try {
-			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
-            // SCDF에 Task 정의 생성
-            String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions/" + jobName;
-            
-            try {
-            	ResponseEntity<String> response = restTemplate.getForEntity(taskDefUrl, String.class);
-            	int statusCode = response.getStatusCode().value();
-            	if (statusCode == 404) {
-            		isNotExists = true;
-            	}
-                this.info("JobName["+jobName+"] notExists ?: " + isNotExists);
-            } catch (Exception e) {
-            	isNotExists = false;
-            	//e.printStackTrace();
-            }
-		} catch (Exception e) {
-			isNotExists = false;
-			//e.printStackTrace();
-		}
-		return isNotExists;
 	}
 	
 }

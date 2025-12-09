@@ -15,16 +15,20 @@ import net.dstone.batch.common.DstoneBatchApplication;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
+/**
+ * 독립 Application 으로 기동하여 단건 Job을 처리한다.
+ * <pre>
+ * - 동기로 Job을 처리.
+ * </pre>
+ */
 public class SimpleBatchRunner extends AbstractRunner {
 	
     public static void main(String[] args) throws Exception {
-    	
     	int exitCode = 0;
     	ConfigurableApplicationContext context = null;
-    	
     	try {
     		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-    		context = launchJob(context, exitCode, args);
+    		context = launch(context, exitCode, args);
 		} catch (Exception e) {
 			exitCode = -1;
 			e.printStackTrace();
@@ -36,8 +40,8 @@ public class SimpleBatchRunner extends AbstractRunner {
  		}
     }
     
-    public static ConfigurableApplicationContext launchJob(ConfigurableApplicationContext context, int exitCode, String[] args) throws Exception {
-    	LogUtil.sysout( SimpleBatchRunner.class.getName() + ".launchJob("+Arrays.toString(args)+") has been called !!!");
+    public static ConfigurableApplicationContext launch(ConfigurableApplicationContext context, int exitCode, String[] args) throws Exception {
+    	LogUtil.sysout( SimpleBatchRunner.class.getName() + ".launch("+Arrays.toString(args)+") has been called !!!");
     	exitCode = 0;
         String jobName = "";
         String[] jobParams = new String[0];

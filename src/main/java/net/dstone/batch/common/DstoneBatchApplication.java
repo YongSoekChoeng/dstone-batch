@@ -93,7 +93,7 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		    
 		    // spring.batch.job.names=JOB이름 설정이 적용되지 않아서 수동으로 취한 조치
 		    if(args.length > 0 ) {
-		    	SimpleBatchRunner.launchJob(context, 0, args);
+		    	//SimpleBatchRunner.launch(context, false, 0, args);
 		    }
 		    
 		} catch (Throwable e) {

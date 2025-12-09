@@ -20,6 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import net.dstone.batch.common.config.ConfigProperty;
 
+/**
+ * SpringBoot WebApplicaton 형식으로 기동하여 Rest Api로 호출되는 모든 요청을 처리한다.
+ * <pre>
+ * - URL 형식 : /batch/restapi/{jobName}
+ * - 비동기로 Job을 처리.
+ * </pre>
+ */
 @RestController
 @RequestMapping("/batch")
 public class RestApiRunner extends AbstractRunner {

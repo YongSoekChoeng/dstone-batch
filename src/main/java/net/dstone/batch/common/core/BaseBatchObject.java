@@ -3,11 +3,18 @@ package net.dstone.batch.common.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
-public class BaseBatchObject{
+@Component
+public class BaseBatchObject implements ApplicationContextAware{
 	
+	private static ApplicationContext context;
 	private LogUtil myLogger = null;
 	private Map<String,Object> baseParam = new HashMap<String,Object>();
 	
@@ -84,6 +91,17 @@ public class BaseBatchObject{
 	}
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		context = applicationContext;
+	}
+	public static <T> T getBean(Class<T> requiredType) {
+		return context.getBean(requiredType);
+	}
+	public static Object getBean(String beanName) {
+		return context.getBean(beanName);
 	}
 	
 }
