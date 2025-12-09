@@ -48,7 +48,7 @@ public class RestApiRunner extends AbstractRunner {
     		// 5. Job 조회
     		job = getJob(context, jobName, jobParameters);
     		// 6. Job 실행
-    		execution = jobLaunch(context, transactionId, job, jobParameters);
+    		execution = jobAsyncLaunch(context, transactionId, job, jobParameters);
 		} catch (Exception e) {
 			e.printStackTrace();
 	        return ResponseEntity.ok(Map.of(
