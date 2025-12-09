@@ -107,15 +107,17 @@ public abstract class BasePartitioner extends BaseItem implements Partitioner {
 	@Override
 	public Map<String, Object> getJobParamMap() {
     	Map<String,Object> map = new HashMap<String,Object>();
-    	JobExecution jobExecution = JobSynchronizationManager.getContext().getJobExecution();
-    	if( jobExecution != null && jobExecution.getJobParameters() != null) {
-    		Map<String, JobParameter<?>> jobParamMap = jobExecution.getJobParameters().getParameters();
-    		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
-    		while(jobParamMapKey.hasNext()) {
-    			String key = jobParamMapKey.next();
-    			JobParameter val = jobParamMap.get(key);
-    			map.put(key, val.getValue());
-    		}
+    	if( JobSynchronizationManager.getContext() != null && JobSynchronizationManager.getContext().getJobExecution() != null ) {
+        	JobExecution jobExecution = JobSynchronizationManager.getContext().getJobExecution();
+        	if( jobExecution != null && jobExecution.getJobParameters() != null) {
+        		Map<String, JobParameter<?>> jobParamMap = jobExecution.getJobParameters().getParameters();
+        		Iterator<String > jobParamMapKey = jobParamMap.keySet().iterator();
+        		while(jobParamMapKey.hasNext()) {
+        			String key = jobParamMapKey.next();
+        			JobParameter val = jobParamMap.get(key);
+        			map.put(key, val.getValue());
+        		}
+        	}
     	}
     	return map;
     }
