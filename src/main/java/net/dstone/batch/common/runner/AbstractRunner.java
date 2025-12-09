@@ -1,5 +1,6 @@
 package net.dstone.batch.common.runner;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -142,6 +143,7 @@ public abstract class AbstractRunner extends BaseBatchObject {
 	 * @return
 	 */
 	protected static JobExecution jobLaunch(ConfigurableApplicationContext context, String transactionId, Job job, JobParameters jobParameters ) {
+		LogUtil.sysout( AbstractRunner.class.getName() + ".jobLaunch("+context+", "+transactionId+", "+job+", "+jobParameters+") has been called !!!");
 		JobExecution execution = null;
 		try {
 			JobLauncher jobLauncher = (JobLauncher)context.getBean("jobLauncher");
@@ -162,6 +164,7 @@ public abstract class AbstractRunner extends BaseBatchObject {
 	 * @return
 	 */
 	protected static JobExecution jobAsyncLaunch(ConfigurableApplicationContext context,String transactionId, Job job, JobParameters jobParameters ) {
+		LogUtil.sysout( AbstractRunner.class.getName() + ".jobAsyncLaunch("+context+", "+transactionId+", "+job+", "+jobParameters+") has been called !!!");
 		JobExecution execution = null;
 		try {
 			JobLauncher jobLauncher = (JobLauncher)context.getBean("asyncJobLauncher");

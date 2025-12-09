@@ -1,11 +1,16 @@
 package net.dstone.batch.common.runner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -20,13 +25,14 @@ import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.config.ConfigProperty;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.batch.common.core.BaseJobConfig;
+import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
 /**
  * Spring Cloud Data Flow 에서 호출하는 경우에 대한 조치.
  */
 @Component
-public class ScdfTaskRunner extends BaseBatchObject implements ApplicationRunner {
+public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner {
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
@@ -37,6 +43,7 @@ public class ScdfTaskRunner extends BaseBatchObject implements ApplicationRunner
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		String jobName = configProperty.getProperty("spring.batch.job.names");
+		LogUtil.sysout( this.getClass().getName() + "run(jobName["+jobName+"]) has been called !!!" );
         if( !StringUtil.isEmpty(jobName) ) {
         	ArrayList<String> listArgs = new ArrayList<String>();
     		listArgs.add( "spring.batch.job.names=" + jobName);
@@ -50,8 +57,123 @@ public class ScdfTaskRunner extends BaseBatchObject implements ApplicationRunner
         	listArgs.toArray(strArgs);
         	listArgs.clear();
         	listArgs = null;
-        	SimpleBatchRunner.launch(null, 0, strArgs);
+        	this.launch(strArgs);
         }
 	}
+	
+	private void launch(String[] jobParams) {
+        String jobName = "";
+        JobExecution execution = null;
+        Job job = null;
+        // 1. 트렌젝션ID 생성.
+		String transactionId = newTransactionId();
+		try {
+    		// 2. Job Name 추출
+    		jobName = SimpleBatchRunner.parseJobName(jobParams);
+    		// 3. Job Parameter 추출
+    		JobParameters jobParameters = getJobParams( SimpleBatchRunner.parseParameterToMap(jobParams) );
+    		// 4. 파라메터레지스트리 등록
+    		jobConfigRegister(transactionId, jobParameters);
+    		// 5. jobRegistry에 저장
+    		jobRegister(context, transactionId, jobName, jobParameters);
+    		// 6. Job 조회
+    		job = getJob(context, jobName, jobParameters);
+    		// 7. Job 실행
+    		execution = jobLaunch(context, transactionId, job, jobParameters);
+    		LogUtil.sysout( "JobName["+jobName+"] 작업결과:" + execution.getExitStatus() );
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			// 8. 파라메터레지스트리 삭제
+			jobConfigUnRegister(transactionId);
+		}
+	}
+
+	public static void main(String[] args) {
+		try {
+			registerJosToScdf();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void registerJosToScdf() {
+		try {
+			
+			/*** SCDF에 Job 의 Task를 등록 시작 ***/
+			String[] args = new String[0];
+			ConfigurableApplicationContext context = new SpringApplicationBuilder(DstoneBatchApplication.class).web(WebApplicationType.NONE).run(args);
+			registerAllJobToDataflow(context);
+			/*** SCDF에 Job 의 Task를 등록 끝 ***/
+			
+		} catch (Exception e) {
+			//e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * SCDF에 Job 의 Task를 등록하는 메소드
+	 */
+	public static void registerAllJobToDataflow(ConfigurableApplicationContext context) {
+		RestTemplate restTemplate = null;
+		try {
+			ConfigProperty configProperty = (ConfigProperty)context.getBean("configProperty");
+			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
+			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
+			Map<String, Object> jobs = context.getBeansWithAnnotation(AutoRegJob.class);
+			for(Object jobObj : jobs.values()) {
+				if (jobObj instanceof BaseJobConfig) {
+					BaseJobConfig abstractJob = (BaseJobConfig)jobObj;
+					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
+					String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions/" + jobName;
+					if( !isExistsInDataflow(jobName, taskDefUrl) ) {
+			            // SCDF에 Task 정의 생성
+			            taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
+			            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+			            params.add("name", jobName);
+			            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
+			            try {
+			            	ResponseEntity<String> response = restTemplate.postForEntity(taskDefUrl, params, String.class);
+			                LogUtil.sysout("Registered job: " + jobName);
+			            } catch (Exception e) {
+			            	LogUtil.sysout("Failed to register job: " + jobName);
+			            }
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * SCDF에 Job 의 Task가 존재하는지 확인하는 메소드
+	 */
+	private static boolean isExistsInDataflow(String jobName, String taskDefUrl) {
+		boolean isExists = false;
+		RestTemplate restTemplate = null;
+		try {
+			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
+            try {
+            	ResponseEntity<String> response = restTemplate.getForEntity(taskDefUrl, String.class);
+            	int statusCode = response.getStatusCode().value();
+            	if (statusCode == 404) {
+            		isExists = false;
+            	}else {
+            		isExists = true;
+            	}
+            	//LogUtil.sysout("JobName["+jobName+"] isExists ====>>>" + isExists);
+            } catch (Exception e) {
+            	isExists = false;
+            	//e.printStackTrace();
+            }
+		} catch (Exception e) {
+			isExists = false;
+			//e.printStackTrace();
+		}
+		return isExists;
+	}
+	
 
 }

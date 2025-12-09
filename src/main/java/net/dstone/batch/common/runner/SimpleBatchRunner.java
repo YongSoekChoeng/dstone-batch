@@ -77,7 +77,7 @@ public class SimpleBatchRunner extends AbstractRunner {
     	return context;
     }
     
-    private static String parseJobName(String[] args) throws Exception{
+    protected static String parseJobName(String[] args) throws Exception{
     	String jobName = "";
     	try {
             if (args == null || args.length < 1) {
@@ -99,7 +99,7 @@ public class SimpleBatchRunner extends AbstractRunner {
     	return jobName;
     }
     
-    private static Map<String,Object> parseParameterToMap(String[] args) {
+    protected static Map<String,Object> parseParameterToMap(String[] args) {
     	Map<String,Object> paramMap = new HashMap<String,Object>();
     	try {
             if ( args != null && args.length > 0) {
