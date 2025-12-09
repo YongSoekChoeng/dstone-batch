@@ -7,15 +7,11 @@ import java.util.Map;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import net.dstone.batch.common.DstoneBatchApplication;
-import net.dstone.batch.common.config.ConfigAutoReg;
-import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 

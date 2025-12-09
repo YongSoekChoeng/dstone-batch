@@ -16,7 +16,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 
 import net.dstone.batch.common.config.ConfigAutoReg;
-import net.dstone.batch.common.config.ConfigProperty;
 import net.dstone.batch.common.consts.ConstMaps;
 import net.dstone.batch.common.core.BaseBatchObject;
 import net.dstone.common.utils.GuidUtil;

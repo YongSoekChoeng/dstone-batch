@@ -9,7 +9,6 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -124,7 +123,7 @@ public class FileCopyType02JobConfig extends BaseJobConfig {
     @Bean
     @StepScope
 	public FilePartitioner fileCopyType02JobFilePartitioner() {
-		callLog(this, "filePartitioner", gridSize);
+		callLog(this, "filePartitioner");
 		FilePartitioner filePartitioner = new FilePartitioner(inputFileFullPath, gridSize, null);
 		return filePartitioner;
 	}
