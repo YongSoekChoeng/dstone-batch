@@ -115,7 +115,6 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 		RestTemplate restTemplate = null;
 		try {
 			ConfigProperty configProperty = (ConfigProperty)context.getBean("configProperty");
-			restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
 			// @AutoRegisteredJob 애노테이션이 붙은 모든 빈 검색
 			Map<String, Object> jobs = context.getBeansWithAnnotation(AutoRegJob.class);
 			for(Object jobObj : jobs.values()) {
@@ -124,16 +123,21 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 					String jobName = jobObj.getClass().getAnnotation(AutoRegJob.class).name();
 					String taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions/" + jobName;
 					if( !isExistsInDataflow(jobName, taskDefUrl) ) {
+System.out.println("jobName==============>>>" + jobName);	
+						restTemplate = net.dstone.common.utils.RestFulUtil.getInstance().getRestTemplate();
 			            // SCDF에 Task 정의 생성
-			            taskDefUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
+						String taskRegUrl = configProperty.getProperty("spring.cloud.dataflow.client.server-uri") + "/tasks/definitions";
 			            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 			            params.add("name", jobName);
 			            params.add("definition", configProperty.getProperty("spring.application.name") + " --spring.batch.job.names=" + jobName);
+			            ResponseEntity<String> response = null;
 			            try {
-			            	ResponseEntity<String> response = restTemplate.postForEntity(taskDefUrl, params, String.class);
-			                LogUtil.sysout("Registered job: " + jobName);
+System.out.println("jobName==============>>>" + jobName + ", taskRegUrl:" + taskRegUrl);			
+			            	response = restTemplate.postForEntity(taskRegUrl, params, String.class);
+			                LogUtil.sysout("Registered job: " + jobName + ", StatusCode:" + response.getStatusCode());
 			            } catch (Exception e) {
-			            	LogUtil.sysout("Failed to register job: " + jobName);
+			            	e.printStackTrace();
+			            	LogUtil.sysout("Failed to register job: " + jobName + ", StatusCode:" + (response==null?"":response.getStatusCode()));
 			            }
 					}
 
@@ -160,7 +164,7 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
             	}else {
             		isExists = true;
             	}
-            	//LogUtil.sysout("JobName["+jobName+"] isExists ====>>>" + isExists);
+            	LogUtil.sysout("JobName["+jobName+"] isExists ====>>>" + isExists);
             } catch (Exception e) {
             	isExists = false;
             	//e.printStackTrace();
