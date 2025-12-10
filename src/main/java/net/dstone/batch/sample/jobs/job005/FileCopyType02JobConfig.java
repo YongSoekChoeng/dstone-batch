@@ -26,6 +26,15 @@ import net.dstone.batch.common.partitioner.FilePartitioner;
  * 1:N 복사(병렬쓰레드처리). 대량파일을 Line Range로 Partitioning하여 각각 저장.
  *   C:/Temp/aa.txt => C:/Temp/aa-out1.txt
  *                     C:/Temp/aa-out2.txt
+ *                     
+ * < JobParameter >
+ * 1. gridSize : 쓰레드 갯수.
+ * 2. chunkSize : 청크 사이즈.
+ * 3. inputFileFullPath : 대상파일Full경로.
+ * 4. outputFileDir : 복사파일 생성 디렉토리.
+ * 5. charset : 파일 인코딩.
+ * 6. append : 기존파일이 존재 할 경우 기존데이터에 추가할지 여부.
+ * 
  * </pre>
  */
 @Component

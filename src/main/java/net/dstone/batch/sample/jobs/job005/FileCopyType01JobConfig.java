@@ -23,6 +23,14 @@ import net.dstone.batch.common.items.FileItemWriter;
  * 단일쓰레드처리
  * 1:1복사(단일쓰레드처리).
  *   C:/Temp/aa.txt => C:/Temp/aa-copy.txt.
+ *                 
+ * < JobParameter >
+ * 1. chunkSize : 청크 사이즈.
+ * 2. inputFileFullPath : 대상파일Full경로.
+ * 3. outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
+ * 4. charset : 파일 인코딩.
+ * 5. append : 기존파일이 존재 할 경우 기존데이터에 추가할지 여부.
+ * 
  * </pre>
  */
 @Component
@@ -33,7 +41,6 @@ public class FileCopyType01JobConfig extends BaseJobConfig {
 	// chunkSize : 트랜젝션묶음 크기
 	// inputFileFullPath : 복사될 Full파일 경로
 	// outputFileFullPath : 복사생성될 Full파일 경로. 복수개의 파일이 생성되어야 할 경우 outputFileFullPath의 디렉토리내에서 파일명[0,1,2,...]처럼 넘버링으로 자동으로 파일생성. 
-	// outputFileDir : 복사생성될 디렉토리 경로.
 	// charset : 생성할 파일의 캐릭터셋
 	// append  : 작업수행시 파일 초기화여부. true-초기화 하지않고 이어서 생성. false-초기화 후 새로 생성.
 	// colInfoMap : 데이터의 Layout 정의

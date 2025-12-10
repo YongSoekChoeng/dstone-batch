@@ -26,6 +26,11 @@ import net.dstone.batch.common.partitioner.QueryPartitioner;
  * 
  * 병렬쓰레드처리.
  * Reader/Processor/Writer 별도클래스로 생성.
+ * 
+ * < JobParameter >
+ * 1. gridSize : 쓰레드 갯수.
+ * 2. chunkSize : 청크 사이즈.
+ * 
  * </pre>
  */
 @Component

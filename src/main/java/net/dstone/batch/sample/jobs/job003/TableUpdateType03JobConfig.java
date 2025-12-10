@@ -32,6 +32,10 @@ import net.dstone.batch.common.core.BaseJobConfig;
  * 
  * 단일쓰레드처리. 
  * Reader/Processor/Writer 동일클래스 내에 구현.
+ * 
+ * < JobParameter >
+ * 1. chunkSize : 청크 사이즈.
+ * 
  * </pre>
  */
 @Component

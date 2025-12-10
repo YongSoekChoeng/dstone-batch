@@ -37,6 +37,14 @@ import net.dstone.common.utils.StringUtil;
  * )
  * 
  * 단일쓰레드처리. 
+ *                          
+ * < JobParameter >
+ * 1. dataCnt : 생성할 데이터 건수.
+ * 2. chunkSize : 청크 사이즈.
+ * 3. outputFileFullPath : 생성될 Full파일 경로
+ * 4. charset : 파일 인코딩.
+ * 5. append : 기존파일이 존재 할 경우 기존데이터에 추가할지 여부.
+ * 
  * </pre>
  */
 @Component

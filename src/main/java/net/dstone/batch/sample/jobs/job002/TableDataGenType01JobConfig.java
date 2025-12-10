@@ -18,6 +18,7 @@ import net.dstone.batch.sample.jobs.job002.items.TableInsertTasklet;
  * < JobParameter >
  * 1. dataCnt : 생성데이터 갯수. 필수.
  * 2. gridSize : 병렬처리할 쓰레드 갯수. 옵션(기본값 1).
+ * 
  * </pre>
  */
 @Component
