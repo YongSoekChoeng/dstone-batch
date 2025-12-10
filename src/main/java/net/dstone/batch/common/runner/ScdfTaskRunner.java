@@ -57,7 +57,10 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
         	this.launch(strArgs);
         }
 	}
-	
+
+	/**
+	 * 배치작업을 실행하는 메소드
+	 */
 	private void launch(String[] jobParams) {
         String jobName = "";
         JobExecution execution = null;
@@ -88,22 +91,23 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 
 	public static void main(String[] args) {
 		try {
+			/*** SCDF에 Job 의 Task를 등록 시작 ***/
 			net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
 			registerJosToScdf();
+			/*** SCDF에 Job 의 Task를 등록 끝 ***/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * SCDF에 Job 의 Task를 등록하기 위해 SpringApplication 을 실행하는 메소드.
+	 */
 	private static void registerJosToScdf() {
 		try {
-			
-			/*** SCDF에 Job 의 Task를 등록 시작 ***/
 			String[] args = new String[0];
 			ConfigurableApplicationContext context = new SpringApplicationBuilder(DstoneBatchApplication.class).web(WebApplicationType.NONE).run(args);
 			registerAllJobToDataflow(context);
-			/*** SCDF에 Job 의 Task를 등록 끝 ***/
-			
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
