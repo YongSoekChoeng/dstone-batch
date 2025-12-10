@@ -242,8 +242,12 @@
                 <directory>conf</directory>
                 <targetPath>${project.basedir}/target/classes</targetPath>
 				<includes>
-					<include>*.*</include>
+					<include>env.properties</include>
 				</includes>
+				<excludes>
+					<exclude>application.xml</exclude>
+					<exclude>log4j2.xml</exclude>
+				</excludes>
             </resource>
             <resource>
                 <directory>src/main/java</directory>
@@ -262,6 +266,7 @@
 					<!--
 					<exclude>application.xml</exclude>
 					<exclude>log4j2.xml</exclude>
+					<exclude>env.properties</exclude>
 					-->
 					<!-- 로컬환경에서는 주석처리하지만 서버환경에서는 주석제거해야하는 부분(설정파일이 war에 들어가게 되면 conf안의 파일보다 해당 설정을 먼저 읽어버리는 경우가 있음.)  끝 -->
 					<!-- Resources Replacement(Ones in conf directory should be used instead.) End  -->
