@@ -1,0 +1,59 @@
+spring: 
+  task: 
+    jdbc: 
+      initialize-schema: never # always/never
+  cloud: 
+    dataflow: 
+      task: 
+        initialize-enabled: false
+        scheduler-enabled: true
+        table-prefix: TASK_
+        platform: 
+          local: 
+            accounts: 
+              default: 
+                workingDirectoriesRoot: ${user.home}/dataflow/tasks	
+      featueres: 
+        streams-enabled: false
+        skipper-enabled: false
+        tasks-enabled: true
+    scheduler: 
+      cron4j: 
+        enabled: true
+      applicationProperties: 
+        task: 
+          globalProperties: 
+            spring.datasource.url: jdbc:mysql://mysql:3306/dataflow?useSSL=false&serverTimezone=UTC
+            spring.datasource.username: dataflow
+            spring.datasource.password: dataflow
+            spring.datasource.driver-class-name: com.mysql.cj.jdbc.Driver
+  datasource: 
+    url: jdbc:mysql://mysql:3306/dataflow?useSSL=false&serverTimezone=UTC
+    username: dataflow
+    password: dataflow
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa: 
+    database-platform: org.hibernate.dialect.MySQL57Dialect  # 추가
+    hibernate: 
+      ddl-auto: update # none/update
+    show-sql: true
+    properties: 
+      hibernate: 
+        dialect: org.hibernate.dialect.MySQL57Dialect
+  flyway: 
+    enabled: false  # H2용 Flyway 비활성화	
+  batch: 
+    jdbc: 
+      initialize-schema: never # always/never
+      table-prefix: BATCH_
+server: 
+  port: 9393
+management: 
+  endpoints: 
+    web: 
+      exposure: 
+        include: health,info,prometheus
+spring.cloud.dataflow.features.skipper-enabled: true
+logging: 
+  level: 
+    root: INFO

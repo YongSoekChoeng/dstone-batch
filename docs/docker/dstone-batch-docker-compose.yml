@@ -1,0 +1,96 @@
+services:
+  # MySQL 데이터베이스 서버
+  mysql:
+    image: mysql:8.0
+    container_name: dstone-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: db2admin!@
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_0900_ai_ci
+    ports:
+      - "33060:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    networks:
+      - dstone-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 배치서버 Application
+  dstone-batch:
+    image: eclipse-temurin:21-jdk
+    container_name: dstone-batch
+    working_dir: /workshop/docker
+    volumes:
+      - ./dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
+      - ./dstone-batch/bin:/workshop/dstone-batch/bin
+      - ./dstone-batch/conf:/workshop/dstone-batch/conf
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sampleDB?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: sampleuser
+      SPRING_DATASOURCE_PASSWORD: sampleuser
+      SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: always
+      TZ: Asia/Seoul
+    ports:
+      - "6081:6081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dstone-network
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for MySQL to be ready..."
+        sleep 10
+        echo "Starting Spring Batch Application..."
+        chmod +x /workshop/dstone-batch/bin/startApp.sh
+        cd /workshop/dstone-batch/bin
+        ./startApp.sh
+    restart: unless-stopped
+
+  # 배치관리서버 Application
+  dstone-batch-server:
+    image: eclipse-temurin:21-jdk
+    container_name: dstone-batch-server
+    working_dir: /workshop/docker
+    volumes:
+      - ./dstone-batch-server:/workshop/dstone-batch-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dataflow?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: dataflow
+      SPRING_DATASOURCE_PASSWORD: dataflow
+      TZ: Asia/Seoul
+    ports:
+      - "9393:9393"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - dstone-network
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        echo "Waiting for MySQL to be ready..."
+        sleep 10
+        echo "Starting Batch Management Server..."
+        chmod +x /workshop/dstone-batch-server/01.dataflow.sh
+        cd /workshop/dstone-batch-server
+        ./01.dataflow.sh
+    restart: unless-stopped
+
+networks:
+  dstone-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
