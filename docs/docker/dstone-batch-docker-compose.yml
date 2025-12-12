@@ -43,7 +43,7 @@ services:
   dstone-batch:
     image: eclipse-temurin:21-jdk
     container_name: dstone-batch
-    working_dir: /workshop/docker
+    working_dir: /workshop
     volumes:
       - ./dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
       - ./dstone-batch/bin:/workshop/dstone-batch/bin
@@ -77,7 +77,7 @@ services:
   dstone-batch-server:
     image: eclipse-temurin:21-jdk
     container_name: dstone-batch-server
-    working_dir: /workshop/docker
+    working_dir: /workshop
     volumes:
       - ./dstone-batch-server:/workshop/dstone-batch-server
     environment:
