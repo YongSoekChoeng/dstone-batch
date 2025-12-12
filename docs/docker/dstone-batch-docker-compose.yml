@@ -57,7 +57,7 @@ services:
     ports:
       - "6081:6081"
     depends_on:
-      mysql:
+      dstone-mysql:
         condition: service_healthy
     networks:
       - dstone-network
@@ -88,7 +88,7 @@ services:
     ports:
       - "9393:9393"
     depends_on:
-      mysql:
+      dstone-mysql:
         condition: service_healthy
     networks:
       - dstone-network
