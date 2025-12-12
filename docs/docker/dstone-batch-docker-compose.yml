@@ -80,7 +80,7 @@ services:
     working_dir: /workshop
     volumes:
       - ./dstone-batch-server:/workshop/dstone-batch-server
-      - ./dstone-batch-server/applications:/workshop/dstone-batch/target
+      - ./dstone-batch/target:/workshop/dstone-batch-server/applications
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://dstone-mysql:3306/dataflow?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: dataflow
