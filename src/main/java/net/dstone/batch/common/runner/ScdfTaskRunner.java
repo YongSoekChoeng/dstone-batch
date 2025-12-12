@@ -93,7 +93,7 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 		try {
 			/*** SCDF에 Job 의 Task를 등록 시작 ***/
 			net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-			registerJosToScdf();
+			ScdfTaskRunner.registerJosToScdf();
 			/*** SCDF에 Job 의 Task를 등록 끝 ***/
 		} catch (Exception e) {
 			e.printStackTrace();
