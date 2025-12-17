@@ -35,6 +35,7 @@ import org.springframework.context.annotation.ComponentScan;
 import net.dstone.common.DstoneBootApplication;
 import net.dstone.common.utils.ConvertUtil;
 import net.dstone.common.utils.LogUtil;
+import net.dstone.common.utils.StringUtil;
 
 @EnableTask
 @EnableBatchProcessing
@@ -52,7 +53,12 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 			IS_SYS_PROPERTIES_SET = true;
 			StringBuffer msg = new StringBuffer();
 			try {
-				String profile = System.getProperty("spring.profiles.active", "local").toLowerCase();
+				String profile = "local";
+				if( !StringUtil.isEmpty(System.getProperty("spring.profiles.active")) ) {
+					profile = System.getenv("spring.profiles.active");
+				}else if( !StringUtil.isEmpty(System.getenv("spring.profiles.active")) ) {
+					profile = System.getProperty("spring.profiles.active", "local").toLowerCase();
+				}
 				if("local".equals(profile)) {
 					profile = "";
 				}else {
