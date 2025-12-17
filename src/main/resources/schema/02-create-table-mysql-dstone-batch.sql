@@ -1,7 +1,11 @@
--- ============================================
--- Spring Batch 5.1.0 Table for MySQL 5.7
--- ============================================
 
+/**********************************************
+Dataflow 데이터베이스[배치관리서버용] 테이블
+**********************************************/
+
+-- ============================================
+-- Spring Batch 5.1.0 Schema for MySQL 5.7
+-- ============================================
 USE dataflow;
 
 CREATE TABLE IF NOT EXISTS BATCH_JOB_INSTANCE (
@@ -102,7 +106,7 @@ CREATE TABLE IF NOT EXISTS BATCH_JOB_SEQ (
 INSERT INTO BATCH_JOB_SEQ (ID, UNIQUE_KEY) SELECT * FROM (SELECT 0 AS ID, '0' AS UNIQUE_KEY) AS TMP WHERE NOT EXISTS(SELECT * FROM BATCH_JOB_SEQ);
 
 -- ============================================
--- Spring Cloud Task 3.1.1 Table for MySQL 5.7
+-- Spring Cloud Task 3.1.1 Schema for MySQL 5.7
 -- ============================================
 
 CREATE TABLE IF NOT EXISTS TASK_EXECUTION (
@@ -234,7 +238,7 @@ FROM `TASK_EXECUTION_PARAMS`
 ;
 
 -- ============================================
--- Spring Cloud Data Flow 2.11.5 Table for MySQL 5.7
+-- Spring Cloud Data Flow 2.11.5 Schema for MySQL 5.7
 -- ============================================
 
 CREATE TABLE IF NOT EXISTS HIBERNATE_SEQUENCE (
@@ -321,18 +325,3 @@ CREATE TABLE IF NOT EXISTS SCHEMA_VERSION (
     INDEX SCHEMA_VERSION_S_IDX (SUCCESS)
 ) ;
 
-
-
--- ============================================
--- Sample Table for MySQL 5.7
--- ============================================
-
-USE sampleDB;
-
-CREATE TABLE IF NOT EXISTS SAMPLE_TEST (
-  TEST_ID VARCHAR(30) NOT NULL, 
-  TEST_NAME VARCHAR(200), 
-  FLAG_YN VARCHAR(1), 
-  INPUT_DT DATE NOT NULL,  
-  PRIMARY KEY  (TEST_ID)
-) ;
