@@ -18,7 +18,12 @@ services:
 
   # MySQL 데이터베이스 서버
   dstone-mysql:
+    # ---------- 최초작업일 때 ---------------------- #
     image: mysql:8.0
+    # --------------------------------------------- #    
+    # ---------- Docker Hub 에서 가져올 때 ---------- #
+    # image: jysn007/dstone-mysql:latest
+    # --------------------------------------------- #
     container_name: dstone-mysql
     environment:
       MYSQL_ROOT_PASSWORD: db2admin!@
@@ -42,7 +47,12 @@ services:
 
   # 배치서버 Application
   dstone-batch:
+    # ---------- 최초작업일 때 ---------------------- #
     image: eclipse-temurin:21-jdk
+    # --------------------------------------------- #    
+    # ---------- Docker Hub 에서 가져올 때 ---------- #
+    # image: jysn007/dstone-batch:latest
+    # --------------------------------------------- #
     container_name: dstone-batch
     working_dir: /workshop
     volumes:
