@@ -28,7 +28,7 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_0900_ai_ci
     ports:
-      - "33060:3306"
+      - "3306:3306"
       
     ###########################################################  
     # 서비스 내부 Volumes (바인드 마운트 vs 볼륨 참조)

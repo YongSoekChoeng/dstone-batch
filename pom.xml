@@ -241,10 +241,10 @@
             <resource>
                 <directory>conf</directory>
                 <targetPath>${project.basedir}/target/classes</targetPath>
-                <!--
 				<includes>
-					<include>env.properties</include>
+					<include>*.properties</include>
 				</includes>
+                <!--
 				<excludes>
 					<exclude>application.xml</exclude>
 					<exclude>log4j2.xml</exclude>

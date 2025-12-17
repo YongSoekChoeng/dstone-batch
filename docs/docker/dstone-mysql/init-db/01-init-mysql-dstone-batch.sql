@@ -1,4 +1,3 @@
-
 -- Dataflow 데이터베이스[배치관리서버용] 생성
 CREATE DATABASE IF NOT EXISTS dataflow CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 
