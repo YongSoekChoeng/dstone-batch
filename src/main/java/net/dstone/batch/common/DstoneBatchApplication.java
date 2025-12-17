@@ -18,16 +18,23 @@ package net.dstone.batch.common;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+
+import net.dstone.common.DstoneBootApplication;
+import net.dstone.common.utils.ConvertUtil;
+import net.dstone.common.utils.LogUtil;
 
 @EnableTask
 @EnableBatchProcessing
@@ -45,8 +52,15 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 			IS_SYS_PROPERTIES_SET = true;
 			StringBuffer msg = new StringBuffer();
 			try {
-				msg.append("/******************************* env.properties System변수로 세팅 하기위한 조치 시작 *********************************/").append("\n");
-				java.net.URL resource = DstoneBatchApplication.class.getClassLoader().getResource("env.properties");
+				String profile = System.getProperty("spring.profiles.active", "local").toLowerCase();
+				if("local".equals(profile)) {
+					profile = "";
+				}else {
+					profile = "-"+profile;
+				}
+				String envFile = "env"+profile+".properties";
+				msg.append("/******************************* "+envFile+" System변수로 세팅 하기위한 조치 시작 *********************************/").append("\n");
+				java.net.URL resource = DstoneBootApplication.class.getClassLoader().getResource(envFile);
 				if (resource != null) {
 			        try (InputStream input = resource.openStream()) {
 			        	Properties props = new Properties();
@@ -69,9 +83,9 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 			            ex.printStackTrace();
 			        }
 				}
-				msg.append("/******************************* env.properties System변수로 세팅 하기위한 조치 끝  *********************************/").append("\n");
+				msg.append("/******************************* "+envFile+" System변수로 세팅 하기위한 조치 끝  *********************************/").append("\n");
 
-				System.out.println(msg.toString());
+				LogUtil.sysout(msg);
 				
 			} catch (Exception e) {
 				// TODO: handle exception
@@ -85,15 +99,22 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 			/*** env.properties의 항목들을 System변수로 세팅 ***/
 			setSysProperties();
 
-			SpringApplication app = new SpringApplication(DstoneBatchApplication.class);
-			app.addListeners(new ApplicationPidFileWriter()); // ApplicationPidFileWriter 설정
-			ConfigurableApplicationContext context = app.run(args);
+		    StringBuffer msg = new StringBuffer();
+		    String appConfDir = System.getProperty("APP_CONF_DIR");
+		    SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(DstoneBatchApplication.class);
+		    Map<String,Object> prop = new HashMap<String,Object>();
+		    prop.put("spring.config.location", appConfDir + "/application.yml" );
+		    prop.put("logging.config", appConfDir + "/log4j2.xml" );
 		    
-		    // spring.batch.job.names=JOB이름 설정이 적용되지 않아서 수동으로 취한 조치
-		    if(args.length > 0 ) {
-		    	//SimpleBatchRunner.launch(context, false, 0, args);
-		    }
-		    
+		    msg.append("/******************************* 설정파일 로딩 시작 *********************************/").append("\n");
+		    msg.append( ConvertUtil.convertToJson(prop) ).append("\n");
+		    msg.append("/******************************* 설정파일 로딩 끝 *********************************/").append("\n");
+		    LogUtil.sysout(msg);
+
+		    springApplicationBuilder.properties(prop);
+		    springApplicationBuilder.listeners(new ApplicationPidFileWriter());
+		    springApplicationBuilder.run(args);
+
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
