@@ -23,13 +23,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.task.configuration.EnableTask;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import net.dstone.common.DstoneBootApplication;
@@ -55,9 +53,9 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 			try {
 				String profile = "local";
 				if( !StringUtil.isEmpty(System.getProperty("spring.profiles.active")) ) {
-					profile = System.getenv("spring.profiles.active");
+					profile = System.getenv("spring.profiles.active").trim().toLowerCase();
 				}else if( !StringUtil.isEmpty(System.getenv("spring.profiles.active")) ) {
-					profile = System.getProperty("spring.profiles.active", "local").toLowerCase();
+					profile = System.getProperty("spring.profiles.active", "local").trim().toLowerCase();
 				}
 				if("local".equals(profile)) {
 					profile = "";
