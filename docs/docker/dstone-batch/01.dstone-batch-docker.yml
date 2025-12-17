@@ -53,7 +53,7 @@ services:
       - -c
       - |
         echo "Starting Spring Boot Application..."
-        java -Xms512m -Xmx1024m -Dspring.profiles.active=dev -jar /workshop/dstone-batch/target/dstone-batch.war net.dstone.batch.common.DstoneBatchApplication
+        java -Xms512m -Xmx1024m -Dspring.profiles.active=dev -jar /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar net.dstone.batch.common.DstoneBatchApplication
     restart: unless-stopped
     #restart: "no"
 
