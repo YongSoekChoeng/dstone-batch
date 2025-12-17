@@ -15,6 +15,7 @@
 #   - docker-compose -f dstone-batch-docker-compose.yml down -v
 ########################################################################################
 services:
+
   # MySQL 데이터베이스 서버
   dstone-mysql:
     image: mysql:8.0
@@ -24,7 +25,7 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_0900_ai_ci
     ports:
-      - "33060:3306"
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./dstone-mysql/init-db:/docker-entrypoint-initdb.d
