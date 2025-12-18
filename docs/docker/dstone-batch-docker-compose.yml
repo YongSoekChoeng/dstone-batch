@@ -64,6 +64,8 @@ services:
       - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
     networks:
       - dstone-network
+    depends_on:
+      - dstone-mysql
     command:
       - /bin/bash
       - -c
@@ -92,6 +94,9 @@ services:
       - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
     networks:
       - dstone-network
+    depends_on:
+      - dstone-mysql
+      - dstone-batch
     command:
       - /bin/bash
       - -c
