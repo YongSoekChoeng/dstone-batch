@@ -28,6 +28,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.task.configuration.EnableTask;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import net.dstone.common.DstoneBootApplication;
@@ -118,7 +119,7 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		    springApplicationBuilder.properties(prop);
 		    springApplicationBuilder.listeners(new ApplicationPidFileWriter());
 		    springApplicationBuilder.run(args);
-
+		    
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
