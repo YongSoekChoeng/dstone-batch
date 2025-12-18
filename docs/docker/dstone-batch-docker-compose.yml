@@ -1,36 +1,39 @@
 ########################################################################################
+# <컨테이너목록>
+# * 아래의 모든 컨테이너들을 일괄로 생성한다.
+# 1. dstone-mysql(데이터베이스)
+# 2. dstone-batch(배치프레임웍 Application)
+# 3. dstone-batch-server(배치프레임웍 Application 관리서버)
+# 
 # <사전작업>
-# 1. 작업디렉토리 결정 후 템플릿(dstone-batch/docs/docker) 복사.
-#   예) /workshop/docker 
-# 2. 배치서버 Application 복사.
-#   - dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
-# 3. 배치관리서버 Application 복사.
-#   - dstone-batch-server/dataflow/spring-cloud-dataflow-server-2.11.5.jar
+# 1. 작업디렉토리 결정 후 템플릿 복사.
+#   /workshop
+# 
 # <작업명령>
 # 1. Docker Compose 실행
-#   - docker-compose -f dstone-batch-docker-compose.yml up -d
+#   - docker-compose -p dstone -f /workshop/01.dstone-batch-docker-compose.yml up -d
 # 2. 로그 확인
-#   - docker-compose -f dstone-batch-docker-compose.yml logs -f
+#   - docker-compose -p dstone -f /workshop/01.dstone-batch-docker-compose.yml logs -f
 # 3. 중지 및 삭제
-#   - docker-compose -f dstone-batch-docker-compose.yml down -v
+#   - docker-compose -p dstone -f /workshop/01.dstone-batch-docker-compose.yml down -v
 ########################################################################################
 services:
 
   # MySQL 데이터베이스 서버
-  dstone-mysql:
+  dstone-mysql:  
     # ---------- 최초작업일 때 ---------------------- #
-    image: mysql:8.0
+    # image: mysql:8.0
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-mysql:latest
-    # --------------------------------------------- #
+    image: jysn007/dstone-mysql:latest
+    # --------------------------------------------- #    
     container_name: dstone-mysql
     environment:
       MYSQL_ROOT_PASSWORD: db2admin!@
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_0900_ai_ci
     ports:
-      - "3306:3306"
+      - "3306:3306"  
     volumes:
       - mysql-data:/var/lib/mysql
       - ./dstone-mysql/init-db:/docker-entrypoint-initdb.d
@@ -45,77 +48,58 @@ services:
       timeout: 5s
       retries: 5
 
-  # 배치서버 Application
-  dstone-batch:
+  # 배치프레임웍 Application
+  dstone-batch:    
     # ---------- 최초작업일 때 ---------------------- #
     image: eclipse-temurin:21-jdk
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
     # image: jysn007/dstone-batch:latest
-    # --------------------------------------------- #
+    # --------------------------------------------- #    
     container_name: dstone-batch
-    working_dir: /workshop
-    volumes:
-      - ./dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
-      - ./dstone-batch/bin:/workshop/dstone-batch/bin
-      - ./dstone-batch/conf:/workshop/dstone-batch/conf
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://dstone-mysql:3306/sampleDB?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: sampleuser
-      SPRING_DATASOURCE_PASSWORD: sampleuser
-      SPRING_BATCH_JDBC_INITIALIZE_SCHEMA: always
-      TZ: Asia/Seoul
     ports:
       - "6081:6081"
-    depends_on:
-      dstone-mysql:
-        condition: service_healthy
+    volumes:
+      - /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
+      - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
     networks:
       - dstone-network
     command:
       - /bin/bash
       - -c
       - |
-        echo "Waiting for MySQL to be ready..."
-        sleep 10
-        echo "Starting Spring Batch Application..."
-        chmod +x /workshop/dstone-batch/bin/startApp.sh
-        cd /workshop/dstone-batch/bin
-        ./startApp.sh
+        echo "Starting Spring Boot Application..."
+        java -Xms512m -Xmx1024m -Dspring.profiles.active=dev -jar /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar net.dstone.batch.common.DstoneBatchApplication
     restart: unless-stopped
 
-  # 배치관리서버 Application
-  dstone-batch-server:
+  # 배치프레임웍 Application 관리서버
+  dstone-batch-server:    
+    # ---------- 최초작업일 때 ---------------------- #
     image: eclipse-temurin:21-jdk
+    # --------------------------------------------- #    
+    # ---------- Docker Hub 에서 가져올 때 ---------- #
+    # image: jysn007/dstone-batch-server:latest
+    # --------------------------------------------- #    
     container_name: dstone-batch-server
-    working_dir: /workshop
-    volumes:
-      - ./dstone-batch-server:/workshop/dstone-batch-server
-      - ./dstone-batch/target:/workshop/dstone-batch-server/applications
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://dstone-mysql:3306/dataflow?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: dataflow
-      SPRING_DATASOURCE_PASSWORD: dataflow
-      TZ: Asia/Seoul
     ports:
       - "9393:9393"
-    depends_on:
-      dstone-mysql:
-        condition: service_healthy
+    volumes:
+      # dstone-batch-server(배치관리프로그램)용 설정
+      - /workshop/dstone-batch-server/target:/workshop/dstone-batch-server/target
+      - /workshop/dstone-batch-server/conf:/workshop/dstone-batch-server/conf
+      # dstone-batch(배치프로그램)용 설정
+      - /workshop/dstone-batch/target:/workshop/dstone-batch/target
+      - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
     networks:
       - dstone-network
-    command: 
+    command:
       - /bin/bash
       - -c
       - |
-        echo "Waiting for MySQL to be ready..."
-        sleep 10
-        echo "Starting Batch Management Server..."
-        chmod +x /workshop/dstone-batch-server/01.dataflow.sh
-        cd /workshop/dstone-batch-server
-        ./01.dataflow.sh
+        echo "Starting Dataflow Server..."
+        java -Dspring.profiles.active=dev -jar /workshop/dstone-batch-server/target/spring-cloud-dataflow-server-2.11.5.jar --spring.config.location=/workshop/dstone-batch-server/conf/dataflow-server.yml
     restart: unless-stopped
-
+    
 networks:
   dstone-network:
     driver: bridge
