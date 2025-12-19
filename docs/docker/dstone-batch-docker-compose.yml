@@ -8,6 +8,21 @@
 # <사전작업>
 # 1. 작업디렉토리 결정 후 템플릿 복사.
 #   /workshop
+#     └─ /dstone-mysql                             # <Database (MySQL)>
+#        ├─ init-db/                               #   DB 초기화 스크립트
+#        ├─ 01.dstone-mysql-docker.yml             #   개별 Docker Compose 빌드파일
+#        └─ 02.dstone-mysql-docker-reg.sh          #   Docker Hub 등록 Shell
+#     └─ /dstone-batch                             # <Batch Application>
+#        ├─ conf/                                  #   설정 파일
+#        ├─ target/                                #   실행 파일
+#        ├─ 01.dstone-batch-docker.yml             #   개별 Docker Compose 빌드파일
+#        └─ 02.dstone-batch-docker-reg.sh          #   Docker Hub 등록 Shell
+#     └─ /dstone-batch-server                      # <Batch Admin Application>
+#        ├─ conf/                                  #   설정 파일
+#        ├─ target/                                #   실행 파일
+#        ├─ 01.dstone-batch-server-docker.yml      #   개별 Docker Compose 빌드파일
+#        └─ 02.dstone-batch-server-docker-reg.sh   #   Docker Hub 등록 Shell
+#     └─ /workshop/dstone-batch-docker-compose.yml # 메인 Docker Compose 빌드파일
 # 
 # <작업명령>
 # 1. Docker Compose 실행
