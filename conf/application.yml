@@ -79,5 +79,5 @@ spring:
         dataflow:
             job-auto-register: true
             client:
-                server-uri: http://${ADMIN_HOST}:${DB_HOST}
+                server-uri: http://${ADMIN_HOST}:${ADMIN_PORT}
                 enable-dsl: true
