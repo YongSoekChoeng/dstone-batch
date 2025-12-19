@@ -99,7 +99,7 @@ services:
     # --------------------------------------------- #    
     container_name: dstone-batch-server
     env_file:
-      - ./conf/env-dev.properties
+      - /workshop/dstone-batch-server/conf/env-dev.properties
     ports:
       - "9393:9393"
     volumes:
