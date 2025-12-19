@@ -15,7 +15,7 @@ spring:
         common: 
             hikari: 
                 driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy        # 데이터베이스 드라이버 클래스 이름
-                jdbc-url: jdbc:log4jdbc:mysql://${DB_HOST}:${DB_POST}/dataflow  # 데이터베이스 연결 URL
+                jdbc-url: jdbc:log4jdbc:mysql://${DB_HOST}:${DB_PORT}/dataflow  # 데이터베이스 연결 URL
                 username: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)     # 데이터베이스 사용자 이름
                 password: ENC(VElaOj1pF3IdRCrKXHIQFVRCQv4hE6Oniig5ohsQ1wY=)     # 데이터베이스 사용자 비밀번호
                 minimum-idle: 2                                                 # 최소 Idle 커넥션 수
@@ -40,7 +40,7 @@ spring:
         sample:
             hikari: 
                 driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy        # 데이터베이스 드라이버 클래스 이름
-                jdbc-url: jdbc:log4jdbc:mysql://${DB_HOST}:${DB_POST}/sampleDB  # 데이터베이스 연결 URL
+                jdbc-url: jdbc:log4jdbc:mysql://${DB_HOST}:${DB_PORT}/sampleDB  # 데이터베이스 연결 URL
                 username: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)     # 데이터베이스 사용자 이름
                 password: ENC(RxKuJmDmzNwlIYKQOUjUlAC4mm4RPraeCDJWbUh99w0=)     # 데이터베이스 사용자 비밀번호
                 minimum-idle: 2                                                 # 최소 Idle 커넥션 수
@@ -79,5 +79,5 @@ spring:
         dataflow:
             job-auto-register: true
             client:
-                server-uri: http://localhost:9393
+                server-uri: http://${ADMIN_HOST}:${DB_HOST}
                 enable-dsl: true
