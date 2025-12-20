@@ -36,7 +36,36 @@ public class RestApiRunner extends AbstractRunner {
 
 	@Autowired 
 	ConfigProperty configProperty; // 프로퍼티 가져오는 bean
+
+	/**
+	 * AutoRegJob 어노테이션들이 붙은 Job들을 SCDF에 등록하는 메소드.
+	 * @param params
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/regtasks")
+    public ResponseEntity<?> regtasks(@RequestParam Map<String, Object> params, HttpServletRequest request) throws Exception {
+		
+		/*** SCDF에 Job 의 Task를 등록 시작 ***/
+		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
+		ScdfTaskRunner.registerJosToScdf();
+		/*** SCDF에 Job 의 Task를 등록 끝 ***/
+		
+        return ResponseEntity.ok(Map.of(
+             "status", BatchStatus.STARTED
+        ));
+    }
 	
+	
+	/** 
+	 * jobName 에 해당하는 JOB을 호출하는 메소드.
+	 * @param jobName
+	 * @param params
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping("/restapi/{jobName}")
     public ResponseEntity<?> runJob(@PathVariable String jobName, @RequestParam Map<String, Object> params, HttpServletRequest request) throws Exception {
         JobExecution execution = null;
@@ -74,6 +103,11 @@ public class RestApiRunner extends AbstractRunner {
         ));
     }
 	
+    /**
+     * jobExecutionId 에 해당하는 Job실행상태를 조회하는 메소드
+     * @param jobExecutionId
+     * @return
+     */
     @GetMapping("/status/{jobExecutionId}")
     public ResponseEntity<?> status(@PathVariable Long jobExecutionId) {
         JobExecution execution = jobExplorer.getJobExecution(jobExecutionId);

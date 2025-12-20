@@ -120,11 +120,6 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		    springApplicationBuilder.listeners(new ApplicationPidFileWriter());
 		    springApplicationBuilder.run(args);
 		    
-		    String taskRegOnStartYn = System.getProperty("TASK_REG_ON_START_YN", "N");
-		    if( "Y".equals(taskRegOnStartYn)) {
-		    	ScdfTaskRunner.registerJosToScdf();
-		    }
-		    
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
