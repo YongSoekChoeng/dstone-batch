@@ -28,9 +28,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.task.configuration.EnableTask;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import net.dstone.batch.common.runner.ScdfTaskRunner;
 import net.dstone.common.DstoneBootApplication;
 import net.dstone.common.utils.ConvertUtil;
 import net.dstone.common.utils.LogUtil;
@@ -119,6 +119,11 @@ public class DstoneBatchApplication extends SpringBootServletInitializer {
 		    springApplicationBuilder.properties(prop);
 		    springApplicationBuilder.listeners(new ApplicationPidFileWriter());
 		    springApplicationBuilder.run(args);
+		    
+		    String taskRegOnStartYn = System.getProperty("TASK_REG_ON_START_YN", "N");
+		    if( "Y".equals(taskRegOnStartYn)) {
+		    	ScdfTaskRunner.registerJosToScdf();
+		    }
 		    
 		} catch (Throwable e) {
 			e.printStackTrace();

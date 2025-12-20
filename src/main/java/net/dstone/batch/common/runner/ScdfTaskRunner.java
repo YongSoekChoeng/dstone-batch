@@ -103,7 +103,7 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 	/**
 	 * SCDF에 Job 의 Task를 등록하기 위해 SpringApplication 을 실행하는 메소드.
 	 */
-	private static void registerJosToScdf() {
+	public static void registerJosToScdf() {
 		try {
 			String[] args = new String[0];
 			ConfigurableApplicationContext context = new SpringApplicationBuilder(DstoneBatchApplication.class).web(WebApplicationType.NONE).run(args);
