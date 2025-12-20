@@ -63,32 +63,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # 배치프레임웍 Application
-  dstone-batch:    
-    # ---------- 최초작업일 때 ---------------------- #
-    image: eclipse-temurin:21-jdk
-    # --------------------------------------------- #    
-    # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-batch:latest
-    # --------------------------------------------- #    
-    container_name: dstone-batch
-    ports:
-      - "6081:6081"
-    volumes:
-      - /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
-      - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
-    networks:
-      - dstone-network
-    depends_on:
-      - dstone-mysql
-    command:
-      - /bin/bash
-      - -c
-      - |
-        echo "Starting Spring Boot Application..."
-        java -Xms512m -Xmx1024m -Dspring.profiles.active=dev -jar /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar net.dstone.batch.common.DstoneBatchApplication
-    restart: unless-stopped
-
   # 배치프레임웍 Application 관리서버
   dstone-batch-server:    
     # ---------- 최초작업일 때 ---------------------- #
@@ -113,7 +87,6 @@ services:
       - dstone-network
     depends_on:
       - dstone-mysql
-      - dstone-batch
     command:
       - /bin/bash
       - -c
@@ -122,6 +95,33 @@ services:
         java -Dspring.profiles.active=dev -jar /workshop/dstone-batch-server/target/spring-cloud-dataflow-server-2.11.5.jar --spring.config.location=/workshop/dstone-batch-server/conf/dataflow-server.yml
     restart: unless-stopped
     
+  # 배치프레임웍 Application
+  dstone-batch:    
+    # ---------- 최초작업일 때 ---------------------- #
+    image: eclipse-temurin:21-jdk
+    # --------------------------------------------- #    
+    # ---------- Docker Hub 에서 가져올 때 ---------- #
+    # image: jysn007/dstone-batch:latest
+    # --------------------------------------------- #    
+    container_name: dstone-batch
+    ports:
+      - "6081:6081"
+    volumes:
+      - /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar:/workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar
+      - /workshop/dstone-batch/conf:/workshop/dstone-batch/conf
+    networks:
+      - dstone-network
+    depends_on:
+      - dstone-mysql
+      - dstone-batch-server
+    command:
+      - /bin/bash
+      - -c
+      - |
+        echo "Starting Spring Boot Application..."
+        java -Xms512m -Xmx1024m -Dspring.profiles.active=dev -jar /workshop/dstone-batch/target/dstone-batch-0.0.1-SNAPSHOT.jar net.dstone.batch.common.DstoneBatchApplication
+    restart: unless-stopped
+
 networks:
   dstone-network:
     driver: bridge
