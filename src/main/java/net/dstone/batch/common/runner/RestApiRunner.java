@@ -49,7 +49,7 @@ public class RestApiRunner extends AbstractRunner {
 		
 		/*** SCDF에 Job 의 Task를 등록 시작 ***/
 		net.dstone.batch.common.DstoneBatchApplication.setSysProperties();
-		ScdfTaskRunner.registerJosToScdf();
+		ScdfTaskRunner.registerAllJobToDataflow(context);
 		/*** SCDF에 Job 의 Task를 등록 끝 ***/
 		
         return ResponseEntity.ok(Map.of(
