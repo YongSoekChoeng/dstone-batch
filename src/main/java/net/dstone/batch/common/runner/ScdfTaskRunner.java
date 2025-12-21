@@ -1,6 +1,7 @@
 package net.dstone.batch.common.runner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.batch.core.Job;
@@ -22,6 +23,7 @@ import net.dstone.batch.common.DstoneBatchApplication;
 import net.dstone.batch.common.annotation.AutoRegJob;
 import net.dstone.batch.common.config.ConfigProperty;
 import net.dstone.batch.common.core.BaseJobConfig;
+import net.dstone.common.utils.ConvertUtil;
 import net.dstone.common.utils.LogUtil;
 import net.dstone.common.utils.StringUtil;
 
@@ -105,8 +107,23 @@ public class ScdfTaskRunner extends AbstractRunner implements ApplicationRunner 
 	 */
 	public static void registerJosToScdf() {
 		try {
+
+		    SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(DstoneBatchApplication.class);
+		    StringBuffer msg = new StringBuffer();
+		    String appConfDir = System.getProperty("APP_CONF_DIR");
+		    Map<String,Object> prop = new HashMap<String,Object>();
+		    prop.put("spring.config.location", appConfDir + "/application.yml" );
+		    prop.put("logging.config", appConfDir + "/log4j2.xml" );
+		    
+		    msg.append("/******************************* 설정파일 로딩 시작 *********************************/").append("\n");
+		    msg.append( ConvertUtil.convertToJson(prop) ).append("\n");
+		    msg.append("/******************************* 설정파일 로딩 끝 *********************************/").append("\n");
+		    LogUtil.sysout(msg);
+
+		    springApplicationBuilder.properties(prop);
+		    
 			String[] args = new String[0];
-			ConfigurableApplicationContext context = new SpringApplicationBuilder(DstoneBatchApplication.class).web(WebApplicationType.NONE).run(args);
+			ConfigurableApplicationContext context = springApplicationBuilder.web(WebApplicationType.NONE).run(args);
 			registerAllJobToDataflow(context);
 		} catch (Exception e) {
 			//e.printStackTrace();
