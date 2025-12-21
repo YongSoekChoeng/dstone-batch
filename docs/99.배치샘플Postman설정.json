@@ -7,6 +7,52 @@
 	},
 	"item": [
 		{
+			"name": "common",
+			"item": [
+				{
+					"name": "regJobs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6081/batch/regtasks",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6081",
+							"path": [
+								"batch",
+								"regtasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "jobStatus",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6081/batch/status/69",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6081",
+							"path": [
+								"batch",
+								"status",
+								"69"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "job001",
 			"item": [
 				{
@@ -29,30 +75,9 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "sampleJob-status",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:6081/batch/status/69",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "6081",
-							"path": [
-								"batch",
-								"status",
-								"69"
-							]
-						}
-					},
-					"response": []
 				}
 			]
-		},
+		},		
 		{
 			"name": "job002",
 			"item": [
