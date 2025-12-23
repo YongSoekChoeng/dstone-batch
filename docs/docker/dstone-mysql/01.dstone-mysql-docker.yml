@@ -16,10 +16,10 @@ services:
   dstone-mysql:
   
     # ---------- 최초작업일 때 ---------------------- #
-    image: mysql:8.0
+    # image: mysql:8.0
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-mysql:latest
+    image: jysn007/dstone-mysql:latest
     # --------------------------------------------- #
     
     container_name: dstone-mysql

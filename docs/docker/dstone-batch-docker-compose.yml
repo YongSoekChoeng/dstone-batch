@@ -37,10 +37,10 @@ services:
   # MySQL 데이터베이스 서버(dstone-batch만 설치할 경우 설치. dstone-boot가 설치되어 있으면 mysql이 이미 설치되러 있음)
   dstone-mysql:  
     # ---------- 최초작업일 때 ---------------------- #
-    image: mysql:8.0
+    # image: mysql:8.0
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-mysql:latest
+    image: jysn007/dstone-mysql:latest
     # --------------------------------------------- #    
     container_name: dstone-mysql
     environment:
@@ -66,10 +66,10 @@ services:
   # 배치프레임웍 Application 관리서버
   dstone-batch-server:    
     # ---------- 최초작업일 때 ---------------------- #
-    image: eclipse-temurin:21-jdk
+    # image: eclipse-temurin:21-jdk
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-batch-server:latest
+    image: jysn007/dstone-batch-server:latest
     # --------------------------------------------- #    
     container_name: dstone-batch-server
     env_file:
@@ -98,10 +98,10 @@ services:
   # 배치프레임웍 Application
   dstone-batch:    
     # ---------- 최초작업일 때 ---------------------- #
-    image: eclipse-temurin:21-jdk
+    # image: eclipse-temurin:21-jdk
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-batch:latest
+    image: jysn007/dstone-batch:latest
     # --------------------------------------------- #    
     container_name: dstone-batch
     ports:

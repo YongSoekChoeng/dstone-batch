@@ -16,10 +16,10 @@ services:
   dstone-batch:
     
     # ---------- 최초작업일 때 ---------------------- #
-    image: eclipse-temurin:21-jdk
+    # image: eclipse-temurin:21-jdk
     # --------------------------------------------- #    
     # ---------- Docker Hub 에서 가져올 때 ---------- #
-    # image: jysn007/dstone-batch:latest
+    image: jysn007/dstone-batch:latest
     # --------------------------------------------- #
     
     container_name: dstone-batch
