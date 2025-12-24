@@ -26,11 +26,11 @@
 # 
 # <작업명령>
 # 1. Docker Compose 실행
-#   - docker-compose -p dstone -f /workshop/dstone-batch-docker-compose.yml up -d
+#   - docker compose -p dstone -f /workshop/dstone-batch-docker-compose.yml up -d
 # 2. 로그 확인
-#   - docker-compose -p dstone -f /workshop/dstone-batch-docker-compose.yml logs -f
+#   - docker compose -p dstone -f /workshop/dstone-batch-docker-compose.yml logs -f
 # 3. 중지 및 삭제
-#   - docker-compose -p dstone -f /workshop/dstone-batch-docker-compose.yml down -v
+#   - docker compose -p dstone -f /workshop/dstone-batch-docker-compose.yml down -v
 ########################################################################################
 services:
 

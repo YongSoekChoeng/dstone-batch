@@ -4,11 +4,11 @@
 #   /workshop/dstone-mysql
 # <작업명령>
 # 1. Docker Compose 실행
-#   - docker-compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml up -d
+#   - docker compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml up -d
 # 2. 로그 확인
-#   - docker-compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml logs -f dstone-mysql
+#   - docker compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml logs -f dstone-mysql
 # 3. 중지 및 삭제
-#   - docker-compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml down -v
+#   - docker compose -p dstone -f /workshop/dstone-mysql/01.dstone-mysql-docker.yml down -v
 ########################################################################################
 services:
 
